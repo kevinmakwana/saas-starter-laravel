@@ -48,3 +48,25 @@ function something()
 {
     // ..
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+use App\Models\Team;
+use App\Models\User;
+use App\Support\Tenancy\TenantContext;
+
+/** Run a callback with the given team as the current tenant. */
+function asTenant(Team $team, Closure $callback): mixed
+{
+    return app(TenantContext::class)->run($team, $callback);
+}
+
+/** A user who owns a fresh team (their current team). */
+function ownerWithTeam(): User
+{
+    return Team::factory()->create()->owner->refresh();
+}
