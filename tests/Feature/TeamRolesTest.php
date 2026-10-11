@@ -8,7 +8,7 @@ use App\Models\User;
 function teamWith(Role ...$roles): array
 {
     $owner = User::factory()->create();
-    $team = Team::factory()->for($owner, 'owner')->create();
+    $team = Team::factory()->for($owner, 'owner')->create(['plan' => 'business']);
     $users = ['owner' => $owner];
     foreach ($roles as $role) {
         if ($role === Role::Owner && isset($users['owner']) && $users['owner']->is($owner) && ! isset($users['_seen'])) {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Plan;
 use App\Enums\Role;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,14 +11,38 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Laravel\Cashier\Billable;
 
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
-    use HasFactory;
+    use Billable, HasFactory;
 
     /** @var list<string> */
     protected $fillable = ['name', 'owner_id'];
+
+    /** @return array<string, string> */
+    protected function casts(): array
+    {
+        return ['plan_ends_at' => 'datetime'];
+    }
+
+    /** The plan in force right now: a cancelled plan stays active until its period ends. */
+    public function currentPlan(): Plan
+    {
+        $plan = Plan::tryFrom((string) $this->plan) ?? Plan::Free;
+
+        if ($this->plan_ends_at !== null && $this->plan_ends_at->isPast()) {
+            return Plan::Free;
+        }
+
+        return $plan;
+    }
+
+    public function onGracePeriod(): bool
+    {
+        return $this->plan_ends_at !== null && $this->plan_ends_at->isFuture();
+    }
 
     /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo

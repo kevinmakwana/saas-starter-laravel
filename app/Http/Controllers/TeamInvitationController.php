@@ -28,6 +28,9 @@ class TeamInvitationController extends Controller
         $role = Role::from($data['role']);
 
         Gate::authorize('inviteAs', [$team, $role]);
+        if (! $team->invitations()->where('email', $data['email'])->whereNull('accepted_at')->where('expires_at', '>', now())->exists()) {
+            Gate::authorize('addMember', $team);
+        }
 
         if ($team->users()->where('email', $data['email'])->exists()) {
             throw ValidationException::withMessages(['email' => 'This person is already on the team.']);

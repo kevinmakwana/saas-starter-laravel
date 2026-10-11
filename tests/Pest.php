@@ -66,7 +66,7 @@ function asTenant(Team $team, Closure $callback): mixed
 }
 
 /** A user who owns a fresh team (their current team). */
-function ownerWithTeam(): User
+function ownerWithTeam(string $plan = 'business'): User
 {
-    return Team::factory()->create()->owner->refresh();
+    return Team::factory()->create(['plan' => $plan])->owner->refresh();
 }

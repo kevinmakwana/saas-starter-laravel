@@ -5,6 +5,8 @@ namespace App\Policies;
 use App\Enums\Role;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\PlanLimits;
+use Illuminate\Auth\Access\Response;
 
 class TeamPolicy
 {
@@ -26,6 +28,21 @@ class TeamPolicy
     public function invite(User $user, Team $team): bool
     {
         return $team->roleOf($user)?->canManageTeam() ?? false;
+    }
+
+    /** Role check plus the plan's member limit (pending invitations count as seats). */
+    public function addMember(User $user, Team $team): Response
+    {
+        if (! $this->invite($user, $team)) {
+            return Response::deny();
+        }
+
+        return app(PlanLimits::class)->check($team, 'members', 'members');
+    }
+
+    public function manageBilling(User $user, Team $team): bool
+    {
+        return $team->roleOf($user) === Role::Owner;
     }
 
     /** Owners can invite admins and members, admins only members. */

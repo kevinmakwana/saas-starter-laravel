@@ -16,8 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        $middleware->alias(['team' => \App\Http\Middleware\EnsureHasTeam::class]);
+        $middleware->alias([
+            'team' => \App\Http\Middleware\EnsureHasTeam::class,
+            'feature' => \App\Http\Middleware\RequireFeature::class,
+        ]);
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Plan-limit denials (402) become a friendly upgrade prompt instead of a bare error page.
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() === 402 && ($request->header('X-Inertia') || ! $request->expectsJson())) {
+                return back()->with('upgrade', $e->getMessage());
+            }
+        });
     })->create();
