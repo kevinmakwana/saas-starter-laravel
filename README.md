@@ -63,6 +63,10 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
   `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
 - **Webhooks:** `POST /webhooks/stripe` verifies the signature, stores each event id once (idempotent) and processes it on the `webhooks` queue.
+- **Failed payments:** `invoice.payment_failed` starts a 7-day grace period (`billing.grace_days`) and emails the owner once.
+  The paid plan stays active during grace, drops to Free if it is not fixed, and is restored by `invoice.paid`. A banner warns the team.
+- **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions and the webhook
+  (login and email verification are throttled by Breeze). Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
 - **Feature flags:** `FeatureGate` and a `feature:` route middleware. For example `audit_log` is Business only.
 - **Projects and tasks:** CRUD with search, status filter and pagination.
@@ -86,25 +90,30 @@ The Stripe path has not been exercised against live Stripe in this repo (see bel
 
 ```bash
 make test                  # Pest feature + unit tests (inside Sail)
+npm run e2e                # Playwright browser tests against the running app (make up first)
 vendor/bin/pint --test     # code style
 vendor/bin/phpstan analyse # Larastan, level 6
 npm run build              # vue-tsc type check + Vite build
 ```
 
 Tests cover tenancy isolation (reads, writes, route model binding), role policies, the invitation flow, plan limits,
-webhook signature and idempotency, feature gates, and the seeder. CI (GitHub Actions) runs Pint, Larastan and Pest
-against a MySQL 8.4 service container on every push and pull request.
+webhook signature and idempotency, payment failures, rate limits, feature gates, and the seeder.
+Browser tests (Playwright) cover login, registration with email verification through Mailpit, tenant isolation, the Free plan
+limit and upgrade, and the invitation flow with its signed link. CI (GitHub Actions) runs Pint, Larastan and Pest against a
+MySQL 8.4 service container, plus the Playwright suite in a second job, on every push and pull request.
+
+For repeated local E2E runs from one IP, set `THROTTLE_REGISTRATION_PER_HOUR=1000` in `.env`.
 
 ## What I'd do next in production
 
 - Add Stripe Checkout and Customer Portal coverage and test the `StripeGateway` against Stripe's test mode in CI.
-- Handle dunning: `invoice.payment_failed`, grace periods, and email notices to the owner.
+- Extend dunning: reminder emails during the grace period and a self-serve payment-method update (Customer Portal).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
 - Add rate limiting on invitations and auth, 2FA, and SSO for Business.
 - Make audit logs append-only and exportable, with retention rules.
 - Observability: structured logs, Sentry, queue and failed-job alerts, Horizon for Redis queues.
 - Add seat-based billing and proration instead of fixed per-plan limits.
-- Browser end-to-end tests (Playwright) for the main flows, and zero-downtime deploys with migration safety checks.
+- Zero-downtime deploys with migration safety checks.
 
 ## License
 

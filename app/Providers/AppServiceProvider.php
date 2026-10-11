@@ -43,11 +43,11 @@ class AppServiceProvider extends ServiceProvider
     {
         $user = fn (Request $request): string => (string) ($request->user()?->getAuthIdentifier() ?? $request->ip());
 
-        RateLimiter::for('registration', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
+        RateLimiter::for('registration', fn (Request $request) => Limit::perHour((int) config('throttle.registration_per_hour'))->by($request->ip()));
         RateLimiter::for('password-reset', fn (Request $request) => Limit::perHour(5)->by($request->ip().'|'.strtolower((string) $request->input('email'))));
         RateLimiter::for('team-create', fn (Request $request) => Limit::perHour(10)->by($user($request)));
         RateLimiter::for('invitations', fn (Request $request) => [
-            Limit::perMinute(5)->by($user($request)),
+            Limit::perMinute((int) config('throttle.invitations_per_minute'))->by($user($request)),
             Limit::perDay(50)->by($user($request)),
         ]);
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));

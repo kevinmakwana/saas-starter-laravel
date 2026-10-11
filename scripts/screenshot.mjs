@@ -1,5 +1,5 @@
 // Captures docs/screenshot.png from a running local app (make up).
-// Usage: npm i --no-save playwright && npx playwright install chromium && node scripts/screenshot.mjs
+// Usage: npx playwright install chromium && node scripts/screenshot.mjs
 import { chromium } from 'playwright';
 
 const base = process.env.APP_URL ?? 'http://localhost:8080';

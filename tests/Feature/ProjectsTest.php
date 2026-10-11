@@ -85,6 +85,15 @@ it('enforces the project limit with an upgrade prompt', function () {
     expect(asTenant($this->team, fn () => Project::count()))->toBe(4);
 });
 
+it('sends a denied page view to the plans page instead of redirecting to itself', function () {
+    $this->team->forceFill(['plan' => 'free'])->save();
+    asTenant($this->team, fn () => Project::factory()->count(3)->create());
+
+    $this->actingAs($this->user)->from('/projects/create')->get('/projects/create')
+        ->assertRedirect(route('billing.show'))
+        ->assertSessionHas('upgrade', fn ($m) => str_contains($m, 'Free plan includes up to 3 projects'));
+});
+
 it('only lets owners and admins delete projects', function () {
     $member = User::factory()->create(['current_team_id' => $this->team->id]);
     $this->team->addMember($member, Role::Member);

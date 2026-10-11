@@ -33,7 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Plan-limit denials (402) become a friendly upgrade prompt instead of a bare error page.
         $exceptions->render(function (HttpException $e, Request $request) {
             if ($e->getStatusCode() === 402 && ($request->header('X-Inertia') || ! $request->expectsJson())) {
-                return back()->with('upgrade', $e->getMessage());
+                // A denied page view (GET) cannot go "back" to itself without looping: send it to the plans page.
+                return $request->isMethod('GET')
+                    ? redirect()->route('billing.show')->with('upgrade', $e->getMessage())
+                    : back()->with('upgrade', $e->getMessage());
             }
         });
 

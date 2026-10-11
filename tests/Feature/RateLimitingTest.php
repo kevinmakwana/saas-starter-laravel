@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Mail;
 
+// Pin the limits so a local .env override (used for browser E2E runs) cannot change these tests.
+beforeEach(fn () => config(['throttle.registration_per_hour' => 10, 'throttle.invitations_per_minute' => 5]));
+
 it('throttles team invitations per user', function () {
     Mail::fake();
     $owner = ownerWithTeam('business');
