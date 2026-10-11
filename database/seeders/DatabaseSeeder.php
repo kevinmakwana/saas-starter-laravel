@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             $user->switchTeam($team);
         }
 
-        app(TenantContext::class)->run($team, function () use ($team, $owner, $admin) {
+        app(TenantContext::class)->run($team, function () use ($owner, $admin) {
             if (Project::count() > 0) {
                 return;
             }

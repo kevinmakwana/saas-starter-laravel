@@ -10,9 +10,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Laravel\Cashier\Billable;
 
+/**
+ * @property int $id
+ * @property int $owner_id
+ * @property string $name
+ * @property string $plan
+ * @property Carbon|null $plan_ends_at
+ * @property string|null $stripe_id
+ */
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */

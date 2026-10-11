@@ -1,9 +1,13 @@
 <?php
 
+use App\Billing\BillingGateway;
+use App\Billing\FakeGateway;
 use App\Enums\Plan;
-use App\Models\Team;
+use App\Enums\Role;
 use App\Models\User;
 use App\Services\FeatureGate;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
     $this->owner = ownerWithTeam('free');
@@ -11,7 +15,7 @@ beforeEach(function () {
 });
 
 it('runs on the fake gateway when no Stripe keys are set', function () {
-    expect(app(\App\Billing\BillingGateway::class))->toBeInstanceOf(\App\Billing\FakeGateway::class);
+    expect(app(BillingGateway::class))->toBeInstanceOf(FakeGateway::class);
 });
 
 it('subscribes, changes plan and cancels with the fake gateway', function () {
@@ -44,7 +48,7 @@ it('rejects subscribing to the free plan or an unknown plan', function () {
 
 it('lets only the owner manage billing', function () {
     $admin = User::factory()->create(['current_team_id' => $this->team->id]);
-    $this->team->addMember($admin, \App\Enums\Role::Admin);
+    $this->team->addMember($admin, Role::Admin);
 
     $this->actingAs($admin)->get('/billing')->assertOk();
     $this->actingAs($admin)->post('/billing/subscribe', ['plan' => 'pro'])->assertForbidden();
@@ -52,7 +56,7 @@ it('lets only the owner manage billing', function () {
 });
 
 it('enforces the member limit with an upgrade prompt', function () {
-    \Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
     // Free allows 2 members: the owner plus one pending invitation fills it.
     $this->actingAs($this->owner)->post('/team/invitations', ['email' => 'a@example.com', 'role' => 'member'])->assertRedirect()
         ->assertSessionMissing('upgrade');
@@ -91,7 +95,7 @@ it('treats an expired cancelled plan as free for feature gates', function () {
 });
 
 it('redirects to billing when a gated feature is requested without the plan', function () {
-    \Illuminate\Support\Facades\Route::middleware(['web', 'auth', 'team', 'feature:audit_log'])->get('/_gated', fn () => 'secret');
+    Route::middleware(['web', 'auth', 'team', 'feature:audit_log'])->get('/_gated', fn () => 'secret');
 
     $this->actingAs($this->owner)->get('/_gated')->assertRedirect(route('billing.show'))->assertSessionHas('upgrade');
 

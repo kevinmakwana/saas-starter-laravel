@@ -1,0 +1,1 @@
+O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:73:"v2-904dc6b3e908c83b4f2b8511fc65a43bc6e3c21e541ddc1ef5e70cb614f81d69-8.4.1";s:4:"data";a:3:{s:7:"classes";a:1:{s:44:"laravel\cashier\exceptions\incompletepayment";b:1;}s:9:"functions";a:0:{}s:9:"constants";a:0:{}}}

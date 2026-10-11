@@ -2,9 +2,9 @@
 
 use App\Enums\Role;
 use App\Models\AuditLog;
-use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     $this->owner = ownerWithTeam('business');
@@ -22,7 +22,7 @@ it('records who did what', function () {
 });
 
 it('records team and billing changes', function () {
-    \Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
     $this->actingAs($this->owner)->post('/team/invitations', ['email' => 'x@example.com', 'role' => 'member']);
     $this->actingAs($this->owner)->post('/billing/change', ['plan' => 'pro']);
 

@@ -4,6 +4,7 @@ use App\Exceptions\TenancyException;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\Team;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -86,7 +87,7 @@ it('follows the users current team and ignores teams they were removed from', fu
     // Pointing current_team_id at a team without membership must not grant access.
     $user->forceFill(['current_team_id' => $this->teamB->id])->save();
     $user->unsetRelation('currentTeam');
-    app(\App\Support\Tenancy\TenantContext::class)->forget();
+    app(TenantContext::class)->forget();
 
     expect(Project::count())->toBe(0);
 });

@@ -17,7 +17,7 @@ class StripeGateway implements BillingGateway
                 'cancel_url' => route('billing.show', ['checkout' => 'cancelled']),
             ]);
 
-        return $checkout->url;
+        return $checkout->asStripeCheckoutSession()->url;
     }
 
     public function changePlan(Team $team, Plan $plan): void

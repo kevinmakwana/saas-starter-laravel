@@ -1,0 +1,87 @@
+O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:82:"v2-d2b3567793a041b8064e81a2dae7b861adaae53d59145baf254d8b5d9c8b7cd6-8.4.1-6.73.0.6";s:4:"data";a:22:{s:13:"locatedSource";a:2:{s:5:"class";s:60:"PHPStan\BetterReflection\SourceLocator\Located\LocatedSource";s:4:"data";a:2:{s:4:"name";s:13:"Stripe\Coupon";s:8:"filename";s:90:"/Volumes/Personal/saas-starter-laravel/vendor/composer/../stripe/stripe-php/lib/Coupon.php";}}s:9:"namespace";s:6:"Stripe";s:4:"name";s:13:"Stripe\Coupon";s:9:"shortName";s:6:"Coupon";s:11:"isInterface";b:0;s:7:"isTrait";b:0;s:6:"isEnum";b:0;s:12:"isBackedEnum";b:0;s:9:"modifiers";i:0;s:10:"docComment";s:3220:"/**
+ * A coupon contains information about a percent-off or amount-off discount you
+ * might want to apply to a customer. Coupons may be applied to <a href="https://api.stripe.com#subscriptions">subscriptions</a>, <a href="https://api.stripe.com#invoices">invoices</a>,
+ * <a href="https://docs.stripe.com/api/checkout/sessions">checkout sessions</a>, <a href="https://api.stripe.com#quotes">quotes</a>, and more. Coupons do not work with conventional one-off <a href="/api/charges/create">charges</a> or <a href="https://docs.stripe.com/api/payment_intents">payment intents</a>.
+ *
+ * @property string $id Unique identifier for the object.
+ * @property string $object String representing the object's type. Objects of the same type share the same value.
+ * @property null|int $amount_off Amount (in the <code>currency</code> specified) that will be taken off the subtotal of any invoices for this customer.
+ * @property null|(object{products: string[]}&StripeObject) $applies_to
+ * @property int $created Time at which the object was created. Measured in seconds since the Unix epoch.
+ * @property null|string $currency If <code>amount_off</code> has been set, the three-letter <a href="https://stripe.com/docs/currencies">ISO code for the currency</a> of the amount to take off.
+ * @property null|StripeObject $currency_options Coupons defined in each available currency option. Each key must be a three-letter <a href="https://www.iso.org/iso-4217-currency-codes.html">ISO currency code</a> and a <a href="https://stripe.com/docs/currencies">supported currency</a>.
+ * @property string $duration One of <code>forever</code>, <code>once</code>, or <code>repeating</code>. Describes how long a customer who applies this coupon will get the discount.
+ * @property null|int $duration_in_months If <code>duration</code> is <code>repeating</code>, the number of months the coupon applies. Null if coupon <code>duration</code> is <code>forever</code> or <code>once</code>.
+ * @property bool $livemode If the object exists in live mode, the value is <code>true</code>. If the object exists in test mode, the value is <code>false</code>.
+ * @property null|int $max_redemptions Maximum number of times this coupon can be redeemed, in total, across all customers, before it is no longer valid.
+ * @property null|StripeObject $metadata Set of <a href="https://docs.stripe.com/api/metadata">key-value pairs</a> that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
+ * @property null|string $name Name of the coupon displayed to customers on for instance invoices or receipts.
+ * @property null|float $percent_off Percent that will be taken off the subtotal of any invoices for this customer for the duration of the coupon. For example, a coupon with percent_off of 50 will make a $ (or local equivalent)100 invoice $ (or local equivalent)50 instead.
+ * @property null|int $redeem_by Date after which the coupon can no longer be redeemed.
+ * @property int $times_redeemed Number of times this coupon has been applied to a customer.
+ * @property bool $valid Taking account of the above properties, whether this coupon can still be applied to a customer.
+ */";s:10:"attributes";a:0:{}s:9:"startLine";i:30;s:7:"endLine";i:159;s:11:"startColumn";i:1;s:9:"endColumn";i:1;s:15:"parentClassName";s:18:"Stripe\ApiResource";s:20:"implementsClassNames";a:0:{}s:15:"traitClassNames";a:1:{i:0;s:27:"Stripe\ApiOperations\Update";}s:18:"immediateConstants";a:4:{s:11:"OBJECT_NAME";a:12:{s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:4:"name";s:11:"OBJECT_NAME";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:8:"'coupon'";s:10:"attributes";a:6:{s:9:"startLine";i:32;s:7:"endLine";i:32;s:13:"startTokenPos";i:27;s:12:"startFilePos";i:3347;s:11:"endTokenPos";i:27;s:10:"endFilePos";i:3354;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:32;s:7:"endLine";i:32;s:11:"startColumn";i:5;s:9:"endColumn";i:33;}s:16:"DURATION_FOREVER";a:12:{s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:4:"name";s:16:"DURATION_FOREVER";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:9:"'forever'";s:10:"attributes";a:6:{s:9:"startLine";i:36;s:7:"endLine";i:36;s:13:"startTokenPos";i:41;s:12:"startFilePos";i:3418;s:11:"endTokenPos";i:41;s:10:"endFilePos";i:3426;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:36;s:7:"endLine";i:36;s:11:"startColumn";i:5;s:9:"endColumn";i:39;}s:13:"DURATION_ONCE";a:12:{s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:4:"name";s:13:"DURATION_ONCE";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:6:"'once'";s:10:"attributes";a:6:{s:9:"startLine";i:37;s:7:"endLine";i:37;s:13:"startTokenPos";i:50;s:12:"startFilePos";i:3455;s:11:"endTokenPos";i:50;s:10:"endFilePos";i:3460;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:37;s:7:"endLine";i:37;s:11:"startColumn";i:5;s:9:"endColumn";i:33;}s:18:"DURATION_REPEATING";a:12:{s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:4:"name";s:18:"DURATION_REPEATING";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:11:"'repeating'";s:10:"attributes";a:6:{s:9:"startLine";i:38;s:7:"endLine";i:38;s:13:"startTokenPos";i:59;s:12:"startFilePos";i:3494;s:11:"endTokenPos";i:59;s:10:"endFilePos";i:3504;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:38;s:7:"endLine";i:38;s:11:"startColumn";i:5;s:9:"endColumn";i:43;}}s:19:"immediateProperties";a:0:{}s:16:"immediateMethods";a:5:{s:6:"create";a:20:{s:4:"name";s:6:"create";s:10:"parameters";a:2:{s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:63;s:7:"endLine";i:63;s:13:"startTokenPos";i:76;s:12:"startFilePos";i:5027;s:11:"endTokenPos";i:76;s:10:"endFilePos";i:5030;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:63;s:7:"endLine";i:63;s:11:"startColumn";i:35;s:9:"endColumn";i:48;s:14:"parameterIndex";i:0;s:10:"isOptional";b:1;}s:7:"options";a:13:{s:4:"name";s:7:"options";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:63;s:7:"endLine";i:63;s:13:"startTokenPos";i:83;s:12:"startFilePos";i:5044;s:11:"endTokenPos";i:83;s:10:"endFilePos";i:5047;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:63;s:7:"endLine";i:63;s:11:"startColumn";i:51;s:9:"endColumn";i:65;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:1382:"/**
+ * You can create coupons easily via the <a
+ * href="https://dashboard.stripe.com/coupons">coupon management</a> page of the
+ * Stripe dashboard. Coupon creation is also accessible via the API if you need to
+ * create coupons on the fly.
+ *
+ * A coupon has either a <code>percent_off</code> or an <code>amount_off</code> and
+ * <code>currency</code>. If you set an <code>amount_off</code>, that amount will
+ * be subtracted from any invoice’s subtotal. For example, an invoice with a
+ * subtotal of <currency>100</currency> will have a final total of
+ * <currency>0</currency> if a coupon with an <code>amount_off</code> of
+ * <amount>200</amount> is applied to it and an invoice with a subtotal of
+ * <currency>300</currency> will have a final total of <currency>100</currency> if
+ * a coupon with an <code>amount_off</code> of <amount>200</amount> is applied to
+ * it.
+ *
+ * @param null|array{amount_off?: int, applies_to?: array{products?: string[]}, currency?: string, currency_options?: array<string, array{amount_off: int}>, duration?: string, duration_in_months?: int, expand?: string[], id?: string, max_redemptions?: int, metadata?: null|array<string, string>, name?: string, percent_off?: float, redeem_by?: int} $params
+ * @param null|array|string $options
+ *
+ * @return Coupon the created resource
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:63;s:7:"endLine";i:73;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:16:"currentClassName";s:13:"Stripe\Coupon";s:9:"aliasName";N;}s:6:"delete";a:20:{s:4:"name";s:6:"delete";s:10:"parameters";a:2:{s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:89;s:7:"endLine";i:89;s:13:"startTokenPos";i:178;s:12:"startFilePos";i:5973;s:11:"endTokenPos";i:178;s:10:"endFilePos";i:5976;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:89;s:7:"endLine";i:89;s:11:"startColumn";i:28;s:9:"endColumn";i:41;s:14:"parameterIndex";i:0;s:10:"isOptional";b:1;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:89;s:7:"endLine";i:89;s:13:"startTokenPos";i:185;s:12:"startFilePos";i:5987;s:11:"endTokenPos";i:185;s:10:"endFilePos";i:5990;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:89;s:7:"endLine";i:89;s:11:"startColumn";i:44;s:9:"endColumn";i:55;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:513:"/**
+ * You can delete coupons via the <a
+ * href="https://dashboard.stripe.com/coupons">coupon management</a> page of the
+ * Stripe dashboard. However, deleting a coupon does not affect any customers who
+ * have already applied the coupon; it means that new customers can’t redeem the
+ * coupon. You can also delete coupons via the API.
+ *
+ * @param null|array $params
+ * @param null|array|string $opts
+ *
+ * @return Coupon the deleted resource
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:89;s:7:"endLine";i:98;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:1;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:16:"currentClassName";s:13:"Stripe\Coupon";s:9:"aliasName";N;}s:3:"all";a:20:{s:4:"name";s:3:"all";s:10:"parameters";a:2:{s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:110;s:7:"endLine";i:110;s:13:"startTokenPos";i:268;s:12:"startFilePos";i:6639;s:11:"endTokenPos";i:268;s:10:"endFilePos";i:6642;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:110;s:7:"endLine";i:110;s:11:"startColumn";i:32;s:9:"endColumn";i:45;s:14:"parameterIndex";i:0;s:10:"isOptional";b:1;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:110;s:7:"endLine";i:110;s:13:"startTokenPos";i:275;s:12:"startFilePos";i:6653;s:11:"endTokenPos";i:275;s:10:"endFilePos";i:6656;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:110;s:7:"endLine";i:110;s:11:"startColumn";i:48;s:9:"endColumn";i:59;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:322:"/**
+ * Returns a list of your coupons.
+ *
+ * @param null|array{created?: array|int, ending_before?: string, expand?: string[], limit?: int, starting_after?: string} $params
+ * @param null|array|string $opts
+ *
+ * @return Collection<Coupon> of ApiResources
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:110;s:7:"endLine";i:115;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:16:"currentClassName";s:13:"Stripe\Coupon";s:9:"aliasName";N;}s:8:"retrieve";a:20:{s:4:"name";s:8:"retrieve";s:10:"parameters";a:2:{s:2:"id";a:13:{s:4:"name";s:2:"id";s:7:"default";N;s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:127;s:7:"endLine";i:127;s:11:"startColumn";i:37;s:9:"endColumn";i:39;s:14:"parameterIndex";i:0;s:10:"isOptional";b:0;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:127;s:7:"endLine";i:127;s:13:"startTokenPos";i:331;s:12:"startFilePos";i:7157;s:11:"endTokenPos";i:331;s:10:"endFilePos";i:7160;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:127;s:7:"endLine";i:127;s:11:"startColumn";i:42;s:9:"endColumn";i:53;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:281:"/**
+ * Retrieves the coupon with the given ID.
+ *
+ * @param array|string $id the ID of the API resource to retrieve, or an options array containing an `id` key
+ * @param null|array|string $opts
+ *
+ * @return Coupon
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:127;s:7:"endLine";i:134;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:16:"currentClassName";s:13:"Stripe\Coupon";s:9:"aliasName";N;}s:6:"update";a:20:{s:4:"name";s:6:"update";s:10:"parameters";a:3:{s:2:"id";a:13:{s:4:"name";s:2:"id";s:7:"default";N;s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:148;s:7:"endLine";i:148;s:11:"startColumn";i:35;s:9:"endColumn";i:37;s:14:"parameterIndex";i:0;s:10:"isOptional";b:0;}s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:148;s:7:"endLine";i:148;s:13:"startTokenPos";i:394;s:12:"startFilePos";i:7913;s:11:"endTokenPos";i:394;s:10:"endFilePos";i:7916;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:148;s:7:"endLine";i:148;s:11:"startColumn";i:40;s:9:"endColumn";i:53;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:148;s:7:"endLine";i:148;s:13:"startTokenPos";i:401;s:12:"startFilePos";i:7927;s:11:"endTokenPos";i:401;s:10:"endFilePos";i:7930;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:148;s:7:"endLine";i:148;s:11:"startColumn";i:56;s:9:"endColumn";i:67;s:14:"parameterIndex";i:2;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:487:"/**
+ * Updates the metadata of a coupon. Other coupon details (currency, duration,
+ * amount_off) are, by design, not editable.
+ *
+ * @param string $id the ID of the resource to update
+ * @param null|array{currency_options?: array<string, array{amount_off: int}>, expand?: string[], metadata?: null|array<string, string>, name?: string} $params
+ * @param null|array|string $opts
+ *
+ * @return Coupon the updated resource
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:148;s:7:"endLine";i:158;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:13:"Stripe\Coupon";s:21:"implementingClassName";s:13:"Stripe\Coupon";s:16:"currentClassName";s:13:"Stripe\Coupon";s:9:"aliasName";N;}}s:10:"traitsData";a:4:{s:7:"aliases";a:0:{}s:9:"modifiers";a:0:{}s:11:"precedences";a:0:{}s:6:"hashes";a:0:{}}}}

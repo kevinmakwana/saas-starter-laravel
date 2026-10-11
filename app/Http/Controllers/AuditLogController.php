@@ -22,7 +22,7 @@ class AuditLogController extends Controller
                 'id' => $log->id,
                 'action' => $log->action,
                 'summary' => $log->summary,
-                'actor' => $log->user?->name ?? 'System',
+                'actor' => $log->user_id === null ? 'System' : $log->user->name,
                 'at' => $log->created_at->toIso8601String(),
             ]);
 

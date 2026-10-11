@@ -1,0 +1,1 @@
+O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:73:"v2-020b38aa04041b75a21a86165f3343456e60d1de579dcd9c5ebd4805b0ead5cc-8.4.1";s:4:"data";a:3:{s:7:"classes";a:1:{s:52:"laravel\cashier\exceptions\subscriptionupdatefailure";b:1;}s:9:"functions";a:0:{}s:9:"constants";a:0:{}}}

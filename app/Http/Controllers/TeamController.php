@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Team;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -33,11 +34,11 @@ class TeamController extends Controller
 
         return Inertia::render('Teams/Show', [
             'team' => ['id' => $team->id, 'name' => $team->name, 'owner_id' => $team->owner_id],
-            'members' => $team->users()->orderBy('name')->get()->map(fn ($member) => [
+            'members' => $team->users()->orderBy('name')->get()->map(fn (User $member) => [
                 'id' => $member->id,
                 'name' => $member->name,
                 'email' => $member->email,
-                'role' => $member->pivot->role,
+                'role' => $team->roleOf($member)?->value,
             ]),
             'invitations' => Gate::allows('invite', $team)
                 ? $team->invitations()->whereNull('accepted_at')->latest()->get()->map(fn ($invitation) => [

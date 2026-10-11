@@ -1,0 +1,64 @@
+O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:82:"v2-88c0dc55e1803c74cec89a5aee5083286b2e770b9b912ae0c2596f79ed2f65f8-8.4.1-6.73.0.6";s:4:"data";a:22:{s:13:"locatedSource";a:2:{s:5:"class";s:60:"PHPStan\BetterReflection\SourceLocator\Located\LocatedSource";s:4:"data";a:2:{s:4:"name";s:20:"Stripe\PromotionCode";s:8:"filename";s:97:"/Volumes/Personal/saas-starter-laravel/vendor/composer/../stripe/stripe-php/lib/PromotionCode.php";}}s:9:"namespace";s:6:"Stripe";s:4:"name";s:20:"Stripe\PromotionCode";s:9:"shortName";s:13:"PromotionCode";s:11:"isInterface";b:0;s:7:"isTrait";b:0;s:6:"isEnum";b:0;s:12:"isBackedEnum";b:0;s:9:"modifiers";i:0;s:10:"docComment";s:2333:"/**
+ * A Promotion Code represents a customer-redeemable code for an underlying promotion.
+ * You can create multiple codes for a single promotion.
+ *
+ * If you enable promotion codes in your <a href="https://docs.stripe.com/customer-management/configure-portal">customer portal configuration</a>, then customers can redeem a code themselves when updating a subscription in the portal.
+ * Customers can also view the currently active promotion codes and coupons on each of their subscriptions in the portal.
+ *
+ * @property string $id Unique identifier for the object.
+ * @property string $object String representing the object's type. Objects of the same type share the same value.
+ * @property bool $active Whether the promotion code is currently active. A promotion code is only active if the coupon is also valid.
+ * @property string $code The customer-facing code. Regardless of case, this code must be unique across all active promotion codes for each customer. Valid characters are lower case letters (a-z), upper case letters (A-Z), digits (0-9), and dashes (-).
+ * @property int $created Time at which the object was created. Measured in seconds since the Unix epoch.
+ * @property null|Customer|string $customer The customer who can use this promotion code.
+ * @property null|string $customer_account The account representing the customer who can use this promotion code.
+ * @property null|int $expires_at Date at which the promotion code can no longer be redeemed.
+ * @property bool $livemode If the object exists in live mode, the value is <code>true</code>. If the object exists in test mode, the value is <code>false</code>.
+ * @property null|int $max_redemptions Maximum number of times this promotion code can be redeemed.
+ * @property null|StripeObject $metadata Set of <a href="https://docs.stripe.com/api/metadata">key-value pairs</a> that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
+ * @property (object{coupon: null|Coupon|string, type: string}&StripeObject) $promotion
+ * @property (object{currency_options?: StripeObject, first_time_transaction: bool, minimum_amount: null|int, minimum_amount_currency: null|string}&StripeObject) $restrictions
+ * @property int $times_redeemed Number of times this promotion code has been used.
+ */";s:10:"attributes";a:0:{}s:9:"startLine";i:29;s:7:"endLine";i:120;s:11:"startColumn";i:1;s:9:"endColumn";i:1;s:15:"parentClassName";s:18:"Stripe\ApiResource";s:20:"implementsClassNames";a:0:{}s:15:"traitClassNames";a:1:{i:0;s:27:"Stripe\ApiOperations\Update";}s:18:"immediateConstants";a:1:{s:11:"OBJECT_NAME";a:12:{s:18:"declaringClassName";s:20:"Stripe\PromotionCode";s:21:"implementingClassName";s:20:"Stripe\PromotionCode";s:4:"name";s:11:"OBJECT_NAME";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:16:"'promotion_code'";s:10:"attributes";a:6:{s:9:"startLine";i:31;s:7:"endLine";i:31;s:13:"startTokenPos";i:27;s:12:"startFilePos";i:2467;s:11:"endTokenPos";i:27;s:10:"endFilePos";i:2482;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:31;s:7:"endLine";i:31;s:11:"startColumn";i:5;s:9:"endColumn";i:41;}}s:19:"immediateProperties";a:0:{}s:16:"immediateMethods";a:4:{s:6:"create";a:20:{s:4:"name";s:6:"create";s:10:"parameters";a:2:{s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:46;s:7:"endLine";i:46;s:13:"startTokenPos";i:49;s:12:"startFilePos";i:3343;s:11:"endTokenPos";i:49;s:10:"endFilePos";i:3346;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:46;s:7:"endLine";i:46;s:11:"startColumn";i:35;s:9:"endColumn";i:48;s:14:"parameterIndex";i:0;s:10:"isOptional";b:1;}s:7:"options";a:13:{s:4:"name";s:7:"options";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:46;s:7:"endLine";i:46;s:13:"startTokenPos";i:56;s:12:"startFilePos";i:3360;s:11:"endTokenPos";i:56;s:10:"endFilePos";i:3363;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:46;s:7:"endLine";i:46;s:11:"startColumn";i:51;s:9:"endColumn";i:65;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:737:"/**
+ * A promotion code points to an underlying promotion. You can optionally restrict
+ * the code to a specific customer, redemption limit, and expiration date.
+ *
+ * @param null|array{active?: bool, code?: string, customer?: string, customer_account?: string, expand?: string[], expires_at?: int, max_redemptions?: int, metadata?: array<string, string>, promotion: array{coupon?: string, type: string}, restrictions?: array{currency_options?: array<string, array{minimum_amount?: int}>, first_time_transaction?: bool, minimum_amount?: int, minimum_amount_currency?: string}} $params
+ * @param null|array|string $options
+ *
+ * @return PromotionCode the created resource
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:46;s:7:"endLine";i:56;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:20:"Stripe\PromotionCode";s:21:"implementingClassName";s:20:"Stripe\PromotionCode";s:16:"currentClassName";s:20:"Stripe\PromotionCode";s:9:"aliasName";N;}s:3:"all";a:20:{s:4:"name";s:3:"all";s:10:"parameters";a:2:{s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:68;s:7:"endLine";i:68;s:13:"startTokenPos";i:153;s:12:"startFilePos";i:4194;s:11:"endTokenPos";i:153;s:10:"endFilePos";i:4197;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:68;s:7:"endLine";i:68;s:11:"startColumn";i:32;s:9:"endColumn";i:45;s:14:"parameterIndex";i:0;s:10:"isOptional";b:1;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:68;s:7:"endLine";i:68;s:13:"startTokenPos";i:160;s:12:"startFilePos";i:4208;s:11:"endTokenPos";i:160;s:10:"endFilePos";i:4211;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:68;s:7:"endLine";i:68;s:11:"startColumn";i:48;s:9:"endColumn";i:59;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:430:"/**
+ * Returns a list of your promotion codes.
+ *
+ * @param null|array{active?: bool, code?: string, coupon?: string, created?: array|int, customer?: string, customer_account?: string, ending_before?: string, expand?: string[], limit?: int, starting_after?: string} $params
+ * @param null|array|string $opts
+ *
+ * @return Collection<PromotionCode> of ApiResources
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:68;s:7:"endLine";i:73;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:20:"Stripe\PromotionCode";s:21:"implementingClassName";s:20:"Stripe\PromotionCode";s:16:"currentClassName";s:20:"Stripe\PromotionCode";s:9:"aliasName";N;}s:8:"retrieve";a:20:{s:4:"name";s:8:"retrieve";s:10:"parameters";a:2:{s:2:"id";a:13:{s:4:"name";s:2:"id";s:7:"default";N;s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:88;s:7:"endLine";i:88;s:11:"startColumn";i:37;s:9:"endColumn";i:39;s:14:"parameterIndex";i:0;s:10:"isOptional";b:0;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:88;s:7:"endLine";i:88;s:13:"startTokenPos";i:216;s:12:"startFilePos";i:4917;s:11:"endTokenPos";i:216;s:10:"endFilePos";i:4920;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:88;s:7:"endLine";i:88;s:11:"startColumn";i:42;s:9:"endColumn";i:53;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:474:"/**
+ * Retrieves the promotion code with the given ID. In order to retrieve a promotion
+ * code by the customer-facing <code>code</code> use <a
+ * href="/docs/api/promotion_codes/list">list</a> with the desired
+ * <code>code</code>.
+ *
+ * @param array|string $id the ID of the API resource to retrieve, or an options array containing an `id` key
+ * @param null|array|string $opts
+ *
+ * @return PromotionCode
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:88;s:7:"endLine";i:95;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:20:"Stripe\PromotionCode";s:21:"implementingClassName";s:20:"Stripe\PromotionCode";s:16:"currentClassName";s:20:"Stripe\PromotionCode";s:9:"aliasName";N;}s:6:"update";a:20:{s:4:"name";s:6:"update";s:10:"parameters";a:3:{s:2:"id";a:13:{s:4:"name";s:2:"id";s:7:"default";N;s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:109;s:7:"endLine";i:109;s:11:"startColumn";i:35;s:9:"endColumn";i:37;s:14:"parameterIndex";i:0;s:10:"isOptional";b:0;}s:6:"params";a:13:{s:4:"name";s:6:"params";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:109;s:7:"endLine";i:109;s:13:"startTokenPos";i:279;s:12:"startFilePos";i:5716;s:11:"endTokenPos";i:279;s:10:"endFilePos";i:5719;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:109;s:7:"endLine";i:109;s:11:"startColumn";i:40;s:9:"endColumn";i:53;s:14:"parameterIndex";i:1;s:10:"isOptional";b:1;}s:4:"opts";a:13:{s:4:"name";s:4:"opts";s:7:"default";a:2:{s:4:"code";s:4:"null";s:10:"attributes";a:6:{s:9:"startLine";i:109;s:7:"endLine";i:109;s:13:"startTokenPos";i:286;s:12:"startFilePos";i:5730;s:11:"endTokenPos";i:286;s:10:"endFilePos";i:5733;}}s:4:"type";N;s:10:"isVariadic";b:0;s:5:"byRef";b:0;s:10:"isPromoted";b:0;s:10:"attributes";a:0:{}s:9:"startLine";i:109;s:7:"endLine";i:109;s:11:"startColumn";i:56;s:9:"endColumn";i:67;s:14:"parameterIndex";i:2;s:10:"isOptional";b:1;}}s:16:"returnsReference";b:0;s:10:"returnType";N;s:10:"attributes";a:0:{}s:10:"docComment";s:530:"/**
+ * Updates the specified promotion code by setting the values of the parameters
+ * passed. Most fields are, by design, not editable.
+ *
+ * @param string $id the ID of the resource to update
+ * @param null|array{active?: bool, expand?: string[], metadata?: null|array<string, string>, restrictions?: array{currency_options?: array<string, array{minimum_amount?: int}>}} $params
+ * @param null|array|string $opts
+ *
+ * @return PromotionCode the updated resource
+ *
+ * @throws Exception\ApiErrorException if the request fails
+ */";s:9:"startLine";i:109;s:7:"endLine";i:119;s:11:"startColumn";i:5;s:9:"endColumn";i:5;s:10:"couldThrow";b:0;s:9:"isClosure";b:0;s:11:"isGenerator";b:0;s:10:"isVariadic";b:0;s:9:"modifiers";i:17;s:9:"namespace";s:6:"Stripe";s:18:"declaringClassName";s:20:"Stripe\PromotionCode";s:21:"implementingClassName";s:20:"Stripe\PromotionCode";s:16:"currentClassName";s:20:"Stripe\PromotionCode";s:9:"aliasName";N;}}s:10:"traitsData";a:4:{s:7:"aliases";a:0:{}s:9:"modifiers";a:0:{}s:11:"precedences";a:0:{}s:6:"hashes";a:0:{}}}}

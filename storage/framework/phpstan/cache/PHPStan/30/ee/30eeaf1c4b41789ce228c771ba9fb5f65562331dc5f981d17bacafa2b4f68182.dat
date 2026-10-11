@@ -1,0 +1,20 @@
+O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:82:"v2-c7e6fd59510af0f1aade7473f8392a64a46d9423de71a713115abf5e97611331-8.4.1-6.73.0.6";s:4:"data";a:22:{s:13:"locatedSource";a:2:{s:5:"class";s:60:"PHPStan\BetterReflection\SourceLocator\Located\LocatedSource";s:4:"data";a:2:{s:4:"name";s:15:"Stripe\Discount";s:8:"filename";s:92:"/Volumes/Personal/saas-starter-laravel/vendor/composer/../stripe/stripe-php/lib/Discount.php";}}s:9:"namespace";s:6:"Stripe";s:4:"name";s:15:"Stripe\Discount";s:9:"shortName";s:8:"Discount";s:11:"isInterface";b:0;s:7:"isTrait";b:0;s:6:"isEnum";b:0;s:12:"isBackedEnum";b:0;s:9:"modifiers";i:0;s:10:"docComment";s:2293:"/**
+ * A discount represents the actual application of a <a href="https://api.stripe.com#coupons">coupon</a> or <a href="https://api.stripe.com#promotion_codes">promotion code</a>.
+ * It contains information about when the discount began, when it will end, and what it is applied to.
+ *
+ * Related guide: <a href="https://docs.stripe.com/billing/subscriptions/discounts">Applying discounts to subscriptions</a>
+ *
+ * @property string $id The ID of the discount object. Discounts can't be fetched by ID. Use <code>expand[]=discounts</code> in API calls to expand discount IDs in an array.
+ * @property string $object String representing the object's type. Objects of the same type share the same value.
+ * @property null|string $checkout_session The Checkout session that this coupon is applied to, if it is applied to a particular session in payment mode. Not present for subscription mode.
+ * @property null|Customer|string $customer The ID of the customer associated with this discount.
+ * @property null|string $customer_account The ID of the account representing the customer associated with this discount.
+ * @property null|int $end If the coupon has a duration of <code>repeating</code>, the date that this discount will end. If the coupon has a duration of <code>once</code> or <code>forever</code>, this attribute will be null.
+ * @property null|string $invoice The invoice that the discount's coupon was applied to, if it was applied directly to a particular invoice.
+ * @property null|string $invoice_item The invoice item <code>id</code> (or invoice line item <code>id</code> for invoice line items of type='subscription') that the discount's coupon was applied to, if it was applied directly to a particular invoice item or invoice line item.
+ * @property null|PromotionCode|string $promotion_code The promotion code applied to create this discount.
+ * @property (object{coupon: null|Coupon|string, type: string}&StripeObject) $source
+ * @property int $start Date that the coupon was applied.
+ * @property null|string $subscription The subscription that this coupon is applied to, if it is applied to a particular subscription.
+ * @property null|string $subscription_item The subscription item that this coupon is applied to, if it is applied to a particular subscription item.
+ */";s:10:"attributes";a:0:{}s:9:"startLine";i:27;s:7:"endLine";i:30;s:11:"startColumn";i:1;s:9:"endColumn";i:1;s:15:"parentClassName";s:18:"Stripe\ApiResource";s:20:"implementsClassNames";a:0:{}s:15:"traitClassNames";a:0:{}s:18:"immediateConstants";a:1:{s:11:"OBJECT_NAME";a:12:{s:18:"declaringClassName";s:15:"Stripe\Discount";s:21:"implementingClassName";s:15:"Stripe\Discount";s:4:"name";s:11:"OBJECT_NAME";s:9:"modifiers";i:1;s:4:"type";N;s:5:"value";a:2:{s:4:"code";s:10:"'discount'";s:10:"attributes";a:6:{s:9:"startLine";i:29;s:7:"endLine";i:29;s:13:"startTokenPos";i:27;s:12:"startFilePos";i:2422;s:11:"endTokenPos";i:27;s:10:"endFilePos";i:2431;}}s:10:"docComment";N;s:10:"attributes";a:0:{}s:9:"startLine";i:29;s:7:"endLine";i:29;s:11:"startColumn";i:5;s:9:"endColumn";i:35;}}s:19:"immediateProperties";a:0:{}s:16:"immediateMethods";a:0:{}s:10:"traitsData";a:4:{s:7:"aliases";a:0:{}s:9:"modifiers";a:0:{}s:11:"precedences";a:0:{}s:6:"hashes";a:0:{}}}}

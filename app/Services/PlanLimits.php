@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\Plan;
 use App\Models\Project;
 use App\Models\Team;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Auth\Access\Response;
 
 /** Checks plan limits and builds the friendly upgrade message used by policies. */
@@ -13,7 +14,7 @@ class PlanLimits
     public function usage(Team $team, string $key): int
     {
         return match ($key) {
-            'projects' => app(\App\Support\Tenancy\TenantContext::class)->run($team, fn () => Project::count()),
+            'projects' => app(TenantContext::class)->run($team, fn () => Project::count()),
             'members' => $team->users()->count() + $team->invitations()->whereNull('accepted_at')->where('expires_at', '>', now())->count(),
             default => 0,
         };

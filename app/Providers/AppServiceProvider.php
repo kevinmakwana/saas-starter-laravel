@@ -2,8 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Vite;
+use App\Billing\BillingGateway;
+use App\Billing\FakeGateway;
+use App\Billing\StripeGateway;
 use App\Models\Team;
+use App\Support\Tenancy\TenantContext;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 
@@ -14,10 +18,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(\App\Billing\BillingGateway::class, fn () => config('billing.gateway') === 'stripe' && config('cashier.secret')
-            ? new \App\Billing\StripeGateway
-            : new \App\Billing\FakeGateway);
-        $this->app->scoped(\App\Support\Tenancy\TenantContext::class);
+        $this->app->bind(BillingGateway::class, fn () => config('billing.gateway') === 'stripe' && config('cashier.secret')
+            ? new StripeGateway
+            : new FakeGateway);
+        $this->app->scoped(TenantContext::class);
         //
     }
 

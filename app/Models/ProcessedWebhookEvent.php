@@ -3,7 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property string $event_id
+ * @property string $type
+ * @property array<string, mixed> $payload
+ * @property Carbon|null $processed_at
+ */
 class ProcessedWebhookEvent extends Model
 {
     /** @var list<string> */

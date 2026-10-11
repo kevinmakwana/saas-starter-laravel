@@ -5,7 +5,14 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $user_id
+ * @property Carbon $created_at
+ */
 class AuditLog extends Model
 {
     use BelongsToTenant;

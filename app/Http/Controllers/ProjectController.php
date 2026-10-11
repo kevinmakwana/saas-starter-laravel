@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\Task;
 use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -60,7 +61,7 @@ class ProjectController extends Controller
 
         $tasks = $project->tasks()
             ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.addcslashes($search, '%_\\').'%'))
-            ->when(in_array($status, \App\Models\Task::STATUSES, true), fn ($query) => $query->where('status', $status))
+            ->when(in_array($status, Task::STATUSES, true), fn ($query) => $query->where('status', $status))
             ->latest('id')
             ->paginate(10)
             ->withQueryString();
@@ -69,7 +70,7 @@ class ProjectController extends Controller
             'project' => $project->only(['id', 'name', 'description']),
             'tasks' => $tasks,
             'filters' => ['q' => $search, 'status' => is_string($status) ? $status : ''],
-            'statuses' => \App\Models\Task::STATUSES,
+            'statuses' => Task::STATUSES,
             'can' => ['delete' => Gate::allows('delete', $project)],
         ]);
     }

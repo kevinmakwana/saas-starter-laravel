@@ -5,14 +5,23 @@ namespace App\Models;
 use App\Enums\Role;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 
+/**
+ * @property int $id
+ * @property int $team_id
+ * @property string $email
+ * @property Role $role
+ * @property Carbon $expires_at
+ * @property Carbon|null $accepted_at
+ */
 class TeamInvitation extends Model
 {
     /** @var list<string> */
     protected $fillable = ['email', 'role', 'invited_by', 'expires_at'];
 
-    /** @return array<string, string|class-string> */
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
