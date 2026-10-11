@@ -5,9 +5,11 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import TeamSwitcher from '@/Components/TeamSwitcher.vue';
+import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage();
 </script>
 
 <template>
@@ -39,10 +41,17 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    :href="route('teams.show')"
+                                    :active="route().current('teams.*')"
+                                >
+                                    Team
+                                </NavLink>
                             </div>
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                            <TeamSwitcher />
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
                                 <Dropdown align="right" width="48">
@@ -146,6 +155,9 @@ const showingNavigationDropdown = ref(false);
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('teams.show')" :active="route().current('teams.*')">
+                            Team
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -188,6 +200,14 @@ const showingNavigationDropdown = ref(false);
                     <slot name="header" />
                 </div>
             </header>
+
+            <div
+                v-if="page.props.flash?.success"
+                class="mx-auto mt-4 max-w-7xl rounded-md bg-green-50 px-4 py-3 text-sm text-green-800 sm:px-6 lg:px-8"
+                role="status"
+            >
+                {{ page.props.flash.success }}
+            </div>
 
             <!-- Page Content -->
             <main>

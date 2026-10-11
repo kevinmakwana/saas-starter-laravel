@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -33,7 +34,21 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'team' => fn () => $this->currentTeam($request),
+                'teams' => fn () => $request->user()?->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
             ],
         ];
+    }
+
+    /** @return array{id: int, name: string, role: string|null}|null */
+    private function currentTeam(Request $request): ?array
+    {
+        $user = $request->user();
+        $team = $user ? app(TenantContext::class)->current() : null;
+
+        return $team ? ['id' => $team->id, 'name' => $team->name, 'role' => $team->roleOf($user)?->value] : null;
     }
 }

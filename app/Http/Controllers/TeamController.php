@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Team;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class TeamController extends Controller
+{
+    public function create(): Response
+    {
+        return Inertia::render('Teams/Create');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
+
+        Team::createFor($request->user(), $data['name']);
+
+        return redirect()->route('teams.show')->with('success', 'Team created.');
+    }
+
+    public function show(Request $request): Response
+    {
+        $user = $request->user();
+        $team = $user->currentTeam;
+        Gate::authorize('view', $team);
+
+        return Inertia::render('Teams/Show', [
+            'team' => ['id' => $team->id, 'name' => $team->name, 'owner_id' => $team->owner_id],
+            'members' => $team->users()->orderBy('name')->get()->map(fn ($member) => [
+                'id' => $member->id,
+                'name' => $member->name,
+                'email' => $member->email,
+                'role' => $member->pivot->role,
+            ]),
+            'invitations' => Gate::allows('invite', $team)
+                ? $team->invitations()->whereNull('accepted_at')->latest()->get()->map(fn ($invitation) => [
+                    'id' => $invitation->id,
+                    'email' => $invitation->email,
+                    'role' => $invitation->role->value,
+                    'expires_at' => $invitation->expires_at->toIso8601String(),
+                ])
+                : [],
+            'can' => [
+                'invite' => Gate::allows('invite', $team),
+                'updateRoles' => Gate::allows('updateMemberRole', $team),
+                'transfer' => Gate::allows('transferOwnership', $team),
+                'update' => Gate::allows('update', $team),
+            ],
+        ]);
+    }
+
+    public function update(Request $request): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+        Gate::authorize('update', $team);
+
+        $team->update($request->validate(['name' => ['required', 'string', 'max:255']]));
+
+        return back()->with('success', 'Team renamed.');
+    }
+
+    /** Switch the current team to one the user belongs to. */
+    public function switch(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['team_id' => ['required', 'integer']]);
+        $team = Team::find($data['team_id']);
+
+        abort_unless($team && $request->user()->switchTeam($team), 403);
+
+        return redirect()->route('dashboard');
+    }
+}
