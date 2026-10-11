@@ -26,7 +26,7 @@ Also seeded with the same password: `admin@acme.test` (Admin) and `member@acme.t
 
 Host ports are configurable in `.env` (`APP_PORT`, `FORWARD_DB_PORT`, `FORWARD_REDIS_PORT`,
 `FORWARD_MAILPIT_PORT`, `FORWARD_MAILPIT_DASHBOARD_PORT`, `VITE_PORT`) in case the defaults are busy.
-All ports bind to `127.0.0.1` only. Other commands: `make dev` (Vite HMR), `make test`, `make fresh`, `make logs`, `make down`.
+All ports bind to `127.0.0.1` only. If you change `DB_DATABASE` or `DB_USERNAME` after the first start, run `./vendor/bin/sail down -v` first so MySQL re-initialises. Other commands: `make dev` (Vite HMR), `make test`, `make fresh`, `make logs`, `make down`.
 
 ## How it fits together
 

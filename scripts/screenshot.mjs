@@ -9,7 +9,7 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, dev
 await page.goto(`${base}/login`);
 await page.fill('input[type=email]', 'demo@acme.test');
 await page.fill('input[type=password]', 'password');
-await Promise.all([page.waitForURL('**/dashboard'), page.click('button[type=submit]')]);
+await Promise.all([page.waitForURL('**/dashboard'), page.click('form button')]);
 await page.waitForLoadState('networkidle');
 
 await page.screenshot({ path: 'docs/screenshot.png' });
