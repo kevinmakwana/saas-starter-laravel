@@ -1,1 +1,0 @@
-O:23:"PHPStan\Cache\CacheItem":2:{s:11:"variableKey";s:73:"v2-ad6393b2b5007a496a3419133849ed068b7be69d40e354c790ffeae7304d4c8c-8.4.1";s:4:"data";a:3:{s:7:"classes";a:1:{s:45:"laravel\cashier\concerns\managessubscriptions";b:1;}s:9:"functions";a:0:{}s:9:"constants";a:0:{}}}
