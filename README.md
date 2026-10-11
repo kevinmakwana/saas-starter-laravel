@@ -1,59 +1,111 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Acme SaaS Starter (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A multi-tenant SaaS starter built on Laravel 12, Inertia, Vue 3 and TypeScript.
+Teams, roles, signed invitations, plan limits, feature flags and an audit log work out of the box.
+It runs locally with **zero paid keys**: billing uses a fake gateway unless you add Stripe test keys.
 
-## About Laravel
+[![CI](https://github.com/kevinmakwana/saas-starter-laravel/actions/workflows/ci.yml/badge.svg)](https://github.com/kevinmakwana/saas-starter-laravel/actions/workflows/ci.yml)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+![Dashboard of the demo team](docs/screenshot.png)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Quick start
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Requires Docker (and `make`). One command starts the app, MySQL 8, Redis, Mailpit and a queue worker, then migrates and seeds:
 
-## Learning Laravel
+```bash
+make up
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| What | Where |
+| --- | --- |
+| App | <http://localhost:8080> |
+| Mailpit (all outgoing mail) | <http://localhost:8025> |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Demo login:** `demo@acme.test` / `password` (owner of the *Acme Demo* team on the Business plan).
+Also seeded with the same password: `admin@acme.test` (Admin) and `member@acme.test` (Member).
 
-## Laravel Sponsors
+Host ports are configurable in `.env` (`APP_PORT`, `FORWARD_DB_PORT`, `FORWARD_REDIS_PORT`,
+`FORWARD_MAILPIT_PORT`, `FORWARD_MAILPIT_DASHBOARD_PORT`, `VITE_PORT`) in case the defaults are busy.
+All ports bind to `127.0.0.1` only. Other commands: `make dev` (Vite HMR), `make test`, `make fresh`, `make logs`, `make down`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## How it fits together
 
-### Premium Partners
+```mermaid
+flowchart LR
+    U[User] -->|current_team_id| T[(Team = tenant)]
+    U -->|request| M[EnsureHasTeam middleware]
+    M --> C[TenantContext]
+    C -->|tenant id| S[TenantScope<br/>global scope]
+    S --> P[(projects, tasks,<br/>audit_logs)]
+    P -.->|route model binding<br/>goes through the scope| N[404 for other tenants]
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    T -->|plan| L[PlanLimits + FeatureGate]
+    L -->|402 upgrade prompt| UI[Billing page]
+    UI -->|subscribe / change / cancel| G{BillingGateway}
+    G -->|no Stripe keys| F[FakeGateway]
+    G -->|Stripe test keys| ST[StripeGateway<br/>Cashier 16]
+    ST -->|events| W[POST /webhooks/stripe]
+    W -->|verify signature| I[(processed_webhook_events<br/>unique event id)]
+    I -->|first delivery only| Q[[Redis queue: webhooks]]
+    Q --> J[ProcessStripeWebhook] -->|sets plan| T
+```
 
-## Contributing
+**Tenancy.** One database; tenant-owned tables carry `tenant_id`. The `BelongsToTenant` trait adds a global
+scope and refuses writes for any other tenant. The current tenant is the user's current team, and membership
+is re-checked, so removing someone from a team cuts access immediately. With no tenant the scope matches nothing.
+Route model binding goes through the same scope, so another tenant's record is a plain 404.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Features
 
-## Code of Conduct
+- **Auth and teams:** register, log in, create teams, switch teams (Breeze, Inertia, Vue 3, TypeScript, Tailwind).
+- **Roles and policies:** Owner, Admin and Member. Owners manage roles, billing and ownership transfer. Admins invite members and see the audit log.
+- **Invitations:** signed, expiring links (7 days), bound to the invited email, single use. Emails are queued on Redis and show up in Mailpit.
+- **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
+  `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
+- **Webhooks:** `POST /webhooks/stripe` verifies the signature, stores each event id once (idempotent) and processes it on the `webhooks` queue.
+- **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
+- **Feature flags:** `FeatureGate` and a `feature:` route middleware. For example `audit_log` is Business only.
+- **Projects and tasks:** CRUD with search, status filter and pagination.
+- **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Using real Stripe test keys (optional)
 
-## Security Vulnerabilities
+```dotenv
+BILLING_GATEWAY=stripe
+STRIPE_KEY=pk_test_...
+STRIPE_SECRET=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_PRO=price_...
+STRIPE_PRICE_BUSINESS=price_...
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Forward events with `stripe listen --forward-to localhost:8080/webhooks/stripe`.
+The Stripe path has not been exercised against live Stripe in this repo (see below); the fake gateway and the webhook pipeline are covered by tests.
+
+## Testing and quality
+
+```bash
+make test                  # Pest feature + unit tests (inside Sail)
+vendor/bin/pint --test     # code style
+vendor/bin/phpstan analyse # Larastan, level 6
+npm run build              # vue-tsc type check + Vite build
+```
+
+Tests cover tenancy isolation (reads, writes, route model binding), role policies, the invitation flow, plan limits,
+webhook signature and idempotency, feature gates, and the seeder. CI (GitHub Actions) runs Pint, Larastan and Pest
+against a MySQL 8.4 service container on every push and pull request.
+
+## What I'd do next in production
+
+- Add Stripe Checkout and Customer Portal coverage and test the `StripeGateway` against Stripe's test mode in CI.
+- Handle dunning: `invoice.payment_failed`, grace periods, and email notices to the owner.
+- Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
+- Add rate limiting on invitations and auth, 2FA, and SSO for Business.
+- Make audit logs append-only and exportable, with retention rules.
+- Observability: structured logs, Sentry, queue and failed-job alerts, Horizon for Redis queues.
+- Add seat-based billing and proration instead of fixed per-plan limits.
+- Browser end-to-end tests (Playwright) for the main flows, and zero-downtime deploys with migration safety checks.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[MIT](LICENSE) © Kevin Makwana. "Acme" is a fictional brand used for demonstration.
