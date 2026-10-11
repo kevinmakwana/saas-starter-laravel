@@ -20,6 +20,8 @@ use Laravel\Cashier\Billable;
  * @property string $name
  * @property string $plan
  * @property Carbon|null $plan_ends_at
+ * @property Carbon|null $payment_failed_at
+ * @property Carbon|null $payment_grace_ends_at
  * @property string|null $stripe_id
  */
 class Team extends Model
@@ -33,7 +35,11 @@ class Team extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['plan_ends_at' => 'datetime'];
+        return [
+            'plan_ends_at' => 'datetime',
+            'payment_failed_at' => 'datetime',
+            'payment_grace_ends_at' => 'datetime',
+        ];
     }
 
     /** The plan in force right now: a cancelled plan stays active until its period ends. */
@@ -45,7 +51,24 @@ class Team extends Model
             return Plan::Free;
         }
 
+        // A failed payment that was not fixed within the grace period costs the paid plan.
+        if ($this->paymentOverdue()) {
+            return Plan::Free;
+        }
+
         return $plan;
+    }
+
+    /** A payment failed and the team is still inside its grace period. */
+    public function inPaymentGrace(): bool
+    {
+        return $this->payment_failed_at !== null && $this->payment_grace_ends_at?->isFuture() === true;
+    }
+
+    /** A payment failed and the grace period is over. */
+    public function paymentOverdue(): bool
+    {
+        return $this->payment_failed_at !== null && $this->payment_grace_ends_at?->isPast() === true;
     }
 
     public function onGracePeriod(): bool

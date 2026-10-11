@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'team' => fn () => $this->currentTeam($request),
+                'billing' => fn () => $this->billingNotice($request),
                 'features' => fn () => ($team = $request->user() ? app(TenantContext::class)->current() : null) ? app(FeatureGate::class)->all($team) : [],
                 'teams' => fn () => $request->user()?->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
             ],
@@ -54,5 +55,17 @@ class HandleInertiaRequests extends Middleware
         $team = $user ? app(TenantContext::class)->current() : null;
 
         return $team ? ['id' => $team->id, 'name' => $team->name, 'role' => $team->roleOf($user)?->value] : null;
+    }
+
+    /** @return array{state: string, grace_ends_at: string|null}|null */
+    private function billingNotice(Request $request): ?array
+    {
+        $team = $request->user() ? app(TenantContext::class)->current() : null;
+
+        return match (true) {
+            $team?->inPaymentGrace() => ['state' => 'grace', 'grace_ends_at' => $team->payment_grace_ends_at?->toIso8601String()],
+            $team?->paymentOverdue() => ['state' => 'overdue', 'grace_ends_at' => $team->payment_grace_ends_at?->toIso8601String()],
+            default => null,
+        };
     }
 }

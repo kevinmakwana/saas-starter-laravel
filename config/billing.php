@@ -13,6 +13,9 @@ return [
         'tolerance' => 300,
     ],
 
+    // Days a team keeps its plan after a failed payment before dropping to Free.
+    'grace_days' => 7,
+
     'plans' => [
         'free' => [
             'name' => 'Free',

@@ -244,6 +244,19 @@ const auth = computed(() => page.props.auth);
             </div>
 
             <div
+                v-if="auth.billing"
+                class="mx-auto mt-4 flex max-w-7xl items-center justify-between rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 sm:px-6 lg:px-8"
+                role="alert"
+            >
+                <span v-if="auth.billing.state === 'grace'">
+                    Your last payment failed. Your plan stays active until
+                    {{ new Date(auth.billing.grace_ends_at ?? '').toLocaleDateString() }}. Update your payment method to keep it.
+                </span>
+                <span v-else>Your payment is overdue, so this team is on the Free plan until it goes through.</span>
+                <Link :href="route('billing.show')" class="font-semibold underline">Review billing</Link>
+            </div>
+
+            <div
                 v-if="page.props.flash?.error"
                 class="mx-auto mt-4 max-w-7xl rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 sm:px-6 lg:px-8"
                 role="alert"
