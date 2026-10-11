@@ -47,6 +47,12 @@ const page = usePage();
                                 >
                                     Team
                                 </NavLink>
+                                <NavLink
+                                    :href="route('billing.show')"
+                                    :active="route().current('billing.*')"
+                                >
+                                    Billing
+                                </NavLink>
                             </div>
                         </div>
 
@@ -158,6 +164,9 @@ const page = usePage();
                         <ResponsiveNavLink :href="route('teams.show')" :active="route().current('teams.*')">
                             Team
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('billing.show')" :active="route().current('billing.*')">
+                            Billing
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -207,6 +216,15 @@ const page = usePage();
                 role="status"
             >
                 {{ page.props.flash.success }}
+            </div>
+
+            <div
+                v-if="page.props.flash?.upgrade"
+                class="mx-auto mt-4 flex max-w-7xl items-center justify-between rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:px-6 lg:px-8"
+                role="alert"
+            >
+                <span>{{ page.props.flash.upgrade }}</span>
+                <Link :href="route('billing.show')" class="font-semibold underline">See plans</Link>
             </div>
 
             <!-- Page Content -->

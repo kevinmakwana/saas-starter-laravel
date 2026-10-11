@@ -26,5 +26,6 @@ export type PageProps<
     };
     flash: {
         success: string | null;
+        upgrade: string | null;
     };
 };
