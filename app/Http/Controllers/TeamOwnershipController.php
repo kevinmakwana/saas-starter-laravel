@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -10,6 +11,8 @@ use Illuminate\Validation\ValidationException;
 
 class TeamOwnershipController extends Controller
 {
+    public function __construct(private AuditLogger $audit) {}
+
     public function store(Request $request): RedirectResponse
     {
         $team = $request->user()->currentTeam;
@@ -23,6 +26,8 @@ class TeamOwnershipController extends Controller
         }
 
         $team->transferOwnership($request->user(), $newOwner);
+
+        $this->audit->record('team.ownership_transferred', "Transferred ownership to {$newOwner->name}");
 
         return back()->with('success', "{$newOwner->name} is now the owner.");
     }

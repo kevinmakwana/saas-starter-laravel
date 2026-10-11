@@ -23,9 +23,20 @@ export type PageProps<
         user: User;
         team: CurrentTeam | null;
         teams: TeamSummary[];
+        features: Record<string, boolean>;
     };
     flash: {
         success: string | null;
         upgrade: string | null;
     };
 };
+
+export interface Paginated<T> {
+    data: T[];
+    links: { url: string | null; label: string; active: boolean }[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+}

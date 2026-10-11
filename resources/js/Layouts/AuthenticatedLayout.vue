@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import type { PageProps } from '@/types';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
@@ -9,7 +10,8 @@ import TeamSwitcher from '@/Components/TeamSwitcher.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
-const page = usePage();
+const page = usePage<PageProps>();
+const auth = computed(() => page.props.auth);
 </script>
 
 <template>
@@ -40,6 +42,19 @@ const page = usePage();
                                     :active="route().current('dashboard')"
                                 >
                                     Dashboard
+                                </NavLink>
+                                <NavLink
+                                    :href="route('projects.index')"
+                                    :active="route().current('projects.*')"
+                                >
+                                    Projects
+                                </NavLink>
+                                <NavLink
+                                    v-if="auth.features?.audit_log && ['owner', 'admin'].includes(auth.team?.role ?? '')"
+                                    :href="route('audit-log.index')"
+                                    :active="route().current('audit-log.*')"
+                                >
+                                    Audit log
                                 </NavLink>
                                 <NavLink
                                     :href="route('teams.show')"
@@ -160,6 +175,16 @@ const page = usePage();
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('projects.index')" :active="route().current('projects.*')">
+                            Projects
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="auth.features?.audit_log && ['owner', 'admin'].includes(auth.team?.role ?? '')"
+                            :href="route('audit-log.index')"
+                            :active="route().current('audit-log.*')"
+                        >
+                            Audit log
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('teams.show')" :active="route().current('teams.*')">
                             Team

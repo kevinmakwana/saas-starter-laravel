@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Mail\TeamInvitationMail;
 use App\Models\TeamInvitation;
+use App\Services\AuditLogger;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +17,8 @@ use Illuminate\Validation\ValidationException;
 class TeamInvitationController extends Controller
 {
     public const TTL_DAYS = 7;
+
+    public function __construct(private AuditLogger $audit) {}
 
     public function store(Request $request): RedirectResponse
     {
@@ -46,6 +50,8 @@ class TeamInvitationController extends Controller
             ],
         );
 
+        $this->audit->record('member.invited', "Invited {$invitation->email} as {$role->label()}");
+
         Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
 
         return back()->with('success', "Invitation sent to {$invitation->email}.");
@@ -58,6 +64,7 @@ class TeamInvitationController extends Controller
         abort_unless($invitation->team_id === $team->getKey(), 404);
 
         $invitation->delete();
+        $this->audit->record('invitation.cancelled', "Cancelled invitation for {$invitation->email}");
 
         return back()->with('success', 'Invitation cancelled.');
     }
@@ -74,6 +81,7 @@ class TeamInvitationController extends Controller
         $team->addMember($user, $invitation->role);
         $invitation->forceFill(['accepted_at' => now()])->save();
         $user->switchTeam($team);
+        app(TenantContext::class)->run($team, fn () => $this->audit->record('member.joined', "{$user->name} joined as {$invitation->role->label()}", null, $user));
 
         return redirect()->route('dashboard')->with('success', "You joined {$team->name}.");
     }

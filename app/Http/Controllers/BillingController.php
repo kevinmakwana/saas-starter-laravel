@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Billing\BillingGateway;
 use App\Enums\Plan;
+use App\Services\AuditLogger;
 use App\Services\FeatureGate;
 use App\Services\PlanLimits;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class BillingController extends Controller
 {
-    public function __construct(private BillingGateway $gateway) {}
+    public function __construct(private BillingGateway $gateway, private AuditLogger $audit) {}
 
     public function show(Request $request, PlanLimits $limits, FeatureGate $features): Response
     {
@@ -51,6 +52,8 @@ class BillingController extends Controller
 
         $url = $this->gateway->subscribe($team, $plan);
 
+        $this->audit->record('billing.subscribed', "Started the {$plan->label()} plan");
+
         return $url ? Inertia::location($url) : back()->with('success', "You're now on the {$plan->label()} plan.");
     }
 
@@ -62,6 +65,8 @@ class BillingController extends Controller
 
         $this->gateway->changePlan($team, $plan);
 
+        $this->audit->record('billing.changed', "Changed plan to {$plan->label()}");
+
         return back()->with('success', "Plan changed to {$plan->label()}.");
     }
 
@@ -72,6 +77,8 @@ class BillingController extends Controller
 
         $this->gateway->cancel($team);
 
+        $this->audit->record('billing.cancelled', 'Cancelled the subscription');
+
         return back()->with('success', 'Subscription cancelled. You keep your plan until the end of the period.');
     }
 
@@ -81,6 +88,8 @@ class BillingController extends Controller
         Gate::authorize('manageBilling', $team);
 
         $this->gateway->resume($team);
+
+        $this->audit->record('billing.resumed', 'Resumed the subscription');
 
         return back()->with('success', 'Subscription resumed.');
     }
