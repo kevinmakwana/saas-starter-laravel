@@ -15,11 +15,16 @@ class StripeWebhookController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
+        $secret = (string) config('billing.webhook.secret');
+        if ($secret === '') {
+            return response()->json(['error' => 'Webhook secret is not configured'], 403);
+        }
+
         try {
             $event = Webhook::constructEvent(
                 $request->getContent(),
                 (string) $request->header('Stripe-Signature'),
-                (string) config('billing.webhook.secret'),
+                $secret,
                 (int) config('billing.webhook.tolerance'),
             );
         } catch (SignatureVerificationException|UnexpectedValueException) {

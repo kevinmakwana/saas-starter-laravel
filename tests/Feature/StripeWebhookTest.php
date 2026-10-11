@@ -44,6 +44,14 @@ it('rejects missing and invalid signatures', function () {
         ->and($this->team->refresh()->plan)->toBe('free');
 });
 
+it('rejects every webhook when no secret is configured', function () {
+    config(['billing.webhook.secret' => '']);
+
+    postWebhook(stripeEvent('evt_1', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro')), '')->assertForbidden();
+
+    expect(ProcessedWebhookEvent::count())->toBe(0);
+});
+
 it('applies a verified subscription update', function () {
     postWebhook(stripeEvent('evt_1', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro')))
         ->assertOk()->assertJson(['status' => 'queued']);

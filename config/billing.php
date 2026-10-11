@@ -8,7 +8,8 @@ return [
     'gateway' => env('BILLING_GATEWAY', 'fake'),
 
     'webhook' => [
-        'secret' => env('STRIPE_WEBHOOK_SECRET', 'whsec_local_fake_secret'),
+        // The local fallback secret is only used by the fake gateway; with Stripe, an empty secret rejects every webhook.
+        'secret' => env('STRIPE_WEBHOOK_SECRET') ?: (env('BILLING_GATEWAY', 'fake') === 'stripe' ? '' : 'whsec_local_fake_secret'),
         'tolerance' => 300,
     ],
 
