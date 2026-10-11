@@ -244,6 +244,14 @@ const auth = computed(() => page.props.auth);
             </div>
 
             <div
+                v-if="page.props.flash?.error"
+                class="mx-auto mt-4 max-w-7xl rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 sm:px-6 lg:px-8"
+                role="alert"
+            >
+                {{ page.props.flash.error }}
+            </div>
+
+            <div
                 v-if="page.props.flash?.upgrade"
                 class="mx-auto mt-4 flex max-w-7xl items-center justify-between rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:px-6 lg:px-8"
                 role="alert"

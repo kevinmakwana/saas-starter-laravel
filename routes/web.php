@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/teams/create', [TeamController::class, 'create'])->name('teams.create');
-    Route::post('/teams', [TeamController::class, 'store'])->name('teams.store');
+    Route::post('/teams', [TeamController::class, 'store'])->middleware('throttle:team-create')->name('teams.store');
     Route::put('/current-team', [TeamController::class, 'switch'])->name('teams.switch');
 
     // Signed + expiring link from the invitation email; login redirects back here.
@@ -43,20 +43,22 @@ Route::middleware('auth')->group(function () {
         Route::patch('/team', [TeamController::class, 'update'])->name('teams.update');
         Route::patch('/team/members/{user}', [TeamMemberController::class, 'update'])->name('teams.members.update');
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
-        Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->name('teams.invitations.store');
+        Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');
         Route::delete('/team/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
         Route::resource('projects', ProjectController::class);
         Route::resource('projects.tasks', TaskController::class)->only(['store', 'update', 'destroy'])->scoped();
         Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('feature:audit_log')->name('audit-log.index');
         Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
-        Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
-        Route::post('/billing/change', [BillingController::class, 'change'])->name('billing.change');
-        Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
-        Route::post('/billing/resume', [BillingController::class, 'resume'])->name('billing.resume');
+        Route::middleware('throttle:billing')->group(function () {
+            Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
+            Route::post('/billing/change', [BillingController::class, 'change'])->name('billing.change');
+            Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+            Route::post('/billing/resume', [BillingController::class, 'resume'])->name('billing.resume');
+        });
         Route::post('/team/ownership', [TeamOwnershipController::class, 'store'])->name('teams.ownership');
     });
 });
 
-Route::post('/webhooks/stripe', StripeWebhookController::class)->name('webhooks.stripe');
+Route::post('/webhooks/stripe', StripeWebhookController::class)->middleware('throttle:webhooks')->name('webhooks.stripe');
 
 require __DIR__.'/auth.php';
