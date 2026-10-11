@@ -2,6 +2,7 @@
 
 use App\Billing\BillingGateway;
 use App\Billing\FakeGateway;
+use App\Billing\StripeGateway;
 use App\Enums\Plan;
 use App\Enums\Role;
 use App\Models\User;
@@ -16,6 +17,17 @@ beforeEach(function () {
 
 it('runs on the fake gateway when no Stripe keys are set', function () {
     expect(app(BillingGateway::class))->toBeInstanceOf(FakeGateway::class);
+});
+
+it('selects the Stripe gateway only when configured for it and a secret is present', function () {
+    config(['billing.gateway' => 'stripe', 'cashier.secret' => null]);
+    expect(app(BillingGateway::class))->toBeInstanceOf(FakeGateway::class);
+
+    config(['billing.gateway' => 'fake', 'cashier.secret' => 'sk_test_x']);
+    expect(app(BillingGateway::class))->toBeInstanceOf(FakeGateway::class);
+
+    config(['billing.gateway' => 'stripe', 'cashier.secret' => 'sk_test_x']);
+    expect(app(BillingGateway::class))->toBeInstanceOf(StripeGateway::class);
 });
 
 it('subscribes, changes plan and cancels with the fake gateway', function () {
