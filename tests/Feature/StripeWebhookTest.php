@@ -1,10 +1,16 @@
 <?php
 
+use App\Billing\BillingGateway;
 use App\Enums\Plan;
+use App\Jobs\ProcessStripeWebhook;
 use App\Mail\PaymentFailedMail;
 use App\Models\AuditLog;
 use App\Models\ProcessedWebhookEvent;
+use App\Models\Team;
 use App\Services\FeatureGate;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 function stripeEvent(string $id, string $type, array $object): array
@@ -188,5 +194,111 @@ describe('payment failures', function () {
 
         $team = $this->team->refresh();
         expect($team->plan)->toBe('free')->and($team->payment_failed_at)->toBeNull();
+    });
+});
+
+describe('recovering events that were stored but never processed', function () {
+    /** An event row left behind when dispatching or processing failed. */
+    function strandedEvent(string $id, array $object, $createdAt = null): ProcessedWebhookEvent
+    {
+        $record = ProcessedWebhookEvent::create([
+            'event_id' => $id, 'type' => 'customer.subscription.updated',
+            'payload' => stripeEvent($id, 'customer.subscription.updated', $object),
+        ]);
+        $record->forceFill(['created_at' => $createdAt ?? now()->subHour()])->save();
+
+        return $record;
+    }
+
+    it('re-runs an unprocessed event when Stripe redelivers it', function () {
+        $object = subscriptionObject('cus_123', 'price_pro');
+        strandedEvent('evt_stuck', $object);
+
+        postWebhook(stripeEvent('evt_stuck', 'customer.subscription.updated', $object))
+            ->assertOk()->assertJson(['status' => 'queued']);
+
+        expect($this->team->refresh()->plan)->toBe('pro')
+            ->and(ProcessedWebhookEvent::firstWhere('event_id', 'evt_stuck')->processed_at)->not->toBeNull();
+    });
+
+    it('retries stranded events that are old enough, and leaves fresh, ancient and processed ones alone', function () {
+        $old = strandedEvent('evt_old', subscriptionObject('cus_123', 'price_pro'), now()->subMinutes(30));
+        $fresh = strandedEvent('evt_fresh', subscriptionObject('cus_123', 'price_biz'), now()->subMinute());
+        $ancient = strandedEvent('evt_ancient', subscriptionObject('cus_123', 'price_biz'), now()->subDays(10));
+
+        $this->artisan('webhooks:retry-stuck')->assertSuccessful();
+
+        expect($old->refresh()->processed_at)->not->toBeNull()
+            ->and($fresh->refresh()->processed_at)->toBeNull()
+            ->and($ancient->refresh()->processed_at)->toBeNull()
+            ->and($this->team->refresh()->plan)->toBe('pro');
+    });
+
+    it('replays one event by id, even if it was processed before', function () {
+        postWebhook(stripeEvent('evt_replay', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro')));
+        $this->team->forceFill(['plan' => 'free'])->save();
+
+        $this->artisan('webhooks:replay', ['event_id' => 'evt_replay'])->assertSuccessful();
+
+        expect($this->team->refresh()->plan)->toBe('pro');
+    });
+
+    it('fails to replay an unknown event id', function () {
+        $this->artisan('webhooks:replay', ['event_id' => 'evt_nope'])->assertFailed();
+    });
+
+    it('schedules the retry sweeper every five minutes', function () {
+        $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'webhooks:retry-stuck'));
+
+        expect($event)->not->toBeNull()->and($event->expression)->toBe('*/5 * * * *');
+    });
+
+    it('logs the event id when processing fails for good', function () {
+        Log::spy();
+
+        (new ProcessStripeWebhook(42))->failed(new RuntimeException('boom'));
+
+        Log::shouldHaveReceived('error')->withArgs(fn ($message, $context) => str_contains($message, 'Stripe webhook') && $context['record_id'] === 42);
+    });
+
+    it('does not queue the same event twice while one is already waiting', function () {
+        config(['queue.default' => 'database']);
+
+        ProcessStripeWebhook::dispatch(7);
+        ProcessStripeWebhook::dispatch(7);
+
+        expect(DB::table('jobs')->count())->toBe(1);
+    });
+});
+
+describe('subscription audit entries', function () {
+    it('records the plan once the subscription is confirmed by Stripe', function () {
+        postWebhook(stripeEvent('evt_c1', 'customer.subscription.created', subscriptionObject('cus_123', 'price_pro')));
+        postWebhook(stripeEvent('evt_c2', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro')));
+
+        $entries = asTenant($this->team, fn () => AuditLog::where('action', 'billing.subscribed')->pluck('summary')->all());
+        expect($entries)->toBe(['Started the Pro plan']);
+    });
+
+    it('does not log a started plan while the owner is still at Stripe Checkout', function () {
+        $this->app->instance(BillingGateway::class, new class implements BillingGateway
+        {
+            public function subscribe(Team $team, Plan $plan): ?string
+            {
+                return 'https://checkout.stripe.test/session';
+            }
+
+            public function changePlan(Team $team, Plan $plan): void {}
+
+            public function cancel(Team $team): void {}
+
+            public function resume(Team $team): void {}
+
+            public function terminate(Team $team): void {}
+        });
+
+        $this->actingAs($this->team->owner)->post('/billing/subscribe', ['plan' => 'pro'])->assertRedirect('https://checkout.stripe.test/session');
+
+        expect(asTenant($this->team, fn () => AuditLog::where('action', 'billing.subscribed')->count()))->toBe(0);
     });
 });

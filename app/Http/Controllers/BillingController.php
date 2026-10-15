@@ -52,7 +52,10 @@ class BillingController extends Controller
 
         $url = $this->gateway->subscribe($team, $plan);
 
-        $this->audit->record('billing.subscribed', "Started the {$plan->label()} plan");
+        // With a redirect (Stripe Checkout) the subscription is only recorded once the webhook confirms it.
+        if ($url === null) {
+            $this->audit->record('billing.subscribed', "Started the {$plan->label()} plan");
+        }
 
         return $url ? Inertia::location($url) : back()->with('success', "You're now on the {$plan->label()} plan.");
     }

@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Deletes expired invitations, processed webhook events and (when configured) old audit logs. See config/retention.php.
 Schedule::command('model:prune')->daily();
+
+// Re-dispatches Stripe events that were stored but never processed.
+Schedule::command('webhooks:retry-stuck')->everyFiveMinutes()->withoutOverlapping();

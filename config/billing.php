@@ -11,6 +11,10 @@ return [
         // The local fallback secret is only used by the fake gateway; with Stripe, an empty secret rejects every webhook.
         'secret' => env('STRIPE_WEBHOOK_SECRET') ?: (env('BILLING_GATEWAY', 'fake') === 'stripe' ? '' : 'whsec_local_fake_secret'),
         'tolerance' => 300,
+        // Stored events still unprocessed after this many minutes are re-dispatched by `webhooks:retry-stuck`,
+        // but only for this many days (older ones need a human and `webhooks:replay`).
+        'retry_after_minutes' => 10,
+        'retry_window_days' => 7,
     ],
 
     // Days a team keeps its plan after a failed payment before dropping to Free.
