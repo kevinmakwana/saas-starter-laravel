@@ -39,7 +39,15 @@ class StripeWebhookController extends Controller
                 'payload' => $event->toArray(),
             ]);
         } catch (UniqueConstraintViolationException) {
-            return response()->json(['status' => 'duplicate']);
+            // A stored event that never finished (dispatch or job failed) is retried by Stripe's redelivery.
+            $stranded = ProcessedWebhookEvent::where('event_id', $event->id)->whereNull('processed_at')->first();
+            if ($stranded === null) {
+                return response()->json(['status' => 'duplicate']);
+            }
+
+            ProcessStripeWebhook::dispatch($stranded->id);
+
+            return response()->json(['status' => 'queued']);
         }
 
         ProcessStripeWebhook::dispatch($record->id);
