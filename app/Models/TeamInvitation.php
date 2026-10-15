@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Role;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -18,6 +20,8 @@ use Illuminate\Support\Facades\URL;
  */
 class TeamInvitation extends Model
 {
+    use MassPrunable;
+
     /** @var list<string> */
     protected $fillable = ['email', 'role', 'invited_by', 'expires_at'];
 
@@ -29,6 +33,16 @@ class TeamInvitation extends Model
             'expires_at' => 'datetime',
             'accepted_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Invitations are useless once they expired, so they are deleted after a short grace period.
+     *
+     * @return Builder<self>
+     */
+    public function prunable(): Builder
+    {
+        return static::where('expires_at', '<', now()->subDays(config('retention.invitations_days')));
     }
 
     /** @return BelongsTo<Team, $this> */
