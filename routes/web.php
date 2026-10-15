@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskExportController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamInvitationController;
 use App\Http\Controllers\TeamMemberController;
@@ -45,6 +46,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
         Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');
         Route::delete('/team/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
+        Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware('feature:task_export')->name('projects.tasks.export');
         Route::resource('projects', ProjectController::class);
         Route::resource('projects.tasks', TaskController::class)->only(['store', 'update', 'destroy'])->scoped();
         Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('feature:audit_log')->name('audit-log.index');
