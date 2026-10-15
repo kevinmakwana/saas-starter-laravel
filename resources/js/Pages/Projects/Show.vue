@@ -5,9 +5,9 @@ import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import type { Paginated } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import type { PageProps, Paginated } from '@/types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 
 interface TaskRow { id: number; title: string; status: string }
 
@@ -18,6 +18,8 @@ const props = defineProps<{
     statuses: string[];
     can: { delete: boolean };
 }>();
+
+const canExport = computed(() => usePage<PageProps>().props.auth.features?.task_export === true);
 
 const search = ref(props.filters.q);
 const status = ref(props.filters.status);
@@ -47,6 +49,9 @@ const removeProject = () => window.confirm(`Delete “${props.project.name}” a
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">{{ project.name }}</h2>
                 <div class="flex items-center gap-3">
+                    <!-- A plain link: the response is a file download, not an Inertia page. -->
+                    <a v-if="canExport" :href="route('projects.tasks.export', project.id)" class="text-sm text-indigo-700 underline">Export CSV</a>
+                    <Link v-else :href="route('billing.show')" class="text-sm text-gray-500 underline" title="Export is included in Pro and Business">Export CSV (Pro)</Link>
                     <Link :href="route('projects.edit', project.id)" class="text-sm text-indigo-700 underline">Edit</Link>
                     <DangerButton v-if="can.delete" @click="removeProject">Delete</DangerButton>
                 </div>
