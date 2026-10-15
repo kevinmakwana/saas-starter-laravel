@@ -10,7 +10,7 @@ It runs locally with **zero paid keys**: billing uses a fake gateway unless you 
 
 ## Quick start
 
-Requires Docker (and `make`). One command starts the app, MySQL 8, Redis, Mailpit and a queue worker, then migrates and seeds:
+Requires Docker (and `make`). One command starts the app, MySQL 8, Redis, Mailpit, a queue worker and the scheduler, then migrates and seeds:
 
 ```bash
 make up
@@ -65,11 +65,19 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Webhooks:** `POST /webhooks/stripe` verifies the signature, stores each event id once (idempotent) and processes it on the `webhooks` queue.
 - **Failed payments:** `invoice.payment_failed` starts a 7-day grace period (`billing.grace_days`) and emails the owner once.
   The paid plan stays active during grace, drops to Free if it is not fixed, and is restored by `invoice.paid`. A banner warns the team.
+- **Webhook recovery:** an event that was stored but never processed is retried when Stripe redelivers it, and every 5 minutes by the
+  scheduler (`webhooks:retry-stuck`, events from the last 7 days). `php artisan webhooks:replay evt_123` reprocesses one event on demand.
+  Failed jobs are logged with the stored record id.
 - **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions and the webhook
   (login and email verification are throttled by Breeze). Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
 - **Feature flags:** `FeatureGate` and a `feature:` route middleware. For example `audit_log` is Business only.
-- **Projects and tasks:** CRUD with search, status filter and pagination.
+- **Projects and tasks:** CRUD with search, status filter and pagination. Pro and Business can export a project's tasks as CSV
+  (spreadsheet formulas in titles are neutralised).
+- **Account deletion:** an owner whose team still has other members must transfer ownership first. Teams the user owns alone are
+  deleted with the account, and their Stripe subscription is cancelled immediately.
+- **Housekeeping:** the scheduler runs `model:prune` daily: expired invitations, processed webhook events and, if you set a
+  retention, old audit log entries are deleted (`config/retention.php`, `RETENTION_*` in `.env`).
 - **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business.
 
 ### Using real Stripe test keys (optional)
@@ -109,7 +117,7 @@ For repeated local E2E runs from one IP, set `THROTTLE_REGISTRATION_PER_HOUR=100
 - Add Stripe Checkout and Customer Portal coverage and test the `StripeGateway` against Stripe's test mode in CI.
 - Extend dunning: reminder emails during the grace period and a self-serve payment-method update (Customer Portal).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
-- Add rate limiting on invitations and auth, 2FA, and SSO for Business.
+- Add 2FA and SSO for Business.
 - Make audit logs append-only and exportable, with retention rules.
 - Observability: structured logs, Sentry, queue and failed-job alerts, Horizon for Redis queues.
 - Add seat-based billing and proration instead of fixed per-plan limits.
