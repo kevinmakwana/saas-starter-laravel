@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\BillingGateway;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Team;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -42,18 +46,36 @@ class ProfileController extends Controller
 
     /**
      * Delete the user's account.
+     *
+     * Teams cascade-delete with their owner, so an owner must hand over teams that still have
+     * other members first. Teams the user owns alone are deleted, after ending their billing.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, BillingGateway $billing): RedirectResponse
     {
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
+        $owned = Team::where('owner_id', $user->getKey())->get();
+
+        $shared = $owned->first(fn (Team $team) => $team->users()->whereKeyNot($user->getKey())->exists());
+        if ($shared !== null) {
+            throw ValidationException::withMessages([
+                'account' => "You still own “{$shared->name}” with other members. Transfer ownership or remove them before deleting your account.",
+            ]);
+        }
+
+        foreach ($owned as $team) {
+            $billing->terminate($team);
+        }
 
         Auth::logout();
 
-        $user->delete();
+        DB::transaction(function () use ($user, $owned) {
+            $owned->each->delete();
+            $user->delete();
+        });
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

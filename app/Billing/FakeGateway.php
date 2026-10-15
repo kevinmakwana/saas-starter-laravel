@@ -31,6 +31,11 @@ class FakeGateway implements BillingGateway
         $team->forceFill(['plan_ends_at' => null])->save();
     }
 
+    public function terminate(Team $team): void
+    {
+        $this->apply($team, Plan::Free);
+    }
+
     private function apply(Team $team, Plan $plan): void
     {
         $team->forceFill(['plan' => $plan->value, 'plan_ends_at' => null])->save();
