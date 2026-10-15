@@ -19,4 +19,7 @@ interface BillingGateway
     public function cancel(Team $team): void;
 
     public function resume(Team $team): void;
+
+    /** End billing immediately because the team is being deleted. No access period is kept. */
+    public function terminate(Team $team): void;
 }

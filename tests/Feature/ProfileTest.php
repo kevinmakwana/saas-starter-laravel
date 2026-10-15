@@ -1,5 +1,10 @@
 <?php
 
+use App\Billing\BillingGateway;
+use App\Enums\Plan;
+use App\Enums\Role;
+use App\Models\Project;
+use App\Models\Team;
 use App\Models\User;
 
 test('profile page is displayed', function () {
@@ -82,4 +87,78 @@ test('correct password must be provided to delete account', function () {
         ->assertRedirect('/profile');
 
     $this->assertNotNull($user->fresh());
+});
+
+describe('account deletion and owned teams', function () {
+    function spyGateway(): BillingGateway
+    {
+        return new class implements BillingGateway
+        {
+            /** @var list<int> */
+            public array $terminated = [];
+
+            public function subscribe(Team $team, Plan $plan): ?string
+            {
+                return null;
+            }
+
+            public function changePlan(Team $team, Plan $plan): void {}
+
+            public function cancel(Team $team): void {}
+
+            public function resume(Team $team): void {}
+
+            public function terminate(Team $team): void
+            {
+                $this->terminated[] = $team->getKey();
+            }
+        };
+    }
+
+    it('refuses to delete an owner whose team still has other members', function () {
+        $owner = ownerWithTeam();
+        $team = $owner->currentTeam;
+        $team->addMember(User::factory()->create(), Role::Member);
+        asTenant($team, fn () => Project::factory()->create());
+
+        $this->actingAs($owner)
+            ->from('/profile')
+            ->delete('/profile', ['password' => 'password'])
+            ->assertSessionHasErrors('account')
+            ->assertRedirect('/profile');
+
+        expect($owner->fresh())->not->toBeNull()
+            ->and(Team::find($team->id))->not->toBeNull()
+            ->and($team->users()->count())->toBe(2);
+        $this->assertAuthenticatedAs($owner);
+    });
+
+    it('deletes teams the user owns alone and terminates their billing first', function () {
+        $gateway = spyGateway();
+        $this->app->instance(BillingGateway::class, $gateway);
+        $owner = ownerWithTeam();
+        $team = $owner->currentTeam;
+
+        $this->actingAs($owner)->delete('/profile', ['password' => 'password'])->assertRedirect('/');
+
+        expect($owner->fresh())->toBeNull()
+            ->and(Team::find($team->id))->toBeNull()
+            ->and($gateway->terminated)->toBe([$team->id]);
+    });
+
+    it('lets a plain member delete their account without touching the team', function () {
+        $gateway = spyGateway();
+        $this->app->instance(BillingGateway::class, $gateway);
+        $owner = ownerWithTeam();
+        $team = $owner->currentTeam;
+        $member = User::factory()->create(['current_team_id' => $team->id]);
+        $team->addMember($member, Role::Member);
+
+        $this->actingAs($member)->delete('/profile', ['password' => 'password'])->assertRedirect('/');
+
+        expect($member->fresh())->toBeNull()
+            ->and(Team::find($team->id))->not->toBeNull()
+            ->and($team->users()->count())->toBe(1)
+            ->and($gateway->terminated)->toBe([]);
+    });
 });

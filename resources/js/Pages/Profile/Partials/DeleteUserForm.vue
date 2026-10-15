@@ -6,7 +6,7 @@ import Modal from '@/Components/Modal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { useForm } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref<HTMLInputElement | null>(null);
@@ -14,6 +14,9 @@ const passwordInput = ref<HTMLInputElement | null>(null);
 const form = useForm({
     password: '',
 });
+
+// Not a form field: the server reports teams that block deletion under the `account` key.
+const accountError = computed(() => (form.errors as Record<string, string | undefined>).account);
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
@@ -88,6 +91,7 @@ const closeModal = () => {
                     />
 
                     <InputError :message="form.errors.password" class="mt-2" />
+                    <InputError :message="accountError" class="mt-2" />
                 </div>
 
                 <div class="mt-6 flex justify-end">

@@ -39,6 +39,11 @@ class StripeGateway implements BillingGateway
         $team->forceFill(['plan_ends_at' => null])->save();
     }
 
+    public function terminate(Team $team): void
+    {
+        $team->subscription('default')?->cancelNow();
+    }
+
     private function price(Plan $plan): string
     {
         return $plan->stripePrice() ?? throw new RuntimeException("No Stripe price configured for {$plan->label()}.");
