@@ -12,7 +12,7 @@ up:
 	@$(SAIL) npm ci --no-audit --no-fund
 	@$(SAIL) npm run build
 	@$(SAIL) artisan migrate --seed --force --no-interaction
-	@$(SAIL) artisan queue:restart >/dev/null
+	@$(SAIL) artisan horizon:terminate >/dev/null
 	@. ./.env; echo ""; \
 	 echo "  App:     http://localhost:$${APP_PORT:-8080}"; \
 	 echo "  Mailpit: http://localhost:$${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}"; \

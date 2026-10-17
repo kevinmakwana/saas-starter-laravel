@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Middleware\AddRequestContext;
 use App\Http\Middleware\EnsureHasTeam;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireFeature;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Sentry\Laravel\Integration;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,7 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Global, not just `web`: unmatched URLs (404s) never enter the web group.
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->web(append: [
+            AddRequestContext::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
@@ -30,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Reports unhandled exceptions to Sentry. A no-op until SENTRY_LARAVEL_DSN is set.
+        Integration::handles($exceptions);
+
         // Plan-limit denials (402) become a friendly upgrade prompt instead of a bare error page.
         $exceptions->render(function (HttpException $e, Request $request) {
             if ($e->getStatusCode() === 402 && ($request->header('X-Inertia') || ! $request->expectsJson())) {
