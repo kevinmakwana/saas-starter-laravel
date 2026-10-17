@@ -13,3 +13,6 @@ Schedule::command('model:prune')->daily();
 
 // Re-dispatches Stripe events that were stored but never processed.
 Schedule::command('webhooks:retry-stuck')->everyFiveMinutes()->withoutOverlapping();
+
+// Fills Horizon's metrics graphs.
+Schedule::command('horizon:snapshot')->everyFiveMinutes();

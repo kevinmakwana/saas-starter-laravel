@@ -27,7 +27,7 @@ services:
             - mailpit
     queue:
         image: 'sail-8.4/app'
-        command: 'php artisan queue:work redis --queue=default,webhooks,mail --tries=3'
+        command: 'php artisan horizon'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         environment:
