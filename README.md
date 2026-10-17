@@ -10,7 +10,7 @@ It runs locally with **zero paid keys**: billing uses a fake gateway unless you 
 
 ## Quick start
 
-Requires Docker (and `make`). One command starts the app, MySQL 8, Redis, Mailpit, a queue worker and the scheduler, then migrates and seeds:
+Requires Docker (and `make`). One command starts the app, MySQL 8, Redis, Mailpit, a Horizon queue worker and the scheduler, then migrates and seeds:
 
 ```bash
 make up
@@ -20,6 +20,7 @@ make up
 | --- | --- |
 | App | <http://localhost:8080> |
 | Mailpit (all outgoing mail) | <http://localhost:8025> |
+| Horizon (queues, locally open to everyone) | <http://localhost:8080/horizon> |
 
 **Demo login:** `demo@acme.test` / `password` (owner of the *Acme Demo* team on the Business plan).
 Also seeded with the same password: `admin@acme.test` (Admin) and `member@acme.test` (Member).
@@ -76,6 +77,12 @@ Route model binding goes through the same scope, so another tenant's record is a
   (spreadsheet formulas in titles are neutralised).
 - **Account deletion:** an owner whose team still has other members must transfer ownership first. Teams the user owns alone are
   deleted with the account, and their Stripe subscription is cancelled immediately.
+- **Security headers:** a strict Content-Security-Policy (per-request nonce, no inline or eval scripts), HSTS over https,
+  `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`. Configure in `config/security.php`.
+- **Observability:** every response has an `X-Request-Id`; logs and Sentry errors carry the request, user and team ids (never
+  names or emails). Production logs are JSON on stderr (`LOG_STACK=json`), unhandled exceptions go to Sentry when
+  `SENTRY_LARAVEL_DSN` is set, a failed queued job emails `ALERT_EMAIL` (throttled), and Horizon shows the Redis queues at `/horizon`
+  (local: open; elsewhere only `HORIZON_ALLOWED_EMAILS`).
 - **Housekeeping:** the scheduler runs `model:prune` daily: expired invitations, processed webhook events and, if you set a
   retention, old audit log entries are deleted (`config/retention.php`, `RETENTION_*` in `.env`).
 - **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business.
@@ -112,6 +119,12 @@ MySQL 8.4 service container, plus the Playwright suite in a second job, on every
 
 For repeated local E2E runs from one IP, set `THROTTLE_REGISTRATION_PER_HOUR=1000` in `.env`.
 
+## Deploying
+
+The [Dockerfile](Dockerfile) builds one production image that runs the web, worker (Horizon) and scheduler roles. CI builds and
+smoke-tests it; pushing a `v*` tag publishes it to GitHub Container Registry. [docs/deploy.md](docs/deploy.md) covers the
+configuration, the release steps, migration safety, backups and where to look during an incident.
+
 ## What I'd do next in production
 
 - Add Stripe Checkout and Customer Portal coverage and test the `StripeGateway` against Stripe's test mode in CI.
@@ -119,7 +132,7 @@ For repeated local E2E runs from one IP, set `THROTTLE_REGISTRATION_PER_HOUR=100
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
 - Add 2FA and SSO for Business.
 - Make audit logs append-only and exportable, with retention rules.
-- Observability: structured logs, Sentry, queue and failed-job alerts, Horizon for Redis queues.
+- Ship the logs somewhere searchable and add uptime and queue-depth monitoring on top of the Sentry and Horizon alerts.
 - Add seat-based billing and proration instead of fixed per-plan limits.
 - Zero-downtime deploys with migration safety checks.
 
