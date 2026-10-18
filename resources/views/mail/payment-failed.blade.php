@@ -7,7 +7,7 @@ Your plan stays active until **{{ $deadline?->toFormattedDateString() }}**. Plea
 otherwise the team will move to the Free plan until the payment goes through.
 
 <x-mail::button :url="$url">
-Review billing
+Update payment method
 </x-mail::button>
 
 Thanks,<br>

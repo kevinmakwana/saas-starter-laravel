@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('feature:audit_log')->name('audit-log.index');
         Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
         Route::middleware('throttle:billing')->group(function () {
+            Route::get('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
             Route::post('/billing/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
             Route::post('/billing/change', [BillingController::class, 'change'])->name('billing.change');
             Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');

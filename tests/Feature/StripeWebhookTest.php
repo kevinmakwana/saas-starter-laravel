@@ -6,12 +6,12 @@ use App\Jobs\ProcessStripeWebhook;
 use App\Mail\PaymentFailedMail;
 use App\Models\AuditLog;
 use App\Models\ProcessedWebhookEvent;
-use App\Models\Team;
 use App\Services\FeatureGate;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Tests\Support\RecordingGateway;
 
 function stripeEvent(string $id, string $type, array $object): array
 {
@@ -281,21 +281,9 @@ describe('subscription audit entries', function () {
     });
 
     it('does not log a started plan while the owner is still at Stripe Checkout', function () {
-        $this->app->instance(BillingGateway::class, new class implements BillingGateway
-        {
-            public function subscribe(Team $team, Plan $plan): ?string
-            {
-                return 'https://checkout.stripe.test/session';
-            }
-
-            public function changePlan(Team $team, Plan $plan): void {}
-
-            public function cancel(Team $team): void {}
-
-            public function resume(Team $team): void {}
-
-            public function terminate(Team $team): void {}
-        });
+        $gateway = new RecordingGateway;
+        $gateway->checkoutUrl = 'https://checkout.stripe.test/session';
+        $this->app->instance(BillingGateway::class, $gateway);
 
         $this->actingAs($this->team->owner)->post('/billing/subscribe', ['plan' => 'pro'])->assertRedirect('https://checkout.stripe.test/session');
 

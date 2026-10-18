@@ -22,4 +22,17 @@ interface BillingGateway
 
     /** End billing immediately because the team is being deleted. No access period is kept. */
     public function terminate(Team $team): void;
+
+    /** Whether customers can manage their payment method and invoices at a hosted portal (Stripe's Customer Portal). */
+    public function supportsPortal(): bool;
+
+    /** A short-lived URL for the team's portal session; the customer returns to $returnUrl. Only call when supported. */
+    public function portalUrl(Team $team, string $returnUrl): string;
+
+    /**
+     * Invoices, newest first. Empty when the team has none.
+     *
+     * @return list<InvoiceSummary>
+     */
+    public function invoices(Team $team): array;
 }

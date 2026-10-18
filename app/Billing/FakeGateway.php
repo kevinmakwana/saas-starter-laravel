@@ -4,6 +4,7 @@ namespace App\Billing;
 
 use App\Enums\Plan;
 use App\Models\Team;
+use LogicException;
 
 /** Applies plan changes locally so the app runs end to end without Stripe keys. */
 class FakeGateway implements BillingGateway
@@ -34,6 +35,21 @@ class FakeGateway implements BillingGateway
     public function terminate(Team $team): void
     {
         $this->apply($team, Plan::Free);
+    }
+
+    public function supportsPortal(): bool
+    {
+        return false;
+    }
+
+    public function portalUrl(Team $team, string $returnUrl): string
+    {
+        throw new LogicException('The fake gateway has no billing portal.');
+    }
+
+    public function invoices(Team $team): array
+    {
+        return [];
     }
 
     private function apply(Team $team, Plan $plan): void
