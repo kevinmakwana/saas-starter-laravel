@@ -20,6 +20,30 @@ class PlanLimits
         };
     }
 
+    /**
+     * Limits the team already exceeds, e.g. after dropping to Free with more projects than Free allows.
+     * Nothing is deleted or locked in that case; only adding more is blocked (see check()).
+     * Members counts real members only: a pending invitation is not over the limit, it just cannot be accepted yet.
+     *
+     * @return list<array{key: string, label: string, used: int, limit: int}>
+     */
+    public function overages(Team $team): array
+    {
+        $plan = $team->currentPlan();
+        $overages = [];
+
+        foreach (['projects', 'members'] as $key) {
+            $limit = $plan->limit($key);
+            $used = $key === 'members' ? $team->users()->count() : $this->usage($team, $key);
+
+            if ($limit !== null && $used > $limit) {
+                $overages[] = ['key' => $key, 'label' => $key, 'used' => $used, 'limit' => $limit];
+            }
+        }
+
+        return $overages;
+    }
+
     /** Allow when one more of $key still fits the team's plan, otherwise a 402 "upgrade" denial. */
     public function check(Team $team, string $key, string $noun): Response
     {

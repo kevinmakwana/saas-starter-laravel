@@ -25,6 +25,7 @@ export type PageProps<
         teams: TeamSummary[];
         features: Record<string, boolean>;
         billing: { state: 'grace' | 'overdue'; grace_ends_at: string | null } | null;
+        overLimit: { plan: string; items: { key: string; label: string; used: number; limit: number }[] } | null;
     };
     flash: {
         success: string | null;

@@ -78,6 +78,14 @@ class TeamInvitationController extends Controller
         abort_unless($invitation->isPending(), 410, 'This invitation has expired or was already used.');
 
         $team = $invitation->team;
+
+        // Invitations sent on a bigger plan can outlive a downgrade. The link stays valid for when the owner upgrades.
+        $seats = $team->currentPlan()->limit('members');
+        if ($seats !== null && $team->users()->count() >= $seats) {
+            return redirect()->route('dashboard')
+                ->with('error', "{$team->name} is full on its current plan. Ask the owner to upgrade, then open the invitation link again.");
+        }
+
         $team->addMember($user, $invitation->role);
         $invitation->forceFill(['accepted_at' => now()])->save();
         $user->switchTeam($team);
