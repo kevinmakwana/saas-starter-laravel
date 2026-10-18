@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\FeatureGate;
+use App\Services\PlanLimits;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -37,6 +38,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'team' => fn () => $this->currentTeam($request),
                 'billing' => fn () => $this->billingNotice($request),
+                'overLimit' => fn () => $this->overLimitNotice($request),
                 'features' => fn () => ($team = $request->user() ? app(TenantContext::class)->current() : null) ? app(FeatureGate::class)->all($team) : [],
                 'teams' => fn () => $request->user()?->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
             ],
@@ -55,6 +57,15 @@ class HandleInertiaRequests extends Middleware
         $team = $user ? app(TenantContext::class)->current() : null;
 
         return $team ? ['id' => $team->id, 'name' => $team->name, 'role' => $team->roleOf($user)?->value] : null;
+    }
+
+    /** @return array{plan: string, items: list<array{key: string, label: string, used: int, limit: int}>}|null */
+    private function overLimitNotice(Request $request): ?array
+    {
+        $team = $request->user() ? app(TenantContext::class)->current() : null;
+        $items = $team ? app(PlanLimits::class)->overages($team) : [];
+
+        return $items === [] ? null : ['plan' => $team->currentPlan()->label(), 'items' => $items];
     }
 
     /** @return array{state: string, grace_ends_at: string|null}|null */

@@ -257,6 +257,19 @@ const auth = computed(() => page.props.auth);
             </div>
 
             <div
+                v-if="auth.overLimit"
+                class="mx-auto mt-4 flex max-w-7xl items-center justify-between gap-4 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:px-6 lg:px-8"
+                role="status"
+            >
+                <span>
+                    This team is over the {{ auth.overLimit.plan }} plan limits
+                    ({{ auth.overLimit.items.map((item) => `${item.used} of ${item.limit} ${item.label}`).join(', ') }}).
+                    Everything stays available, but nothing new can be added until you remove some or upgrade.
+                </span>
+                <Link :href="route('billing.show')" class="shrink-0 font-semibold underline">See plans</Link>
+            </div>
+
+            <div
                 v-if="page.props.flash?.error"
                 class="mx-auto mt-4 max-w-7xl rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 sm:px-6 lg:px-8"
                 role="alert"
