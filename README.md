@@ -72,6 +72,12 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions and the webhook
   (login and email verification are throttled by Breeze). Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
+  A team that drops to a smaller plan while over its limits (for example after a cancelled subscription) loses nothing: every
+  project and member stays, and can still be read, edited and deleted. Only adding more is blocked, a banner tells every member
+  why, and a pending invitation cannot be accepted until the team has a free seat again.
+- **Customer Portal and invoices:** with Stripe, owners get an "Update payment method" link to Stripe's Customer Portal (the failed
+  payment email links straight to it) and an invoice list on the billing page, loaded after the page so a slow Stripe call never
+  blocks it. Only the owner sees amounts.
 - **Feature flags:** `FeatureGate` and a `feature:` route middleware. For example `audit_log` is Business only.
 - **Projects and tasks:** CRUD with search, status filter and pagination. Pro and Business can export a project's tasks as CSV
   (spreadsheet formulas in titles are neutralised).
@@ -99,12 +105,21 @@ STRIPE_PRICE_BUSINESS=price_...
 ```
 
 Forward events with `stripe listen --forward-to localhost:8080/webhooks/stripe`.
-The Stripe path has not been exercised against live Stripe in this repo (see below); the fake gateway and the webhook pipeline are covered by tests.
+
+For the Customer Portal, save a portal configuration once in the Stripe Dashboard (Settings, Billing, Customer portal; in test mode
+too), otherwise Stripe refuses to create portal sessions and the owner sees a "could not open the billing portal" message.
+
+`StripeGateway` and Cashier are tested against [stripe-mock](https://github.com/stripe/stripe-mock), Stripe's official mock server,
+in CI. The Stripe path has not been exercised against live Stripe in this repo; the fake gateway, the webhook pipeline and
+the mocked Stripe API are covered by tests.
 
 ## Testing and quality
 
 ```bash
 make test                  # Pest feature + unit tests (inside Sail)
+# The StripeGateway tests are skipped unless stripe-mock is running:
+#   docker run --rm -p 12111:12111 stripe/stripe-mock
+#   STRIPE_MOCK_URL=http://127.0.0.1:12111 vendor/bin/pest --group=stripe-mock
 npm run e2e                # Playwright browser tests against the running app (make up first)
 vendor/bin/pint --test     # code style
 vendor/bin/phpstan analyse # Larastan, level 6
@@ -127,8 +142,8 @@ configuration, the release steps, migration safety, backups and where to look du
 
 ## What I'd do next in production
 
-- Add Stripe Checkout and Customer Portal coverage and test the `StripeGateway` against Stripe's test mode in CI.
-- Extend dunning: reminder emails during the grace period and a self-serve payment-method update (Customer Portal).
+- Run a nightly job against Stripe's real test mode (stripe-mock returns canned fixtures, so it cannot prove your real prices and portal settings).
+- Extend dunning: reminder emails during the grace period, and an email to the owner when a downgrade leaves the team over its limits.
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
 - Add 2FA and SSO for Business.
 - Make audit logs append-only and exportable, with retention rules.
