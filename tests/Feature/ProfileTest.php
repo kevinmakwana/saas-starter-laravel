@@ -1,11 +1,11 @@
 <?php
 
 use App\Billing\BillingGateway;
-use App\Enums\Plan;
 use App\Enums\Role;
 use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
+use Tests\Support\RecordingGateway;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -90,29 +90,9 @@ test('correct password must be provided to delete account', function () {
 });
 
 describe('account deletion and owned teams', function () {
-    function spyGateway(): BillingGateway
+    function spyGateway(): RecordingGateway
     {
-        return new class implements BillingGateway
-        {
-            /** @var list<int> */
-            public array $terminated = [];
-
-            public function subscribe(Team $team, Plan $plan): ?string
-            {
-                return null;
-            }
-
-            public function changePlan(Team $team, Plan $plan): void {}
-
-            public function cancel(Team $team): void {}
-
-            public function resume(Team $team): void {}
-
-            public function terminate(Team $team): void
-            {
-                $this->terminated[] = $team->getKey();
-            }
-        };
+        return new RecordingGateway;
     }
 
     it('refuses to delete an owner whose team still has other members', function () {

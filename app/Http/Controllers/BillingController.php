@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Billing\BillingGateway;
+use App\Billing\InvoiceSummary;
 use App\Enums\Plan;
+use App\Models\Team;
 use App\Services\AuditLogger;
 use App\Services\FeatureGate;
 use App\Services\PlanLimits;
@@ -14,6 +16,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Throwable;
 
 class BillingController extends Controller
 {
@@ -24,11 +27,15 @@ class BillingController extends Controller
         $team = $request->user()->currentTeam;
         Gate::authorize('view', $team);
         $current = $team->currentPlan();
+        $canManage = Gate::allows('manageBilling', $team);
 
         return Inertia::render('Billing/Show', [
             'current' => $current->value,
             'cancelsAt' => $team->onGracePeriod() ? $team->plan_ends_at?->toIso8601String() : null,
-            'canManage' => Gate::allows('manageBilling', $team),
+            'canManage' => $canManage,
+            'portal' => $canManage && $team->hasStripeId() && $this->gateway->supportsPortal(),
+            // Loaded after the page so a slow Stripe call never delays it; only the owner sees amounts.
+            'invoices' => $canManage ? Inertia::defer(fn () => $this->loadInvoices($team)) : [],
             'usage' => ['projects' => $limits->usage($team, 'projects'), 'members' => $limits->usage($team, 'members')],
             'features' => $features->all($team),
             'plans' => collect(Plan::cases())->map(fn (Plan $plan) => [
@@ -95,6 +102,42 @@ class BillingController extends Controller
         $this->audit->record('billing.resumed', 'Resumed the subscription');
 
         return back()->with('success', 'Subscription resumed.');
+    }
+
+    /** Sends the owner to Stripe's Customer Portal (payment method, invoices). The payment failed email links here. */
+    public function portal(Request $request): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+        Gate::authorize('manageBilling', $team);
+
+        if (! $team->hasStripeId() || ! $this->gateway->supportsPortal()) {
+            return redirect()->route('billing.show')
+                ->with('error', 'The billing portal is available once you have a paid subscription.');
+        }
+
+        try {
+            return redirect()->away($this->gateway->portalUrl($team, route('billing.show')));
+        } catch (Throwable $e) {
+            // Typically Stripe's portal has no saved configuration yet (see the README). Tell the owner, tell us.
+            report($e);
+
+            return redirect()->route('billing.show')
+                ->with('error', 'We could not open the billing portal right now. Please try again later or contact support.');
+        }
+    }
+
+    /**
+     * @return list<array<string, mixed>>|null null when the provider could not be reached
+     */
+    private function loadInvoices(Team $team): ?array
+    {
+        try {
+            return array_map(fn (InvoiceSummary $invoice) => $invoice->toArray(), $this->gateway->invoices($team));
+        } catch (Throwable $e) {
+            report($e);
+
+            return null;
+        }
     }
 
     private function paidPlan(Request $request): Plan
