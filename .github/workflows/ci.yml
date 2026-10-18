@@ -30,9 +30,15 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
+      # Stripe's official mock server: StripeGateway and Cashier run against it, no Stripe keys needed.
+      stripe-mock:
+        image: stripe/stripe-mock:v0.206.0
+        ports:
+          - 12111:12111
 
     env:
       APP_ENV: testing
+      STRIPE_MOCK_URL: http://127.0.0.1:12111
       DB_CONNECTION: mysql
       DB_HOST: 127.0.0.1
       DB_PORT: 3306
