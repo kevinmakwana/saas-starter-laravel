@@ -1,6 +1,8 @@
 <?php
 
+use App\Billing\FakeGateway;
 use App\Enums\Role;
+use App\Mail\OverLimitMail;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -89,4 +91,48 @@ it('does not seat an invited person while the team is full, and keeps the invita
     $this->actingAs($invitee)->get($invitation->acceptUrl());
 
     expect($this->team->hasMember($invitee))->toBeTrue();
+});
+
+describe('telling the owner about a downgrade', function () {
+    it('emails the owner when a plan change leaves the team over its limits', function () {
+        Mail::fake();
+
+        $this->team->forceFill(['plan' => 'pro'])->save();
+        Mail::assertNothingQueued();
+
+        $this->team->forceFill(['plan' => 'free'])->save();
+
+        Mail::assertQueued(OverLimitMail::class, fn (OverLimitMail $mail) => $mail->hasTo($this->owner->email) && $mail->queue === 'mail'
+            && str_contains($mail->render(), '5 projects') && str_contains($mail->render(), '3 members') && str_contains($mail->render(), 'Free'));
+        Mail::assertQueuedCount(1);
+    });
+
+    it('stays quiet when the smaller plan still fits', function () {
+        Mail::fake();
+        $owner = ownerWithTeam('business');
+        asTenant($owner->currentTeam, fn () => Project::factory()->create());
+
+        $owner->currentTeam->forceFill(['plan' => 'free'])->save();
+
+        Mail::assertNothingQueued();
+    });
+
+    it('does not repeat itself for saves that do not change the plan', function () {
+        Mail::fake();
+
+        $this->team->forceFill(['name' => 'Renamed', 'payment_failed_at' => now()])->save();
+
+        Mail::assertNothingQueued();
+    });
+
+    it('does not email someone who is deleting their account', function () {
+        Mail::fake();
+        $this->team->forceFill(['plan' => 'pro'])->save();
+        $this->team->users()->detach($this->team->users()->whereKeyNot($this->owner->id)->pluck('users.id'));
+
+        (new FakeGateway)->terminate($this->team);
+
+        Mail::assertNothingQueued();
+        expect($this->team->refresh()->plan)->toBe('free');
+    });
 });
