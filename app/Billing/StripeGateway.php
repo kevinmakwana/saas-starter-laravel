@@ -12,6 +12,13 @@ class StripeGateway implements BillingGateway
 {
     public function subscribe(Team $team, Plan $plan): ?string
     {
+        // A second Checkout would bill the team twice. This also covers a team whose plan dropped to Free
+        // because a payment failed: its Stripe subscription is still there, and the portal is how to fix it.
+        $existing = $team->subscription('default');
+        if ($existing !== null && ! $existing->ended() && in_array($existing->stripe_status, ['active', 'trialing', 'past_due'], true)) {
+            throw new AlreadySubscribed('Your team already has a subscription. Use Switch plan, Resume, or Update payment method instead.');
+        }
+
         $checkout = $team->newSubscription('default', $this->price($plan))
             ->checkout([
                 'success_url' => route('billing.show', ['checkout' => 'success']),

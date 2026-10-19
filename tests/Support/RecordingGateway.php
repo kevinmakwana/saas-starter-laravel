@@ -28,9 +28,13 @@ class RecordingGateway implements BillingGateway
 
     public ?Throwable $portalError = null;
 
+    /** Thrown by subscribe, changePlan, cancel and resume, like a payment provider that is down or refuses. */
+    public ?Throwable $error = null;
+
     public function subscribe(Team $team, Plan $plan): ?string
     {
         $this->calls[] = ['subscribe', $plan];
+        $this->failIfTold();
 
         return $this->checkoutUrl;
     }
@@ -38,16 +42,19 @@ class RecordingGateway implements BillingGateway
     public function changePlan(Team $team, Plan $plan): void
     {
         $this->calls[] = ['changePlan', $plan];
+        $this->failIfTold();
     }
 
     public function cancel(Team $team): void
     {
         $this->calls[] = ['cancel', null];
+        $this->failIfTold();
     }
 
     public function resume(Team $team): void
     {
         $this->calls[] = ['resume', null];
+        $this->failIfTold();
     }
 
     public function terminate(Team $team): void
@@ -78,6 +85,13 @@ class RecordingGateway implements BillingGateway
         }
 
         return $this->invoices;
+    }
+
+    private function failIfTold(): void
+    {
+        if ($this->error !== null) {
+            throw $this->error;
+        }
     }
 
     /** @return list<string> the names of the calls made so far */

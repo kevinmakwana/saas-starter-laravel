@@ -4,6 +4,7 @@ use App\Billing\BillingGateway;
 use App\Billing\InvoiceSummary;
 use App\Enums\Role;
 use App\Mail\PaymentFailedMail;
+use App\Models\Team;
 use App\Models\User;
 use Tests\Support\RecordingGateway;
 
@@ -29,6 +30,31 @@ describe('customer portal', function () {
         $this->actingAs($this->owner)->get('/billing/portal')->assertRedirect('https://billing.stripe.test/session/abc');
 
         expect($this->gateway->calls)->toBe([['portal', route('billing.show')]]);
+    });
+
+    it('opens the portal of the team named in the link, even when another team is current', function () {
+        $second = Team::createFor($this->owner, 'Second team');
+        expect($this->owner->fresh()->current_team_id)->toBe($second->id);
+
+        $this->actingAs($this->owner->fresh())->get('/billing/portal?team='.$this->team->id)->assertRedirect('https://billing.stripe.test/session/abc');
+
+        expect($this->gateway->calls)->toHaveCount(1);
+    });
+
+    it('does not open the portal of a team the person does not belong to', function () {
+        $stranger = Team::factory()->create(['stripe_id' => 'cus_other']);
+
+        $this->actingAs($this->owner)->get('/billing/portal?team='.$stranger->id)->assertNotFound();
+
+        expect($this->gateway->calls)->toBe([]);
+    });
+
+    it('is for the owner only, also when the team comes from the link', function () {
+        $admin = User::factory()->create();
+        $this->team->addMember($admin, Role::Admin);
+        $admin->switchTeam(Team::createFor($admin, 'Mine'));
+
+        $this->actingAs($admin->fresh())->get('/billing/portal?team='.$this->team->id)->assertForbidden();
     });
 
     it('is for the owner only', function () {
@@ -83,7 +109,7 @@ describe('customer portal', function () {
     it('links the payment failed email straight to the portal route', function () {
         $mail = new PaymentFailedMail($this->team->forceFill(['payment_grace_ends_at' => now()->addDays(7)]));
 
-        expect($mail->render())->toContain(route('billing.portal'))->toContain('Update payment method');
+        expect($mail->render())->toContain(route('billing.portal', ['team' => $this->team->id]))->toContain('Update payment method');
     });
 });
 
