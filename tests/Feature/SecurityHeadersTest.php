@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\TrustedProxies;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 
@@ -99,3 +101,33 @@ it('applies to routes registered outside the main group', function () {
 
     $this->get('/_probe')->assertHeader('X-Content-Type-Options', 'nosniff');
 });
+
+it('lets form posts and links reach Stripe Checkout and the Customer Portal', function () {
+    $policy = (string) $this->get('/login')->headers->get('Content-Security-Policy');
+
+    expect($policy)->toContain('https://checkout.stripe.com')->toContain('https://billing.stripe.com');
+});
+
+describe('behind a TLS-terminating load balancer', function () {
+    afterEach(fn () => TrustProxies::flushState());
+
+    it('sees plain http when the proxy is not trusted, so it cannot tell the request was https', function () {
+        $this->get('http://localhost/login', ['X-Forwarded-Proto' => 'https'])->assertHeaderMissing('Strict-Transport-Security');
+    });
+
+    it('sends HSTS once the proxy is trusted', function () {
+        TrustProxies::at('*');
+
+        $this->get('http://localhost/login', ['X-Forwarded-Proto' => 'https'])->assertHeader('Strict-Transport-Security');
+    });
+});
+
+it('reads TRUSTED_PROXIES as nothing, everything, or a list', function (?string $env, array|string|null $expected) {
+    expect(TrustedProxies::parse($env))->toBe($expected);
+})->with([
+    'unset' => [null, null],
+    'empty' => ['', null],
+    'everything' => ['*', '*'],
+    'a list' => ['10.0.0.1, 172.16.0.0/12', ['10.0.0.1', '172.16.0.0/12']],
+    'stray commas' => [' 10.0.0.1 ,, ', ['10.0.0.1']],
+]);

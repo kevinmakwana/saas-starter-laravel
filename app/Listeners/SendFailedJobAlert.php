@@ -20,15 +20,15 @@ class SendFailedJobAlert
             return;
         }
 
-        $name = $event->job->resolveName();
-
-        // Cache::add only succeeds for the first failure of this job class inside the window.
-        $window = now()->addMinutes((int) config('alerts.failed_jobs.throttle_minutes'));
-        if (! Cache::add('failed-job-alert:'.md5($name), true, $window)) {
-            return;
-        }
-
         try {
+            $name = $event->job->resolveName();
+
+            // Cache::add only succeeds for the first failure of this job class inside the window.
+            $window = now()->addMinutes((int) config('alerts.failed_jobs.throttle_minutes'));
+            if (! Cache::add('failed-job-alert:'.md5($name), true, $window)) {
+                return;
+            }
+
             Mail::to($to)->send(new FailedJobAlertMail(
                 $name,
                 $event->exception::class,
@@ -37,7 +37,7 @@ class SendFailedJobAlert
                 $event->job->getQueue(),
             ));
         } catch (Throwable $e) {
-            // An alert problem must never fail the worker; the failure itself is already logged and stored.
+            // An alert problem (mail or cache outage) must never fail the worker; the failure itself is already logged and stored.
             Log::warning('Could not send the failed job alert', ['exception' => $e]);
         }
     }

@@ -32,7 +32,8 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         Gate::define('viewHorizon', function (?User $user = null) {
             $allowed = array_map('strtolower', config('horizon.allowed_emails'));
 
-            return $user !== null && in_array(strtolower($user->email), $allowed, true);
+            // Verified only: anyone can register with an address they do not own, and must not inherit its access.
+            return $user !== null && $user->hasVerifiedEmail() && in_array(strtolower($user->email), $allowed, true);
         });
     }
 }

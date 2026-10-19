@@ -1,8 +1,11 @@
 <?php
 
+use App\Listeners\SendFailedJobAlert;
 use App\Mail\FailedJobAlertMail;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
@@ -87,4 +90,15 @@ it('does not break the worker if the alert itself cannot be sent', function () {
     Mail::shouldReceive('to')->andThrow(new RuntimeException('SMTP down'));
 
     expect(fn () => failJob(new AlwaysFailsJob))->not->toThrow(Throwable::class);
+});
+
+it('survives a cache outage while deciding whether to alert', function () {
+    $job = Mockery::mock(Job::class);
+    $job->shouldReceive('resolveName')->andReturn('App\\Jobs\\Anything');
+    $job->shouldReceive('getQueue')->andReturn('default');
+    Cache::shouldReceive('add')->andThrow(new RuntimeException('Redis is down'));
+
+    $handle = fn () => (new SendFailedJobAlert)->handle(new JobFailed('redis', $job, new RuntimeException('boom')));
+
+    expect($handle)->not->toThrow(Throwable::class);
 });

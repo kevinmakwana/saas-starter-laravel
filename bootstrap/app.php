@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureHasTeam;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\TrustedProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Behind a load balancer that ends TLS, the app only knows a request was https (for HSTS and signed
+        // links) by trusting that proxy. Nothing is trusted unless TRUSTED_PROXIES says so.
+        $middleware->trustProxies(at: TrustedProxies::parse(env('TRUSTED_PROXIES')));
+
         // Global, not just `web`: unmatched URLs (404s) never enter the web group.
         $middleware->append(SecurityHeaders::class);
 
