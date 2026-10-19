@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\AlreadySubscribed;
 use App\Billing\BillingGateway;
 use App\Billing\InvoiceSummary;
 use App\Enums\Plan;
@@ -9,12 +10,14 @@ use App\Models\Team;
 use App\Services\AuditLogger;
 use App\Services\FeatureGate;
 use App\Services\PlanLimits;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Cashier\Exceptions\IncompletePayment;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Throwable;
 
@@ -57,7 +60,16 @@ class BillingController extends Controller
         Gate::authorize('manageBilling', $team);
         $plan = $this->paidPlan($request);
 
-        $url = $this->gateway->subscribe($team, $plan);
+        if ($team->currentPlan() !== Plan::Free) {
+            return back()->with('error', 'Your team already has a paid plan. Use Switch plan or Resume instead.');
+        }
+
+        $url = null;
+        if ($failed = $this->attempt(function () use ($team, $plan, &$url) {
+            $url = $this->gateway->subscribe($team, $plan);
+        })) {
+            return $failed;
+        }
 
         // With a redirect (Stripe Checkout) the subscription is only recorded once the webhook confirms it.
         if ($url === null) {
@@ -71,9 +83,16 @@ class BillingController extends Controller
     {
         $team = $request->user()->currentTeam;
         Gate::authorize('manageBilling', $team);
-        $plan = Plan::from($request->validate(['plan' => ['required', Rule::enum(Plan::class)]])['plan']);
+        // Going back to Free is cancelling, which keeps the paid plan until the period ends.
+        $plan = $this->paidPlan($request);
 
-        $this->gateway->changePlan($team, $plan);
+        if ($plan === $team->currentPlan()) {
+            return back()->with('error', "Your team is already on the {$plan->label()} plan.");
+        }
+
+        if ($failed = $this->attempt(fn () => $this->gateway->changePlan($team, $plan))) {
+            return $failed;
+        }
 
         $this->audit->record('billing.changed', "Changed plan to {$plan->label()}");
 
@@ -85,7 +104,9 @@ class BillingController extends Controller
         $team = $request->user()->currentTeam;
         Gate::authorize('manageBilling', $team);
 
-        $this->gateway->cancel($team);
+        if ($failed = $this->attempt(fn () => $this->gateway->cancel($team))) {
+            return $failed;
+        }
 
         $this->audit->record('billing.cancelled', 'Cancelled the subscription');
 
@@ -97,7 +118,9 @@ class BillingController extends Controller
         $team = $request->user()->currentTeam;
         Gate::authorize('manageBilling', $team);
 
-        $this->gateway->resume($team);
+        if ($failed = $this->attempt(fn () => $this->gateway->resume($team))) {
+            return $failed;
+        }
 
         $this->audit->record('billing.resumed', 'Resumed the subscription');
 
@@ -107,7 +130,10 @@ class BillingController extends Controller
     /** Sends the owner to Stripe's Customer Portal (payment method, invoices). The payment failed email links here. */
     public function portal(Request $request): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        // The email names its team, which may not be the one the owner currently has open.
+        $team = $request->query('team') === null
+            ? $request->user()->currentTeam
+            : $request->user()->teams()->whereKey((int) $request->query('team'))->firstOrFail();
         Gate::authorize('manageBilling', $team);
 
         if (! $team->hasStripeId() || ! $this->gateway->supportsPortal()) {
@@ -123,6 +149,24 @@ class BillingController extends Controller
 
             return redirect()->route('billing.show')
                 ->with('error', 'We could not open the billing portal right now. Please try again later or contact support.');
+        }
+    }
+
+    /** Runs a call to the payment provider. A failure becomes a message for the owner, not a server error. */
+    private function attempt(Closure $action): ?RedirectResponse
+    {
+        try {
+            $action();
+
+            return null;
+        } catch (AlreadySubscribed $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (IncompletePayment) {
+            return back()->with('error', 'Your bank needs you to confirm this payment. Update your payment method with the billing portal, then try again.');
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()->with('error', 'We could not reach our payment provider, so nothing was changed. Please try again in a moment.');
         }
     }
 

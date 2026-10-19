@@ -30,7 +30,7 @@ class PaymentFailedMail extends Mailable implements ShouldQueue
             'team' => $this->team,
             'plan' => $this->team->currentPlan(),
             'deadline' => $this->team->payment_grace_ends_at,
-            'url' => route('billing.portal'),
+            'url' => route('billing.portal', ['team' => $this->team->getKey()]),
         ]);
     }
 }
