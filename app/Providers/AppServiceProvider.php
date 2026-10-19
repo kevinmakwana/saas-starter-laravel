@@ -25,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
             ? new StripeGateway
             : new FakeGateway);
         $this->app->scoped(TenantContext::class);
+
+        // Stripe events arrive on POST /webhooks/stripe only. Cashier's own /stripe/webhook route would be a second,
+        // separately configured way in, and its payment page does not fit the app's content security policy.
+        Cashier::ignoreRoutes();
     }
 
     /**
