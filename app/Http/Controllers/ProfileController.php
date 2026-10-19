@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -67,7 +68,16 @@ class ProfileController extends Controller
         }
 
         foreach ($owned as $team) {
-            $billing->terminate($team);
+            try {
+                $billing->terminate($team);
+            } catch (Throwable $e) {
+                // Deleting the team would leave a subscription that keeps charging a customer nobody can reach.
+                report($e);
+
+                throw ValidationException::withMessages([
+                    'account' => "We could not end the subscription of “{$team->name}”, so nothing was deleted. Please try again or contact support.",
+                ]);
+            }
         }
 
         Auth::logout();

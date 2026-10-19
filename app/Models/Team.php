@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\Plan;
 use App\Enums\Role;
+use App\Mail\OverLimitMail;
+use App\Services\PlanLimits;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Cashier\Billable;
+use Laravel\Cashier\SubscriptionItem;
 
 /**
  * @property int $id
@@ -31,6 +35,27 @@ class Team extends Model
 
     /** @var list<string> */
     protected $fillable = ['name', 'owner_id'];
+
+    protected static function booted(): void
+    {
+        // Cashier's tables have no foreign key to teams, so they would be left behind as orphans.
+        // Whatever changed the plan (Stripe, the portal, a cancelled period ending in a webhook), the owner hears about it.
+        static::updated(function (Team $team) {
+            if (! $team->wasChanged('plan') || $team->owner === null) {
+                return;
+            }
+
+            $overages = app(PlanLimits::class)->overages($team);
+            if ($overages !== []) {
+                Mail::to($team->owner)->send(new OverLimitMail($team, $overages));
+            }
+        });
+
+        static::deleting(function (Team $team) {
+            SubscriptionItem::whereIn('subscription_id', $team->subscriptions()->pluck('id'))->delete();
+            $team->subscriptions()->delete();
+        });
+    }
 
     /** @return array<string, string> */
     protected function casts(): array

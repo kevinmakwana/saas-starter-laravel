@@ -34,7 +34,8 @@ class FakeGateway implements BillingGateway
 
     public function terminate(Team $team): void
     {
-        $this->apply($team, Plan::Free);
+        // Quietly: the team is about to be deleted, so its owner must not be told it is over its limits.
+        $team->forceFill(['plan' => Plan::Free->value, 'plan_ends_at' => null])->saveQuietly();
     }
 
     public function supportsPortal(): bool
