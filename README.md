@@ -64,6 +64,10 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
   `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
 - **Webhooks:** `POST /webhooks/stripe` verifies the signature, stores each event id once (idempotent) and processes it on the `webhooks` queue.
+  It is the only Stripe endpoint (Cashier's own `/stripe/webhook` route is switched off). Send it `customer.subscription.created`,
+  `.updated` and `.deleted`, `invoice.payment_failed` and `invoice.paid`. Cashier's subscription records are kept in step from
+  the same job, an event older than one already applied is ignored (Stripe does not guarantee order), and a subscription whose
+  first payment is still `incomplete` does not get the plan yet.
 - **Failed payments:** `invoice.payment_failed` starts a 7-day grace period (`billing.grace_days`) and emails the owner once.
   The paid plan stays active during grace, drops to Free if it is not fixed, and is restored by `invoice.paid`. A banner warns the team.
 - **Webhook recovery:** an event that was stored but never processed is retried when Stripe redelivers it, and every 5 minutes by the
@@ -105,6 +109,9 @@ STRIPE_PRICE_BUSINESS=price_...
 ```
 
 Forward events with `stripe listen --forward-to localhost:8080/webhooks/stripe`.
+
+Subscribing twice is refused (change plan, resume or the portal instead), and a Stripe error shows a message to the owner and
+changes nothing locally. When a plan change leaves a team over its limits the owner gets an email; nothing is deleted or locked.
 
 For the Customer Portal, save a portal configuration once in the Stripe Dashboard (Settings, Billing, Customer portal; in test mode
 too), otherwise Stripe refuses to create portal sessions and the owner sees a "could not open the billing portal" message.
