@@ -54,8 +54,8 @@ class SecurityHeaders
             'object-src' => ["'none'"],
             'base-uri' => ["'self'"],
             'frame-ancestors' => ["'self'"],
-            // Stripe Checkout is reached by redirect after a form post.
-            'form-action' => ["'self'", 'https://checkout.stripe.com'],
+            // Stripe Checkout and the Customer Portal are reached by redirect.
+            'form-action' => ["'self'", 'https://checkout.stripe.com', 'https://billing.stripe.com'],
         ];
 
         foreach ((array) config('security.csp.extra') as $directive => $sources) {

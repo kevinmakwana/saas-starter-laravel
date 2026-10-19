@@ -19,6 +19,12 @@ it('lets allow-listed users in, whatever the email casing', function () {
     $this->actingAs(User::factory()->create(['email' => 'ops@example.com']))->get('/horizon')->assertOk();
 });
 
+it('keeps out someone who signed up with an allow-listed address but never proved they own it', function () {
+    $impostor = User::factory()->unverified()->create(['email' => 'ops@example.com']);
+
+    $this->actingAs($impostor)->get('/horizon')->assertForbidden();
+});
+
 it('lets nobody in when the allow list is empty', function () {
     config(['horizon.allowed_emails' => []]);
 
