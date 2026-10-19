@@ -34,7 +34,7 @@ function subscriptionObject(string $customer, string $price, array $extra = []):
 {
     return array_merge([
         'object' => 'subscription', 'id' => 'sub_1', 'customer' => $customer, 'status' => 'active',
-        'items' => ['data' => [['price' => ['id' => $price]]]],
+        'items' => ['data' => [['id' => 'si_1', 'quantity' => 1, 'price' => ['id' => $price, 'product' => 'prod_1']]]],
     ], $extra);
 }
 
@@ -288,5 +288,110 @@ describe('subscription audit entries', function () {
         $this->actingAs($this->team->owner)->post('/billing/subscribe', ['plan' => 'pro'])->assertRedirect('https://checkout.stripe.test/session');
 
         expect(asTenant($this->team, fn () => AuditLog::where('action', 'billing.subscribed')->count()))->toBe(0);
+    });
+});
+
+describe('Cashier subscription records', function () {
+    it('keeps the subscriptions table in step with Stripe, which changePlan, cancel and resume rely on', function () {
+        postWebhook(stripeEvent('evt_s1', 'customer.subscription.created', subscriptionObject('cus_123', 'price_pro')));
+
+        $subscription = $this->team->subscription('default');
+        expect($subscription)->not->toBeNull()
+            ->and($subscription->stripe_id)->toBe('sub_1')
+            ->and($subscription->stripe_price)->toBe('price_pro')
+            ->and($subscription->valid())->toBeTrue();
+
+        postWebhook(stripeEvent('evt_s2', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_biz', [
+            'cancel_at_period_end' => true, 'cancel_at' => now()->addDays(5)->timestamp,
+        ])));
+
+        $subscription->refresh();
+        expect($subscription->stripe_price)->toBe('price_biz')
+            ->and($subscription->onGracePeriod())->toBeTrue();
+
+        postWebhook(stripeEvent('evt_s3', 'customer.subscription.deleted', subscriptionObject('cus_123', 'price_biz', ['status' => 'canceled'])));
+
+        expect($subscription->refresh()->ended())->toBeTrue()
+            ->and($this->team->refresh()->plan)->toBe('free');
+    });
+
+    it('has no second, Cashier-owned webhook endpoint that could be called without the app signature check', function () {
+        $this->postJson('/stripe/webhook', stripeEvent('evt_x', 'customer.subscription.deleted', subscriptionObject('cus_123', 'price_pro')))
+            ->assertNotFound();
+    });
+});
+
+describe('unusual subscription events', function () {
+    it('finds the end of a cancelled period however the Stripe API version reports it', function (array $extra) {
+        postWebhook(stripeEvent('evt_e1', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro', ['cancel_at_period_end' => true, ...$extra])));
+
+        expect($this->team->refresh()->plan_ends_at?->timestamp)->toBe(1893456000)
+            ->and($this->team->plan)->toBe('pro');
+    })->with([
+        'cancel_at' => [['cancel_at' => 1893456000]],
+        'on the subscription' => [['current_period_end' => 1893456000]],
+        'on the item (newer API versions)' => [['items' => ['data' => [['id' => 'si_1', 'price' => ['id' => 'price_pro', 'product' => 'prod_1'], 'current_period_end' => 1893456000]]]]],
+    ]);
+
+    it('does not grant the plan while the first payment is still incomplete', function () {
+        postWebhook(stripeEvent('evt_i1', 'customer.subscription.created', subscriptionObject('cus_123', 'price_pro', ['status' => 'incomplete'])));
+
+        expect($this->team->refresh()->plan)->toBe('free')
+            ->and(asTenant($this->team, fn () => AuditLog::where('action', 'billing.subscribed')->count()))->toBe(0);
+
+        // Once the payment goes through Stripe says so with an update, and that is when the plan starts.
+        postWebhook(stripeEvent('evt_i2', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro')) + []);
+
+        expect($this->team->refresh()->plan)->toBe('pro');
+    });
+
+    it('records the start of a plan that only became active after an incomplete payment', function () {
+        postWebhook(stripeEvent('evt_i1', 'customer.subscription.created', subscriptionObject('cus_123', 'price_pro', ['status' => 'incomplete'])));
+
+        $update = stripeEvent('evt_i2', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro'));
+        $update['data']['previous_attributes'] = ['status' => 'incomplete'];
+        postWebhook($update);
+
+        expect(asTenant($this->team, fn () => AuditLog::where('action', 'billing.subscribed')->pluck('summary')->all()))->toBe(['Started the Pro plan']);
+    });
+
+    it('ignores an older event that arrives after a newer one', function () {
+        $deleted = stripeEvent('evt_new', 'customer.subscription.deleted', subscriptionObject('cus_123', 'price_pro', ['status' => 'canceled']));
+        $deleted['created'] = 2000;
+        $staleUpdate = stripeEvent('evt_old', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro'));
+        $staleUpdate['created'] = 1000;
+
+        $this->team->forceFill(['plan' => 'pro'])->save();
+        postWebhook($deleted);
+        postWebhook($staleUpdate)->assertOk();
+
+        expect($this->team->refresh()->plan)->toBe('free')
+            ->and(ProcessedWebhookEvent::firstWhere('event_id', 'evt_old')->processed_at)->not->toBeNull();
+    });
+
+    it('still applies events that carry the same timestamp or no timestamp', function () {
+        $first = stripeEvent('evt_a', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro'));
+        $second = stripeEvent('evt_b', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_biz'));
+        $first['created'] = $second['created'] = 5000;
+
+        postWebhook($first);
+        postWebhook($second);
+
+        expect($this->team->refresh()->plan)->toBe('business');
+    });
+
+    it('logs a subscription for a price it does not know instead of silently ignoring it', function () {
+        Log::spy();
+
+        postWebhook(stripeEvent('evt_u1', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_mystery')))->assertOk();
+
+        expect($this->team->refresh()->plan)->toBe('free');
+        Log::shouldHaveReceived('warning')->withArgs(fn ($message, $context) => str_contains($message, 'unknown price') && $context['price'] === 'price_mystery');
+    });
+
+    it('finishes quietly when its stored event was pruned in the meantime', function () {
+        (new ProcessStripeWebhook(987654))->handle();
+
+        expect(ProcessedWebhookEvent::count())->toBe(0);
     });
 });
