@@ -2,6 +2,7 @@
 
 namespace App\Billing;
 
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Models\Team;
 use LogicException;
@@ -9,16 +10,27 @@ use LogicException;
 /** Applies plan changes locally so the app runs end to end without Stripe keys. */
 class FakeGateway implements BillingGateway
 {
-    public function subscribe(Team $team, Plan $plan): ?string
+    public function subscribe(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): ?string
     {
         $this->apply($team, $plan);
 
         return null;
     }
 
-    public function changePlan(Team $team, Plan $plan): void
+    public function changePlan(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): void
     {
         $this->apply($team, $plan);
+    }
+
+    // The fake gateway applies plans instantly and has no billing periods, so it models neither trials nor yearly billing.
+    public function trialDays(Team $team): int
+    {
+        return 0;
+    }
+
+    public function offersYearly(Plan $plan): bool
+    {
+        return false;
     }
 
     public function cancel(Team $team): void

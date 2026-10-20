@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Enums\Role;
 use App\Mail\OverLimitMail;
 use App\Services\PlanLimits;
+use Carbon\CarbonInterface;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -99,6 +101,26 @@ class Team extends Model
     public function onGracePeriod(): bool
     {
         return $this->plan_ends_at !== null && $this->plan_ends_at->isFuture();
+    }
+
+    /** How the current subscription bills, read from its price. Monthly when there is none or the price is unknown. */
+    public function billingInterval(): BillingInterval
+    {
+        $subscription = $this->subscription('default');
+
+        return $subscription === null || $subscription->ended()
+            ? BillingInterval::Monthly
+            : BillingInterval::fromStripePrice($subscription->stripe_price) ?? BillingInterval::Monthly;
+    }
+
+    /** When the free trial ends, or null when the team is not trialing. */
+    public function trialEndsAt(): ?CarbonInterface
+    {
+        $subscription = $this->subscription('default');
+
+        return $subscription !== null && ! $subscription->ended() && $subscription->onTrial()
+            ? $subscription->trial_ends_at
+            : null;
     }
 
     /** @return BelongsTo<User, $this> */

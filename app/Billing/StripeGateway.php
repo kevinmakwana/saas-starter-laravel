@@ -2,6 +2,7 @@
 
 namespace App\Billing;
 
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Models\Team;
 use Laravel\Cashier\Invoice;
@@ -10,7 +11,7 @@ use RuntimeException;
 /** Cashier 16 backed gateway. The `plan` column is then kept in sync by the webhook job. */
 class StripeGateway implements BillingGateway
 {
-    public function subscribe(Team $team, Plan $plan): ?string
+    public function subscribe(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): ?string
     {
         // A second Checkout would bill the team twice. This also covers a team whose plan dropped to Free
         // because a payment failed: its Stripe subscription is still there, and the portal is how to fix it.
@@ -19,18 +20,34 @@ class StripeGateway implements BillingGateway
             throw new AlreadySubscribed('Your team already has a subscription. Use Switch plan, Resume, or Update payment method instead.');
         }
 
-        $checkout = $team->newSubscription('default', $this->price($plan))
-            ->checkout([
-                'success_url' => route('billing.show', ['checkout' => 'success']),
-                'cancel_url' => route('billing.show', ['checkout' => 'cancelled']),
-            ]);
+        $builder = $team->newSubscription('default', $this->price($plan, $interval));
+        if (($days = $this->trialDays($team)) > 0) {
+            $builder->trialDays($days);
+        }
+
+        $checkout = $builder->checkout([
+            'success_url' => route('billing.show', ['checkout' => 'success']),
+            'cancel_url' => route('billing.show', ['checkout' => 'cancelled']),
+        ]);
 
         return $checkout->asStripeCheckoutSession()->url;
     }
 
-    public function changePlan(Team $team, Plan $plan): void
+    /** A trial is a one-time offer, so any earlier subscription (even a cancelled one) uses it up. */
+    public function trialDays(Team $team): int
     {
-        $team->subscription('default')?->swap($this->price($plan))
+        return $team->subscriptions()->exists() ? 0 : max(0, (int) config('billing.trial_days'));
+    }
+
+    public function offersYearly(Plan $plan): bool
+    {
+        return $plan->hasYearlyPrice() && $plan->stripePrice(BillingInterval::Yearly) !== null;
+    }
+
+    public function changePlan(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): void
+    {
+        // swap() keeps a running trial, so switching plans never skips it or charges early.
+        $team->subscription('default')?->swap($this->price($plan, $interval))
             ?? throw new RuntimeException('Team has no active subscription.');
         $team->forceFill(['plan' => $plan->value, 'plan_ends_at' => null])->save();
     }
@@ -76,8 +93,9 @@ class StripeGateway implements BillingGateway
             ->all();
     }
 
-    private function price(Plan $plan): string
+    private function price(Plan $plan, BillingInterval $interval): string
     {
-        return $plan->stripePrice() ?? throw new RuntimeException("No Stripe price configured for {$plan->label()}.");
+        return $plan->stripePrice($interval)
+            ?? throw new RuntimeException("No Stripe {$interval->value} price configured for {$plan->label()}.");
     }
 }

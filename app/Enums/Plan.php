@@ -13,14 +13,23 @@ enum Plan: string
         return (string) config("billing.plans.{$this->value}.name");
     }
 
-    public function price(): int
+    public function price(BillingInterval $interval = BillingInterval::Monthly): int
     {
-        return (int) config("billing.plans.{$this->value}.price");
+        return $interval === BillingInterval::Yearly
+            ? (int) config("billing.plans.{$this->value}.yearly_price")
+            : (int) config("billing.plans.{$this->value}.price");
     }
 
-    public function stripePrice(): ?string
+    public function hasYearlyPrice(): bool
     {
-        return config("billing.plans.{$this->value}.stripe_price");
+        return config("billing.plans.{$this->value}.yearly_price") !== null;
+    }
+
+    public function stripePrice(BillingInterval $interval = BillingInterval::Monthly): ?string
+    {
+        $key = $interval === BillingInterval::Yearly ? 'stripe_price_yearly' : 'stripe_price';
+
+        return config("billing.plans.{$this->value}.{$key}") ?: null;
     }
 
     /** @return int|null null = unlimited */
@@ -41,9 +50,15 @@ enum Plan: string
 
     public static function fromStripePrice(?string $price): ?self
     {
+        if ($price === null || $price === '') {
+            return null;
+        }
+
         foreach (self::cases() as $plan) {
-            if ($price !== null && $plan->stripePrice() === $price) {
-                return $plan;
+            foreach (BillingInterval::cases() as $interval) {
+                if ($plan->stripePrice($interval) === $price) {
+                    return $plan;
+                }
             }
         }
 

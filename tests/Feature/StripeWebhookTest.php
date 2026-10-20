@@ -4,6 +4,7 @@ use App\Billing\BillingGateway;
 use App\Enums\Plan;
 use App\Jobs\ProcessStripeWebhook;
 use App\Mail\PaymentFailedMail;
+use App\Mail\TrialEndingMail;
 use App\Models\AuditLog;
 use App\Models\ProcessedWebhookEvent;
 use App\Services\FeatureGate;
@@ -393,5 +394,63 @@ describe('unusual subscription events', function () {
         (new ProcessStripeWebhook(987654))->handle();
 
         expect(ProcessedWebhookEvent::count())->toBe(0);
+    });
+});
+
+describe('trial ending', function () {
+    beforeEach(function () {
+        Mail::fake();
+        $this->owner = $this->team->owner;
+    });
+
+    function trialEndingEvent(string $id, string $customer = 'cus_123', array $extra = []): array
+    {
+        return stripeEvent($id, 'customer.subscription.trial_will_end', subscriptionObject($customer, 'price_pro', array_merge([
+            'status' => 'trialing', 'trial_end' => now()->addDays(3)->timestamp,
+        ], $extra)));
+    }
+
+    it('emails the owner before the trial turns into a paid plan', function () {
+        postWebhook(trialEndingEvent('evt_t1'))->assertOk();
+
+        Mail::assertQueued(TrialEndingMail::class, fn ($mail) => $mail->hasTo($this->owner->email)
+            && $mail->queue === 'mail'
+            && $mail->endsAt->isSameDay(now()->addDays(3)));
+        expect(ProcessedWebhookEvent::firstWhere('event_id', 'evt_t1')->processed_at)->not->toBeNull();
+    });
+
+    it('stays quiet when the subscription is no longer trialing', function () {
+        postWebhook(trialEndingEvent('evt_t2', extra: ['status' => 'canceled']))->assertOk();
+        postWebhook(trialEndingEvent('evt_t3', extra: ['status' => 'active']))->assertOk();
+
+        Mail::assertNothingQueued();
+    });
+
+    it('stays quiet for an unknown customer or a trial that will not convert', function () {
+        postWebhook(trialEndingEvent('evt_t4', 'cus_unknown'))->assertOk();
+        postWebhook(trialEndingEvent('evt_t5', extra: ['cancel_at_period_end' => true]))->assertOk();
+
+        Mail::assertNothingQueued();
+    });
+
+    it('does not email twice when Stripe redelivers the event', function () {
+        postWebhook(trialEndingEvent('evt_t6'));
+        postWebhook(trialEndingEvent('evt_t6'))->assertJson(['status' => 'duplicate']);
+
+        Mail::assertQueuedCount(1);
+    });
+
+    it('keeps the paid plan while the subscription is trialing', function () {
+        postWebhook(stripeEvent('evt_t7', 'customer.subscription.created', subscriptionObject('cus_123', 'price_pro', ['status' => 'trialing'])));
+
+        expect($this->team->refresh()->currentPlan())->toBe(Plan::Pro);
+    });
+
+    it('recognises the yearly price as the same plan', function () {
+        config(['billing.plans.pro.stripe_price_yearly' => 'price_pro_year']);
+
+        postWebhook(stripeEvent('evt_t8', 'customer.subscription.updated', subscriptionObject('cus_123', 'price_pro_year')));
+
+        expect($this->team->refresh()->currentPlan())->toBe(Plan::Pro);
     });
 });

@@ -4,6 +4,7 @@ namespace Tests\Support;
 
 use App\Billing\BillingGateway;
 use App\Billing\InvoiceSummary;
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Models\Team;
 use Throwable;
@@ -11,7 +12,7 @@ use Throwable;
 /** A gateway for tests that records what the app asks of it and returns whatever the test sets up. */
 class RecordingGateway implements BillingGateway
 {
-    /** @var list<array{0: string, 1: mixed}> */
+    /** @var list<array{0: string, 1: mixed, 2?: BillingInterval}> */
     public array $calls = [];
 
     /** @var list<int> */
@@ -28,20 +29,26 @@ class RecordingGateway implements BillingGateway
 
     public ?Throwable $portalError = null;
 
+    /** Days of free trial the gateway reports for a team that has never subscribed. */
+    public int $trialDays = 0;
+
+    /** Whether the gateway can bill yearly. */
+    public bool $offersYearly = false;
+
     /** Thrown by subscribe, changePlan, cancel and resume, like a payment provider that is down or refuses. */
     public ?Throwable $error = null;
 
-    public function subscribe(Team $team, Plan $plan): ?string
+    public function subscribe(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): ?string
     {
-        $this->calls[] = ['subscribe', $plan];
+        $this->calls[] = ['subscribe', $plan, $interval];
         $this->failIfTold();
 
         return $this->checkoutUrl;
     }
 
-    public function changePlan(Team $team, Plan $plan): void
+    public function changePlan(Team $team, Plan $plan, BillingInterval $interval = BillingInterval::Monthly): void
     {
-        $this->calls[] = ['changePlan', $plan];
+        $this->calls[] = ['changePlan', $plan, $interval];
         $this->failIfTold();
     }
 
@@ -60,6 +67,16 @@ class RecordingGateway implements BillingGateway
     public function terminate(Team $team): void
     {
         $this->terminated[] = $team->getKey();
+    }
+
+    public function trialDays(Team $team): int
+    {
+        return $this->trialDays;
+    }
+
+    public function offersYearly(Plan $plan): bool
+    {
+        return $this->offersYearly && $plan->hasYearlyPrice();
     }
 
     public function supportsPortal(): bool
