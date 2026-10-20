@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Billing\SubscriptionRecords;
 use App\Enums\Plan;
 use App\Mail\PaymentFailedMail;
+use App\Mail\TrialEndingMail;
 use App\Models\ProcessedWebhookEvent;
 use App\Models\Team;
 use App\Services\AuditLogger;
@@ -61,6 +62,7 @@ class ProcessStripeWebhook implements ShouldBeUnique, ShouldQueue
             'customer.subscription.created',
             'customer.subscription.updated',
             'customer.subscription.deleted' => $this->subscriptionEvent($record, $object),
+            'customer.subscription.trial_will_end' => $this->trialEnding($object),
             'invoice.payment_failed' => $this->paymentFailed($object),
             'invoice.paid', 'invoice.payment_succeeded' => $this->paymentRecovered($object),
             default => null,
@@ -151,6 +153,27 @@ class ProcessStripeWebhook implements ShouldBeUnique, ShouldQueue
         $timestamp = $subscription['cancel_at'] ?? $subscription['current_period_end'] ?? ($itemEnds === [] ? null : max($itemEnds));
 
         return $timestamp === null ? null : Carbon::createFromTimestamp((int) $timestamp);
+    }
+
+    /**
+     * Stripe sends this three days before a trial ends. The first charge follows, so the owner gets a heads-up,
+     * unless the subscription was already set to cancel (nothing will be charged) or is no longer trialing.
+     *
+     * @param  array<string, mixed>  $subscription
+     */
+    private function trialEnding(array $subscription): void
+    {
+        $team = Team::where('stripe_id', $subscription['customer'] ?? null)->first();
+
+        if ($team === null
+            || ($subscription['status'] ?? null) !== 'trialing'
+            || ($subscription['cancel_at_period_end'] ?? false)
+            || ! isset($subscription['trial_end'])
+            || $team->owner === null) {
+            return;
+        }
+
+        Mail::to($team->owner)->send(new TrialEndingMail($team, Carbon::createFromTimestamp((int) $subscription['trial_end'])));
     }
 
     /** @param  array<string, mixed>  $invoice */

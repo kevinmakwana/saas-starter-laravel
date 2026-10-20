@@ -30,12 +30,12 @@ Set these in the environment (never bake secrets into the image). Everything els
 | `ALERT_EMAIL` | Gets an email when a queued job fails for good (max one per job class per 15 min) and on long queue waits. |
 | `TRUSTED_PROXIES` | Required behind a load balancer that ends TLS: its IPs or CIDR ranges (comma separated), or `*` if the web container is only reachable through it. Without it the app sees plain http behind the balancer: no HSTS header, and every visitor shares the balancer's IP, so the login, registration and webhook rate limits (which key on the client IP) throttle everyone together. |
 | `HORIZON_ALLOWED_EMAILS` | Comma separated emails allowed to open `/horizon`, once they have verified the address. Empty means nobody. |
-| `STRIPE_*`, `BILLING_GATEWAY=stripe` | Billing. See the README. |
+| `STRIPE_*`, `BILLING_GATEWAY=stripe` | Billing, including `STRIPE_PRICE_*_YEARLY` and `BILLING_TRIAL_DAYS`. See the README. |
 | `CSP_REPORT_ONLY=true` | Optional: log CSP violations in the browser without blocking while you add a third party. |
 
 Sentry only receives ids (request, user, team), never names or emails (`send_default_pii` stays off).
 In Stripe, point one endpoint at `https://<APP_URL>/webhooks/stripe` and send `customer.subscription.created`, `.updated`, `.deleted`,
-`invoice.payment_failed` and `invoice.paid`. Cashier's own `/stripe/webhook` route is disabled on purpose.
+`customer.subscription.trial_will_end`, `invoice.payment_failed` and `invoice.paid`. Cashier's own `/stripe/webhook` route is disabled on purpose.
 Every response carries an `X-Request-Id`; quote it when investigating an error to find the exact log lines and Sentry event.
 
 ## Releasing

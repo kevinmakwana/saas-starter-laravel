@@ -17,6 +17,9 @@ return [
         'retry_window_days' => 7,
     ],
 
+    // Free trial for a team's first paid subscription (Stripe Checkout asks for a card up front). 0 turns trials off.
+    'trial_days' => (int) env('BILLING_TRIAL_DAYS', 14),
+
     // Days a team keeps its plan after a failed payment before dropping to Free.
     'grace_days' => 7,
 
@@ -24,19 +27,26 @@ return [
         'free' => [
             'name' => 'Free',
             'price' => 0,
+            'yearly_price' => null,
             'stripe_price' => null,
+            'stripe_price_yearly' => null,
             'limits' => ['projects' => 3, 'members' => 2],
         ],
         'pro' => [
             'name' => 'Pro',
             'price' => 29,
+            // Yearly: two months free. Leave `yearly_price` null to not offer it; with Stripe it also needs the price id.
+            'yearly_price' => 290,
             'stripe_price' => env('STRIPE_PRICE_PRO'),
+            'stripe_price_yearly' => env('STRIPE_PRICE_PRO_YEARLY'),
             'limits' => ['projects' => 25, 'members' => 10],
         ],
         'business' => [
             'name' => 'Business',
             'price' => 99,
+            'yearly_price' => 990,
             'stripe_price' => env('STRIPE_PRICE_BUSINESS'),
+            'stripe_price_yearly' => env('STRIPE_PRICE_BUSINESS_YEARLY'),
             'limits' => ['projects' => null, 'members' => null],
         ],
     ],

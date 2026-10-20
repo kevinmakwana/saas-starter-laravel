@@ -3,12 +3,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { computed, ref } from 'vue';
 import { Deferred, Head, router } from '@inertiajs/vue3';
 
 interface PlanCard {
     key: 'free' | 'pro' | 'business';
     name: string;
     price: number;
+    /** null when the plan cannot be billed yearly. */
+    yearlyPrice: number | null;
     limits: { projects: number | null; members: number | null };
     features: string[];
 }
@@ -23,8 +26,15 @@ interface InvoiceRow {
     pdf_url: string | null;
 }
 
+type Interval = 'monthly' | 'yearly';
+
 const props = defineProps<{
     current: PlanCard['key'];
+    interval: Interval;
+    /** When the free trial ends; null when the team is not trialing. */
+    trialEndsAt: string | null;
+    /** Days of trial a new subscription gets; 0 when none is on offer. */
+    trialDays: number;
     cancelsAt: string | null;
     canManage: boolean;
     portal: boolean;
@@ -34,6 +44,26 @@ const props = defineProps<{
     features: Record<string, boolean>;
     plans: PlanCard[];
 }>();
+
+// Start on what the team pays today; a first-time subscriber sees the toggle on monthly.
+const selected = ref<Interval>(props.interval);
+const canPickInterval = computed(() => props.canManage && props.plans.some((plan) => plan.yearlyPrice !== null));
+
+function priceOf(plan: PlanCard) {
+    return selected.value === 'yearly' && plan.yearlyPrice !== null ? plan.yearlyPrice : plan.price;
+}
+
+function perOf(plan: PlanCard) {
+    return selected.value === 'yearly' && plan.yearlyPrice !== null ? '/yr' : '/mo';
+}
+
+/** Whether choosing this card changes anything: another plan, or the same plan billed differently. */
+function changesBilling(plan: PlanCard) {
+    if (plan.key === 'free') return false;
+    const interval: Interval = plan.yearlyPrice === null ? 'monthly' : selected.value;
+
+    return plan.key !== props.current || interval !== props.interval;
+}
 
 const limit = (value: number | null) => (value === null ? 'Unlimited' : value);
 const label = (feature: string) => feature.replace(/_/g, ' ');
@@ -46,7 +76,7 @@ function choose(plan: PlanCard) {
     if (plan.key === 'free') return;
     // Free teams subscribe; paid teams swap plans.
     const routeName = props.current === 'free' ? 'billing.subscribe' : 'billing.change';
-    router.post(route(routeName), { plan: plan.key });
+    router.post(route(routeName), { plan: plan.key, interval: plan.yearlyPrice === null ? 'monthly' : selected.value });
 }
 </script>
 
@@ -66,6 +96,24 @@ function choose(plan: PlanCard) {
                 </span>
             </p>
 
+            <p v-if="trialEndsAt" class="rounded-md bg-indigo-50 p-3 text-sm text-indigo-800">
+                You're on a free trial until {{ new Date(trialEndsAt).toLocaleDateString() }}. Cancel before then and you won't be charged.
+            </p>
+
+            <div v-if="canPickInterval" class="inline-flex rounded-md border border-gray-200 bg-white p-1 text-sm" role="group" aria-label="Billing interval">
+                <button
+                    v-for="option in (['monthly', 'yearly'] as Interval[])"
+                    :key="option"
+                    type="button"
+                    :aria-pressed="selected === option"
+                    class="rounded px-3 py-1 font-medium capitalize"
+                    :class="selected === option ? 'bg-indigo-600 text-white' : 'text-gray-600'"
+                    @click="selected = option"
+                >
+                    {{ option }}<span v-if="option === 'yearly'" class="ml-1 text-xs font-normal">2 months free</span>
+                </button>
+            </div>
+
             <div class="grid gap-4 md:grid-cols-3">
                 <section
                     v-for="plan in plans"
@@ -74,16 +122,18 @@ function choose(plan: PlanCard) {
                     :class="{ 'ring-2 ring-indigo-500': plan.key === current }"
                 >
                     <h3 class="text-lg font-semibold text-gray-900">{{ plan.name }}</h3>
-                    <p class="mt-1 text-3xl font-bold text-gray-900">${{ plan.price }}<span class="text-sm font-normal text-gray-500">/mo</span></p>
+                    <p class="mt-1 text-3xl font-bold text-gray-900">${{ priceOf(plan) }}<span class="text-sm font-normal text-gray-500">{{ perOf(plan) }}</span></p>
                     <ul class="mt-4 grow space-y-1 text-sm text-gray-600">
                         <li>{{ limit(plan.limits.projects) }} projects</li>
                         <li>{{ limit(plan.limits.members) }} members</li>
                         <li v-for="feature in plan.features" :key="feature" class="capitalize">{{ label(feature) }}</li>
                     </ul>
                     <div class="mt-6">
-                        <span v-if="plan.key === current" class="text-sm font-medium text-indigo-600">Current plan</span>
-                        <PrimaryButton v-else-if="canManage && plan.key !== 'free'" @click="choose(plan)">
-                            {{ current === 'free' ? 'Subscribe' : 'Switch to ' + plan.name }}
+                        <span v-if="plan.key === current" class="mr-3 text-sm font-medium text-indigo-600">Current plan</span>
+                        <PrimaryButton v-if="canManage && changesBilling(plan)" @click="choose(plan)">
+                            <template v-if="current === 'free'">{{ trialDays > 0 ? `Start ${trialDays}-day free trial` : 'Subscribe' }}</template>
+                            <template v-else-if="plan.key === current">Switch to {{ selected }} billing</template>
+                            <template v-else>Switch to {{ plan.name }}</template>
                         </PrimaryButton>
                     </div>
                 </section>

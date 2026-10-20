@@ -1,6 +1,7 @@
 <?php
 
 use App\Billing\StripeGateway;
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Models\Team;
 use Laravel\Cashier\Cashier;
@@ -27,6 +28,9 @@ beforeEach(function () {
         'cashier.secret' => 'sk_test_mock',
         'billing.plans.pro.stripe_price' => 'price_pro',
         'billing.plans.business.stripe_price' => 'price_biz',
+        'billing.plans.pro.stripe_price_yearly' => 'price_pro_year',
+        'billing.plans.business.stripe_price_yearly' => null,
+        'billing.trial_days' => 14,
     ]);
     Cashier::$apiBaseUrl = $url;
 
@@ -59,7 +63,47 @@ it('starts a Checkout session and creates the Stripe customer', function () {
 it('refuses to start Checkout for a plan without a configured price', function () {
     config(['billing.plans.pro.stripe_price' => null]);
 
-    expect(fn () => $this->gateway->subscribe($this->team, Plan::Pro))->toThrow(RuntimeException::class, 'No Stripe price');
+    expect(fn () => $this->gateway->subscribe($this->team, Plan::Pro))->toThrow(RuntimeException::class, 'price configured');
+});
+
+it('starts Checkout for a yearly price', function () {
+    expect($this->gateway->subscribe($this->team, Plan::Pro, BillingInterval::Yearly))->toStartWith('https://');
+});
+
+it('refuses yearly Checkout for a plan without a yearly Stripe price', function () {
+    expect(fn () => $this->gateway->subscribe($this->team, Plan::Business, BillingInterval::Yearly))
+        ->toThrow(RuntimeException::class, 'price configured');
+});
+
+it('offers a trial only to a team that never subscribed', function () {
+    expect($this->gateway->trialDays($this->team))->toBe(14);
+
+    expect($this->gateway->trialDays(subscribed($this->team, ['stripe_status' => 'canceled', 'ends_at' => now()->subDay()])))->toBe(0);
+});
+
+it('offers no trial when trials are switched off', function () {
+    config(['billing.trial_days' => 0]);
+
+    expect($this->gateway->trialDays($this->team))->toBe(0);
+});
+
+it('starts Checkout with the trial for a first-time team', function () {
+    // stripe-mock accepts the request only if subscription_data.trial_period_days is valid for the spec.
+    expect($this->gateway->subscribe($this->team, Plan::Pro))->toStartWith('https://');
+});
+
+it('only offers yearly where a yearly Stripe price is configured', function () {
+    expect($this->gateway->offersYearly(Plan::Pro))->toBeTrue()
+        ->and($this->gateway->offersYearly(Plan::Business))->toBeFalse()
+        ->and($this->gateway->offersYearly(Plan::Free))->toBeFalse();
+});
+
+it('swaps a monthly subscription to the yearly price', function () {
+    $team = subscribed($this->team);
+
+    $this->gateway->changePlan($team, Plan::Pro, BillingInterval::Yearly);
+
+    expect($team->refresh()->plan)->toBe('pro');
 });
 
 it('swaps the subscription to another plan and records it locally', function () {

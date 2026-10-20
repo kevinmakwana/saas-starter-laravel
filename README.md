@@ -63,9 +63,14 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Invitations:** signed, expiring links (7 days), bound to the invited email, single use. Emails are queued on Redis and show up in Mailpit.
 - **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
   `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
+- **Trials and yearly billing:** a team's first paid subscription gets a 14-day free trial (`BILLING_TRIAL_DAYS`, `0` turns it off).
+  Stripe Checkout still collects a card; it is charged when the trial ends unless the owner cancels first, and `customer.subscription.trial_will_end`
+  emails the owner three days before. A team that has had any subscription before does not get another trial. Plans can also be billed
+  yearly (10x the monthly price, `yearly_price` in `config/billing.php`): the yearly Stripe price is `STRIPE_PRICE_*_YEARLY`, and a plan
+  without one is monthly only. The fake gateway has neither; there is no per-seat billing.
 - **Webhooks:** `POST /webhooks/stripe` verifies the signature, stores each event id once (idempotent) and processes it on the `webhooks` queue.
   It is the only Stripe endpoint (Cashier's own `/stripe/webhook` route is switched off). Send it `customer.subscription.created`,
-  `.updated` and `.deleted`, `invoice.payment_failed` and `invoice.paid`. Cashier's subscription records are kept in step from
+  `.updated` and `.deleted`, `customer.subscription.trial_will_end`, `invoice.payment_failed` and `invoice.paid`. Cashier's subscription records are kept in step from
   the same job, an event older than one already applied is ignored (Stripe does not guarantee order), and a subscription whose
   first payment is still `incomplete` does not get the plan yet.
 - **Failed payments:** `invoice.payment_failed` starts a 7-day grace period (`billing.grace_days`) and emails the owner once.
@@ -106,6 +111,9 @@ STRIPE_SECRET=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRICE_PRO=price_...
 STRIPE_PRICE_BUSINESS=price_...
+# Optional, for yearly billing (create a yearly recurring price on each product)
+STRIPE_PRICE_PRO_YEARLY=price_...
+STRIPE_PRICE_BUSINESS_YEARLY=price_...
 ```
 
 Forward events with `stripe listen --forward-to localhost:8080/webhooks/stripe`.

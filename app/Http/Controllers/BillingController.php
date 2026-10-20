@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Billing\AlreadySubscribed;
 use App\Billing\BillingGateway;
 use App\Billing\InvoiceSummary;
+use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Models\Team;
 use App\Services\AuditLogger;
@@ -34,6 +35,10 @@ class BillingController extends Controller
 
         return Inertia::render('Billing/Show', [
             'current' => $current->value,
+            'interval' => $team->billingInterval()->value,
+            'trialEndsAt' => $team->trialEndsAt()?->toIso8601String(),
+            // Only a team on Free can start a trial, and only if it has not used one.
+            'trialDays' => $canManage && $current === Plan::Free ? $this->gateway->trialDays($team) : 0,
             'cancelsAt' => $team->onGracePeriod() ? $team->plan_ends_at?->toIso8601String() : null,
             'canManage' => $canManage,
             'portal' => $canManage && $team->hasStripeId() && $this->gateway->supportsPortal(),
@@ -45,6 +50,7 @@ class BillingController extends Controller
                 'key' => $plan->value,
                 'name' => $plan->label(),
                 'price' => $plan->price(),
+                'yearlyPrice' => $this->gateway->offersYearly($plan) ? $plan->price(BillingInterval::Yearly) : null,
                 'limits' => ['projects' => $plan->limit('projects'), 'members' => $plan->limit('members')],
                 'features' => array_keys(array_filter(
                     config('billing.features'),
@@ -59,14 +65,19 @@ class BillingController extends Controller
         $team = $request->user()->currentTeam;
         Gate::authorize('manageBilling', $team);
         $plan = $this->paidPlan($request);
+        $interval = $this->interval($request, fallback: BillingInterval::Monthly);
+
+        if ($unavailable = $this->unavailable($plan, $interval)) {
+            return $unavailable;
+        }
 
         if ($team->currentPlan() !== Plan::Free) {
             return back()->with('error', 'Your team already has a paid plan. Use Switch plan or Resume instead.');
         }
 
         $url = null;
-        if ($failed = $this->attempt(function () use ($team, $plan, &$url) {
-            $url = $this->gateway->subscribe($team, $plan);
+        if ($failed = $this->attempt(function () use ($team, $plan, $interval, &$url) {
+            $url = $this->gateway->subscribe($team, $plan, $interval);
         })) {
             return $failed;
         }
@@ -85,16 +96,22 @@ class BillingController extends Controller
         Gate::authorize('manageBilling', $team);
         // Going back to Free is cancelling, which keeps the paid plan until the period ends.
         $plan = $this->paidPlan($request);
+        // Without an explicit choice the plan changes and the billing interval stays as it is.
+        $interval = $this->interval($request, fallback: $team->billingInterval());
 
-        if ($plan === $team->currentPlan()) {
+        if ($plan === $team->currentPlan() && $interval === $team->billingInterval()) {
             return back()->with('error', "Your team is already on the {$plan->label()} plan.");
         }
 
-        if ($failed = $this->attempt(fn () => $this->gateway->changePlan($team, $plan))) {
+        if ($unavailable = $this->unavailable($plan, $interval)) {
+            return $unavailable;
+        }
+
+        if ($failed = $this->attempt(fn () => $this->gateway->changePlan($team, $plan, $interval))) {
             return $failed;
         }
 
-        $this->audit->record('billing.changed', "Changed plan to {$plan->label()}");
+        $this->audit->record('billing.changed', "Changed plan to {$plan->label()} (billed {$interval->value})");
 
         return back()->with('success', "Plan changed to {$plan->label()}.");
     }
@@ -182,6 +199,23 @@ class BillingController extends Controller
 
             return null;
         }
+    }
+
+    private function interval(Request $request, BillingInterval $fallback): BillingInterval
+    {
+        $interval = $request->validate(['interval' => ['sometimes', Rule::enum(BillingInterval::class)]])['interval'] ?? null;
+
+        return $interval === null ? $fallback : BillingInterval::from($interval);
+    }
+
+    /** Yearly billing needs a price from the gateway; a crafted request must not reach it without one. */
+    private function unavailable(Plan $plan, BillingInterval $interval): ?RedirectResponse
+    {
+        if ($interval === BillingInterval::Yearly && ! $this->gateway->offersYearly($plan)) {
+            return back()->with('error', "Yearly billing is not available for the {$plan->label()} plan.");
+        }
+
+        return null;
     }
 
     private function paidPlan(Request $request): Plan
