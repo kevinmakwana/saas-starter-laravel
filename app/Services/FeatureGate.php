@@ -12,13 +12,16 @@ class FeatureGate
         return $team->currentPlan()->includes($feature);
     }
 
-    /** @return array<string, bool> */
+    /** @return array<int|string, bool> keyed by feature name */
     public function all(Team $team): array
     {
         $plan = $team->currentPlan();
 
-        return collect(array_keys(config('billing.features')))
-            ->mapWithKeys(fn (string $feature) => [$feature => $plan->includes($feature)])
-            ->all();
+        $features = [];
+        foreach (array_keys(config('billing.features')) as $feature) {
+            $features[$feature] = $plan->includes((string) $feature);
+        }
+
+        return $features;
     }
 }

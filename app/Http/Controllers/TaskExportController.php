@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Downloads all tasks of a project as CSV. Gated by the `task_export` feature on the route. */
@@ -20,7 +21,7 @@ class TaskExportController extends Controller
         $filename = (Str::slug($project->name) ?: 'project').'-tasks.csv';
 
         return response()->streamDownload(function () use ($project) {
-            $out = fopen('php://output', 'w');
+            $out = fopen('php://output', 'w') ?: throw new RuntimeException('Could not open the response stream.');
             fputcsv($out, self::HEADER, escape: '');
 
             foreach ($project->tasks()->orderBy('id')->cursor() as $task) {

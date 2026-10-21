@@ -45,7 +45,11 @@ enum Plan: string
 
     public function rank(): int
     {
-        return array_search($this, self::cases(), true);
+        return match ($this) {
+            self::Free => 0,
+            self::Pro => 1,
+            self::Business => 2,
+        };
     }
 
     public static function fromStripePrice(?string $price): ?self

@@ -18,8 +18,8 @@ class TeamOwnershipController extends Controller
         $team = $request->user()->currentTeam;
         Gate::authorize('transferOwnership', $team);
 
-        $data = $request->validate(['user_id' => ['required', 'integer']]);
-        $newOwner = User::find($data['user_id']);
+        $request->validate(['user_id' => ['required', 'integer']]);
+        $newOwner = User::find($request->integer('user_id'));
 
         if (! $newOwner || $newOwner->is($request->user()) || ! $team->hasMember($newOwner)) {
             throw ValidationException::withMessages(['user_id' => 'Choose another member of this team.']);
