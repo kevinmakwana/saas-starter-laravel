@@ -158,12 +158,12 @@ configuration, the release steps, migration safety, backups and where to look du
 ## What I'd do next in production
 
 - Run a nightly job against Stripe's real test mode (stripe-mock returns canned fixtures, so it cannot prove your real prices and portal settings).
-- Extend dunning: reminder emails during the grace period, and an email to the owner when a downgrade leaves the team over its limits.
+- Extend dunning: reminder emails during the grace period (today the owner gets one email when the payment fails).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
 - Add 2FA and SSO for Business.
-- Make audit logs append-only and exportable, with retention rules.
+- Make audit logs append-only and exportable (retention rules already exist, see `config/retention.php`).
 - Ship the logs somewhere searchable and add uptime and queue-depth monitoring on top of the Sentry and Horizon alerts.
-- Add seat-based billing and proration instead of fixed per-plan limits.
+- Add seat-based billing and proration instead of fixed per-plan limits (trials and yearly billing are done).
 - Zero-downtime deploys with migration safety checks.
 
 ## License
