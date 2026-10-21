@@ -70,8 +70,8 @@ class TeamController extends Controller
     /** Switch the current team to one the user belongs to. */
     public function switch(Request $request): RedirectResponse
     {
-        $data = $request->validate(['team_id' => ['required', 'integer']]);
-        $team = Team::find($data['team_id']);
+        $request->validate(['team_id' => ['required', 'integer']]);
+        $team = Team::find($request->integer('team_id'));
 
         abort_unless($team && $request->user()->switchTeam($team), 403);
 

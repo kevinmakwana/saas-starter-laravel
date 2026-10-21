@@ -86,11 +86,10 @@ class StripeGateway implements BillingGateway
         }
 
         // Includes open (unpaid) invoices, which matter after a failed payment; drafts are Stripe-internal.
-        return $team->invoicesIncludingPending()
+        return array_values($team->invoicesIncludingPending()
             ->reject(fn (Invoice $invoice) => $invoice->asStripeInvoice()->status === 'draft')
             ->map(fn (Invoice $invoice) => InvoiceSummary::fromCashier($invoice))
-            ->values()
-            ->all();
+            ->all());
     }
 
     private function price(Plan $plan, BillingInterval $interval): string
