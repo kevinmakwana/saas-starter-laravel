@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Billing\BillingGateway;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Team;
+use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +34,7 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, AuditLogger $audit): RedirectResponse
     {
         $request->user()->fill($request->validated());
 
@@ -40,9 +42,26 @@ class ProfileController extends Controller
             $request->user()->email_verified_at = null;
         }
 
+        $changed = array_keys($request->user()->getDirty());
         $request->user()->save();
 
+        $this->auditChanges($request->user(), $changed, $audit);
+
         return Redirect::route('profile.edit');
+    }
+
+    /** Names the changed fields. A new email is spelled out; the old one and anything else is not. */
+    /** @param list<string> $changed */
+    private function auditChanges(User $user, array $changed, AuditLogger $audit): void
+    {
+        $changed = array_values(array_diff($changed, ['updated_at', 'email_verified_at']));
+
+        if ($changed === []) {
+            return;
+        }
+
+        $fields = implode(', ', array_map(fn (string $field) => $field === 'email' ? "email (now {$user->email})" : $field, $changed));
+        $audit->recordFor($user, 'profile.updated', "Updated their profile: {$fields}");
     }
 
     /**

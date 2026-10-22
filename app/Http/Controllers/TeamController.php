@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,11 +18,12 @@ class TeamController extends Controller
         return Inertia::render('Teams/Create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuditLogger $audit): RedirectResponse
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
 
-        Team::createFor($request->user(), $data['name']);
+        $team = Team::createFor($request->user(), $data['name']);
+        $audit->recordFor($request->user(), 'team.created', "Created the team “{$team->name}”", $team);
 
         return redirect()->route('teams.show')->with('success', 'Team created.');
     }
@@ -57,12 +59,17 @@ class TeamController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, AuditLogger $audit): RedirectResponse
     {
         $team = $request->user()->currentTeam;
         Gate::authorize('update', $team);
 
+        $previous = $team->name;
         $team->update($request->validate(['name' => ['required', 'string', 'max:255']]));
+
+        if ($team->wasChanged('name')) {
+            $audit->record('team.renamed', "Renamed the team from “{$previous}” to “{$team->name}”", $team);
+        }
 
         return back()->with('success', 'Team renamed.');
     }

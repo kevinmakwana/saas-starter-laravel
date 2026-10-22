@@ -14,7 +14,10 @@ defineProps<{ entries: Paginated<Entry> }>();
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">Audit log</h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">Audit log</h2>
+                <a :href="route('audit-log.export')" class="text-sm text-indigo-700 underline">Export CSV</a>
+            </div>
         </template>
 
         <div class="mx-auto max-w-4xl py-12 sm:px-6 lg:px-8">

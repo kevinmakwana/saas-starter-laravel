@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Support\Csv;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -28,7 +29,7 @@ class TaskExportController extends Controller
                 /** @var Task $task */
                 fputcsv($out, [
                     $task->id,
-                    $this->safe($task->title),
+                    Csv::safe($task->title),
                     $task->status,
                     $task->created_at?->toIso8601String(),
                 ], escape: '');
@@ -36,11 +37,5 @@ class TaskExportController extends Controller
 
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
-    }
-
-    /** Spreadsheet apps run cells starting with these characters as formulas (CSV injection). */
-    private function safe(string $value): string
-    {
-        return $value !== '' && str_contains("=+-@\t\r", $value[0]) ? "'".$value : $value;
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\AuditLogExportController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -46,9 +47,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
         Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');
         Route::delete('/team/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
-        Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware('feature:task_export')->name('projects.tasks.export');
+        Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware(['feature:task_export', 'throttle:exports'])->name('projects.tasks.export');
         Route::resource('projects', ProjectController::class);
         Route::resource('projects.tasks', TaskController::class)->only(['store', 'update', 'destroy'])->scoped();
+        Route::get('/audit-log/export', AuditLogExportController::class)->middleware(['feature:audit_log', 'throttle:exports'])->name('audit-log.export');
         Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('feature:audit_log')->name('audit-log.index');
         Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
         Route::middleware('throttle:billing')->group(function () {

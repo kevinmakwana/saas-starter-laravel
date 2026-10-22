@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use LogicException;
 
 /**
  * @property int $id
@@ -20,6 +21,16 @@ class AuditLog extends Model
     use BelongsToTenant, MassPrunable;
 
     public const UPDATED_AT = null;
+
+    /**
+     * Entries are append-only for application code. Retention pruning (a mass query delete) and the
+     * database cascade when a team is deleted are the only ways a row goes away.
+     */
+    protected static function booted(): void
+    {
+        static::updating(fn () => throw new LogicException('Audit log entries cannot be modified.'));
+        static::deleting(fn () => throw new LogicException('Audit log entries cannot be deleted.'));
+    }
 
     /** @var list<string> */
     protected $fillable = ['user_id', 'action', 'subject_type', 'subject_id', 'summary'];
