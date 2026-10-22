@@ -134,3 +134,11 @@ it('lets any team member export, since they can all view the project', function 
 
     $this->actingAs($member)->get("/projects/{$this->project->id}/tasks/export")->assertOk();
 });
+
+it('is rate limited', function () {
+    foreach (range(1, 10) as $_) {
+        $this->actingAs($this->user)->get("/projects/{$this->project->id}/tasks/export")->assertOk();
+    }
+
+    $this->actingAs($this->user)->get("/projects/{$this->project->id}/tasks/export")->assertTooManyRequests();
+});

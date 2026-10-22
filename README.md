@@ -100,7 +100,7 @@ Route model binding goes through the same scope, so another tenant's record is a
   (local: open; elsewhere only `HORIZON_ALLOWED_EMAILS`).
 - **Housekeeping:** the scheduler runs `model:prune` daily: expired invitations, processed webhook events and, if you set a
   retention, old audit log entries are deleted (`config/retention.php`, `RETENTION_*` in `.env`).
-- **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business.
+- **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business, with a CSV export (rate limited, formula-safe). It records team activity plus sign-ins, profile and password changes, and team creation and renames. Those user events are written to the user's current team, so a user with no team leaves no entry, and failed logins are not logged. Entries are append-only for application code: the model refuses updates and deletes. Only retention pruning and deleting the team remove rows, and a database-level guard is not included.
 
 ### Using real Stripe test keys (optional)
 
@@ -161,7 +161,6 @@ configuration, the release steps, migration safety, backups and where to look du
 - Extend dunning: reminder emails during the grace period (today the owner gets one email when the payment fails).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
 - Add 2FA and SSO for Business.
-- Make audit logs append-only and exportable (retention rules already exist, see `config/retention.php`).
 - Ship the logs somewhere searchable and add uptime and queue-depth monitoring on top of the Sentry and Horizon alerts.
 - Add seat-based billing and proration instead of fixed per-plan limits (trials and yearly billing are done).
 - Zero-downtime deploys with migration safety checks.

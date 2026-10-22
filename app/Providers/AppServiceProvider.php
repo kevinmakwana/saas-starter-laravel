@@ -54,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute((int) config('throttle.invitations_per_minute'))->by($user($request)),
             Limit::perDay(50)->by($user($request)),
         ]);
+        RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         // Stripe retries and bursts events, so this is generous: it only stops floods.
         RateLimiter::for('webhooks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
