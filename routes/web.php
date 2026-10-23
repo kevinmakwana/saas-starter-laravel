@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('team')->group(function () {
         Route::get('/team', [TeamController::class, 'show'])->name('teams.show');
         Route::patch('/team', [TeamController::class, 'update'])->name('teams.update');
+        Route::delete('/team', [TeamController::class, 'destroy'])->name('teams.destroy');
         Route::patch('/team/members/{user}', [TeamMemberController::class, 'update'])->name('teams.members.update');
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
         Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');

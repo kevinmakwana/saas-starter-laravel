@@ -8,6 +8,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import type { PageProps, RoleName } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 interface Member { id: number; name: string; email: string; role: RoleName }
 interface Invitation { id: number; email: string; role: RoleName; expires_at: string }
@@ -16,11 +17,22 @@ defineProps<{
     team: { id: number; name: string; owner_id: number };
     members: Member[];
     invitations: Invitation[];
-    can: { invite: boolean; updateRoles: boolean; transfer: boolean; update: boolean };
+    can: { invite: boolean; updateRoles: boolean; transfer: boolean; update: boolean; delete: boolean };
 }>();
 
 const me = usePage<PageProps>().props.auth.user;
 const invite = useForm<{ email: string; role: RoleName }>({ email: '', role: 'member' });
+
+const confirmingDeletion = ref(false);
+const deletion = useForm({ password: '', name: '' });
+// Not a form field: the server reports a billing failure under the `team` key.
+const teamError = computed(() => (deletion.errors as Record<string, string | undefined>).team);
+const closeDeletion = () => {
+    confirmingDeletion.value = false;
+    deletion.reset();
+    deletion.clearErrors();
+};
+const deleteTeam = () => deletion.delete(route('teams.destroy'), { preserveScroll: true, onFinish: () => deletion.reset('password') });
 
 const sendInvite = () => invite.post(route('teams.invitations.store'), { preserveScroll: true, onSuccess: () => invite.reset('email') });
 const changeRole = (member: Member, role: string) => router.patch(route('teams.members.update', member.id), { role }, { preserveScroll: true });
@@ -91,6 +103,32 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                         <SecondaryButton @click="cancel(invitation)">Cancel</SecondaryButton>
                     </li>
                 </ul>
+            </section>
+
+            <section v-if="can.delete" class="bg-white p-6 shadow sm:rounded-lg">
+                <h3 class="text-lg font-medium text-gray-900">Delete team</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    Deletes {{ team.name }} with its projects, tasks and activity history, and ends its subscription. Members are told by email. This cannot be undone.
+                </p>
+                <DangerButton class="mt-4" @click="confirmingDeletion = true">Delete team</DangerButton>
+
+                <form v-if="confirmingDeletion" class="mt-4 space-y-4 border-t border-gray-100 pt-4" @submit.prevent="deleteTeam">
+                    <div>
+                        <InputLabel for="delete-name" :value="`Type “${team.name}” to confirm`" />
+                        <TextInput id="delete-name" v-model="deletion.name" type="text" class="mt-1 block w-full" required autocomplete="off" />
+                        <InputError class="mt-2" :message="deletion.errors.name" />
+                    </div>
+                    <div>
+                        <InputLabel for="delete-password" value="Your password" />
+                        <TextInput id="delete-password" v-model="deletion.password" type="password" class="mt-1 block w-full" required autocomplete="current-password" />
+                        <InputError class="mt-2" :message="deletion.errors.password" />
+                    </div>
+                    <InputError :message="teamError" />
+                    <div class="flex gap-3">
+                        <DangerButton :disabled="deletion.processing">Delete team permanently</DangerButton>
+                        <SecondaryButton type="button" @click="closeDeletion">Cancel</SecondaryButton>
+                    </div>
+                </form>
             </section>
         </div>
     </AuthenticatedLayout>
