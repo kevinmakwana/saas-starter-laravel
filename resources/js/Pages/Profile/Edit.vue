@@ -8,6 +8,7 @@ import { Head } from '@inertiajs/vue3';
 defineProps<{
     mustVerifyEmail?: boolean;
     status?: string;
+    pendingEmail?: string | null;
 }>();
 </script>
 
@@ -31,6 +32,7 @@ defineProps<{
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                        :pending-email="pendingEmail"
                         class="max-w-xl"
                     />
                 </div>

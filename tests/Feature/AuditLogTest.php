@@ -96,14 +96,11 @@ describe('user-level events', function () {
         expect(AuditLog::withoutGlobalScopes()->count())->toBe(0);
     });
 
-    it('records which profile fields changed, and the new email but never the old one', function () {
-        $oldEmail = $this->owner->email;
-
-        $this->actingAs($this->owner)->patch('/profile', ['name' => 'Renamed Owner', 'email' => 'new-address@example.com'])->assertRedirect();
+    it('records which profile fields changed', function () {
+        $this->actingAs($this->owner)->patch('/profile', ['name' => 'Renamed Owner', 'email' => $this->owner->email])->assertRedirect();
 
         $entry = collect(entriesOf($this->team))->firstWhere('action', 'profile.updated');
-        expect($entry->summary)->toContain('name', 'email', 'new-address@example.com')
-            ->and($entry->summary)->not->toContain($oldEmail);
+        expect($entry->summary)->toBe('Updated their profile: name');
     });
 
     it('records nothing when a profile save changes nothing', function () {

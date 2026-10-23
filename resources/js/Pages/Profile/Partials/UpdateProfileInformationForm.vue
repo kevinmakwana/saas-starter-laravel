@@ -3,11 +3,13 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 defineProps<{
     mustVerifyEmail?: Boolean;
     status?: String;
+    pendingEmail?: string | null;
 }>();
 
 const user = usePage().props.auth.user;
@@ -15,7 +17,13 @@ const user = usePage().props.auth.user;
 const form = useForm({
     name: user.name,
     email: user.email,
+    current_password: '',
 });
+
+// A new address needs the password and is only applied once its owner opens the mailed link.
+const changingEmail = computed(() => form.email.trim().toLowerCase() !== user.email.toLowerCase());
+
+const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { preserveScroll: true });
 </script>
 
 <template>
@@ -31,7 +39,7 @@ const form = useForm({
         </header>
 
         <form
-            @submit.prevent="form.patch(route('profile.update'))"
+            @submit.prevent="form.patch(route('profile.update'), { preserveScroll: true, onSuccess: () => form.reset('current_password') })"
             class="mt-6 space-y-6"
         >
             <div>
@@ -63,6 +71,30 @@ const form = useForm({
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div v-if="changingEmail">
+                <InputLabel for="current_password" value="Current password" />
+
+                <TextInput
+                    id="current_password"
+                    type="password"
+                    class="mt-1 block w-full"
+                    v-model="form.current_password"
+                    required
+                    autocomplete="current-password"
+                />
+
+                <p class="mt-1 text-sm text-gray-600">
+                    We will email a link to the new address. Your email only changes once you open it.
+                </p>
+
+                <InputError class="mt-2" :message="form.errors.current_password" />
+            </div>
+
+            <div v-if="pendingEmail" class="rounded-md bg-amber-50 p-3 text-sm text-amber-800" data-testid="pending-email">
+                Waiting for you to confirm <strong>{{ pendingEmail }}</strong>. Open the link we sent there to finish the change.
+                <button type="button" class="ml-1 underline hover:text-amber-950" @click="cancelEmailChange">Cancel the change</button>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
