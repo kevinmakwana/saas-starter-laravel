@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuditLogExportController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StripeWebhookController;
@@ -27,7 +28,9 @@ Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verif
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:email-change')->name('profile.update');
+    Route::get('/profile/email/confirm', [EmailChangeController::class, 'confirm'])->middleware('signed')->name('profile.email.confirm');
+    Route::delete('/profile/email', [EmailChangeController::class, 'cancel'])->name('profile.email.cancel');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -43,9 +46,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('team')->group(function () {
         Route::get('/team', [TeamController::class, 'show'])->name('teams.show');
         Route::patch('/team', [TeamController::class, 'update'])->name('teams.update');
+        Route::delete('/team', [TeamController::class, 'destroy'])->name('teams.destroy');
         Route::patch('/team/members/{user}', [TeamMemberController::class, 'update'])->name('teams.members.update');
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
         Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');
+        Route::post('/team/invitations/{invitation}/resend', [TeamInvitationController::class, 'resend'])->middleware('throttle:invitations')->name('teams.invitations.resend');
         Route::delete('/team/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
         Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware(['feature:task_export', 'throttle:exports'])->name('projects.tasks.export');
         Route::resource('projects', ProjectController::class);

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Billing\BillingGateway;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Mail\EmailChangeConfirmationMail;
+use App\Mail\EmailChangeNoticeMail;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -12,7 +14,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,40 +32,61 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'pendingEmail' => $request->user()->pendingEmail(),
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * Update the user's profile information. The name changes at once. A new email address does not:
+     * it waits for the link mailed to it, and the old address is told about the request.
      */
     public function update(ProfileUpdateRequest $request, AuditLogger $audit): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->safe()->only('name'));
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $changed = array_keys($user->getDirty());
+        $newEmail = $request->changesEmail() ? $request->validated('email') : null;
+
+        if ($newEmail !== null) {
+            $user->forceFill(['pending_email' => $newEmail, 'pending_email_expires_at' => now()->addMinutes(User::EMAIL_CHANGE_TTL_MINUTES)]);
         }
 
-        $changed = array_keys($request->user()->getDirty());
-        $request->user()->save();
+        $user->save();
 
-        $this->auditChanges($request->user(), $changed, $audit);
+        $this->auditChanges($user, $changed, $audit);
+
+        if ($newEmail !== null) {
+            $this->requestEmailChange($user, $newEmail, $audit);
+        }
 
         return Redirect::route('profile.edit');
     }
 
-    /** Names the changed fields. A new email is spelled out; the old one and anything else is not. */
+    private function requestEmailChange(User $user, string $newEmail, AuditLogger $audit): void
+    {
+        $link = URL::temporarySignedRoute(
+            'profile.email.confirm',
+            now()->addMinutes(User::EMAIL_CHANGE_TTL_MINUTES),
+            ['id' => $user->getKey(), 'hash' => sha1($newEmail)],
+        );
+
+        Mail::to($newEmail)->send(new EmailChangeConfirmationMail($user->name, $link));
+        Mail::to($user->email)->send(new EmailChangeNoticeMail($user->name, $newEmail));
+        $audit->recordFor($user, 'profile.email_change_requested', "Asked to change their email to {$newEmail}");
+    }
+
+    /** Names the changed fields. Emails are audited when the change is requested and confirmed, not here. */
     /** @param list<string> $changed */
     private function auditChanges(User $user, array $changed, AuditLogger $audit): void
     {
-        $changed = array_values(array_diff($changed, ['updated_at', 'email_verified_at']));
+        $changed = array_values(array_diff($changed, ['updated_at']));
 
         if ($changed === []) {
             return;
         }
 
-        $fields = implode(', ', array_map(fn (string $field) => $field === 'email' ? "email (now {$user->email})" : $field, $changed));
-        $audit->recordFor($user, 'profile.updated', "Updated their profile: {$fields}");
+        $audit->recordFor($user, 'profile.updated', 'Updated their profile: '.implode(', ', $changed));
     }
 
     /**

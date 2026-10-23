@@ -60,7 +60,7 @@ Route model binding goes through the same scope, so another tenant's record is a
 
 - **Auth and teams:** register, log in, create teams, switch teams (Breeze, Inertia, Vue 3, TypeScript, Tailwind).
 - **Roles and policies:** Owner, Admin and Member. Owners manage roles, billing and ownership transfer. Admins invite members and see the audit log.
-- **Invitations:** signed, expiring links (7 days), bound to the invited email, single use. Emails are queued on Redis and show up in Mailpit.
+- **Invitations:** signed, expiring links (7 days), bound to the invited email, single use. Owners and admins can resend one from the Team page (a fresh 7 days, also after it expired, as long as the plan has a seat). Emails are queued on Redis and show up in Mailpit.
 - **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
   `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
 - **Trials and yearly billing:** a team's first paid subscription gets a 14-day free trial (`BILLING_TRIAL_DAYS`, `0` turns it off).
@@ -79,7 +79,7 @@ Route model binding goes through the same scope, so another tenant's record is a
   scheduler (`webhooks:retry-stuck`, events from the last 7 days). `php artisan webhooks:replay evt_123` reprocesses one event on demand.
   Failed jobs are logged with the stored record id.
 - **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions and the webhook
-  (login and email verification are throttled by Breeze). Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
+  (login and email verification are throttled by Breeze), email-address changes and the exports. Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
   A team that drops to a smaller plan while over its limits (for example after a cancelled subscription) loses nothing: every
   project and member stays, and can still be read, edited and deleted. Only adding more is blocked, a banner tells every member
@@ -92,6 +92,13 @@ Route model binding goes through the same scope, so another tenant's record is a
   (spreadsheet formulas in titles are neutralised).
 - **Account deletion:** an owner whose team still has other members must transfer ownership first. Teams the user owns alone are
   deleted with the account, and their Stripe subscription is cancelled immediately.
+- **Team deletion:** the owner can delete a team from the Team page, after typing its name and their password. Billing is ended first, so if
+  Stripe fails nothing is deleted. Projects, tasks, invitations and the audit log go with the team (so the deletion itself is not in the log),
+  the other members get an email, and everyone lands on another team of theirs or on "create a team".
+- **Email change:** a new address needs the current password and does not replace the old one until its owner opens a signed link
+  (60 minutes) mailed to it, while signed in. Opening it verifies the address. The old address gets a notice when the change is
+  requested and again when it is done. Requesting a change is limited to 5 per hour; the name can still be saved freely. Other sessions
+  are not signed out when the address changes.
 - **Security headers:** a strict Content-Security-Policy (per-request nonce, no inline or eval scripts), HSTS over https,
   `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`. Configure in `config/security.php`.
 - **Observability:** every response has an `X-Request-Id`; logs and Sentry errors carry the request, user and team ids (never

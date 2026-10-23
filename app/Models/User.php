@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -17,11 +18,16 @@ use Illuminate\Notifications\Notifiable;
  * @property string $email
  * @property int|null $current_team_id
  * @property Team|null $currentTeam
+ * @property string|null $pending_email
+ * @property Carbon|null $pending_email_expires_at
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /** How long the link for a new email address works. */
+    public const EMAIL_CHANGE_TTL_MINUTES = 60;
 
     /**
      * The attributes that are mass assignable.
@@ -53,8 +59,22 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'pending_email_expires_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** The address waiting for confirmation, or null when there is none or its link has run out. */
+    public function pendingEmail(): ?string
+    {
+        return $this->pending_email !== null && $this->pending_email_expires_at?->isFuture() === true
+            ? $this->pending_email
+            : null;
+    }
+
+    public function clearPendingEmail(): void
+    {
+        $this->forceFill(['pending_email' => null, 'pending_email_expires_at' => null])->save();
     }
 
     /** @return BelongsTo<Team, $this> */

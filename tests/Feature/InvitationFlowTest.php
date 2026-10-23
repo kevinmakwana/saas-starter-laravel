@@ -2,7 +2,9 @@
 
 use App\Enums\Role;
 use App\Mail\TeamInvitationMail;
+use App\Models\AuditLog;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
@@ -94,4 +96,106 @@ it('lets managers cancel an invitation but not other teams', function () {
     $this->actingAs($this->owner)->delete("/team/invitations/{$foreign->id}")->assertNotFound();
     $this->actingAs($this->owner)->delete("/team/invitations/{$invitation->id}")->assertRedirect();
     expect($this->team->invitations()->count())->toBe(0);
+});
+
+describe('resending', function () {
+    function resend(?User $as = null, ?TeamInvitation $invitation = null)
+    {
+        return test()->actingAs($as ?? test()->owner)->post(route('teams.invitations.resend', $invitation ?? test()->invitation));
+    }
+
+    beforeEach(function () {
+        $this->invitation = invite('new@example.com');
+        Mail::fake();
+    });
+
+    it('sends the email again and starts a fresh seven days', function () {
+        $this->invitation->forceFill(['expires_at' => now()->addHour()])->save();
+
+        resend()->assertSessionHasNoErrors()->assertRedirect();
+
+        Mail::assertQueued(TeamInvitationMail::class, fn ($mail) => $mail->hasTo('new@example.com') && $mail->queue === 'mail');
+        expect($this->invitation->fresh()->expires_at->isSameDay(now()->addDays(7)))->toBeTrue()
+            ->and($this->team->invitations()->count())->toBe(1);
+    });
+
+    it('records the resend in the audit log', function () {
+        resend();
+
+        expect(asTenant($this->team, fn () => AuditLog::where('action', 'invitation.resent')->first()?->summary))
+            ->toBe('Resent the invitation to new@example.com');
+    });
+
+    it('revives an expired invitation when the team has room', function () {
+        $this->invitation->forceFill(['expires_at' => now()->subDay()])->save();
+
+        resend()->assertSessionHasNoErrors();
+
+        expect($this->invitation->fresh()->isPending())->toBeTrue();
+        Mail::assertQueued(TeamInvitationMail::class);
+    });
+
+    it('refuses to revive an expired invitation once the plan has no seat left', function () {
+        $this->team->forceFill(['plan' => 'free'])->save();
+        $this->team->addMember(User::factory()->create(), Role::Member);
+        $this->invitation->forceFill(['expires_at' => now()->subDay()])->save();
+
+        resend()->assertRedirect()->assertSessionHas('upgrade');
+
+        expect($this->invitation->fresh()->isPending())->toBeFalse();
+        Mail::assertNothingQueued();
+    });
+
+    it('does not need a free seat for an invitation that already holds one', function () {
+        $this->team->forceFill(['plan' => 'free'])->save();
+        $this->team->addMember(User::factory()->create(), Role::Member);
+
+        resend()->assertSessionHasNoErrors();
+
+        Mail::assertQueued(TeamInvitationMail::class);
+    });
+
+    it('lets an admin resend a member invitation but not an admin one', function () {
+        $admin = User::factory()->create(['current_team_id' => $this->team->id]);
+        $this->team->addMember($admin, Role::Admin);
+        $adminInvite = invite('boss@example.com', 'admin');
+
+        resend($admin)->assertSessionHasNoErrors();
+        resend($admin, $adminInvite)->assertForbidden();
+    });
+
+    it('is not available for an accepted invitation', function () {
+        $this->invitation->forceFill(['accepted_at' => now()])->save();
+
+        resend()->assertStatus(409);
+
+        Mail::assertNothingQueued();
+    });
+
+    it('is for owners and admins of the same team only', function () {
+        $member = User::factory()->create(['current_team_id' => $this->team->id]);
+        $this->team->addMember($member, Role::Member);
+        $stranger = ownerWithTeam();
+
+        resend($member)->assertForbidden();
+        resend($stranger)->assertNotFound();
+        auth()->logout();
+        test()->post(route('teams.invitations.resend', $this->invitation))->assertRedirect('/login');
+
+        Mail::assertNothingQueued();
+    });
+
+    it('is rate limited with the other invitation actions', function () {
+        foreach (range(1, 5) as $i) {
+            resend();
+        }
+
+        resend()->assertStatus(429);
+    });
+
+    it('shows on the team page whether an invitation has expired', function () {
+        $this->invitation->forceFill(['expires_at' => now()->subDay()])->save();
+
+        $this->actingAs($this->owner)->get('/team')->assertInertia(fn ($page) => $page->where('invitations.0.expired', true));
+    });
 });

@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Tests\Support\RecordingGateway;
 
 test('profile page is displayed', function () {
@@ -26,18 +27,29 @@ test('profile information can be updated', function () {
         ->actingAs($user)
         ->patch('/profile', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => $user->email,
         ]);
 
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect('/profile');
 
-    $user->refresh();
+    $this->assertSame('Test User', $user->refresh()->name);
+});
 
-    $this->assertSame('Test User', $user->name);
-    $this->assertSame('test@example.com', $user->email);
-    $this->assertNull($user->email_verified_at);
+test('a new email address waits for confirmation instead of replacing the old one', function () {
+    Mail::fake();
+    $user = User::factory()->create();
+    $old = $user->email;
+
+    $this->actingAs($user)->patch('/profile', ['name' => 'Test User', 'email' => 'test@example.com', 'current_password' => 'password'])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+    $this->assertSame($old, $user->email);
+    $this->assertSame('test@example.com', $user->pending_email);
+    $this->assertNotNull($user->email_verified_at);
 });
 
 test('email verification status is unchanged when the email address is unchanged', function () {

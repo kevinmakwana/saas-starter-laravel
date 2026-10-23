@@ -26,6 +26,17 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            // A new address is confirmed by link, and asking for it needs the password, so a hijacked session cannot redirect the account.
+            'current_password' => [
+                Rule::requiredIf(fn () => $this->changesEmail()),
+                'current_password',
+            ],
         ];
+    }
+
+    /** Whether the submitted address differs from the account's current one. */
+    public function changesEmail(): bool
+    {
+        return strcasecmp((string) $this->input('email'), $this->user()->email) !== 0;
     }
 }

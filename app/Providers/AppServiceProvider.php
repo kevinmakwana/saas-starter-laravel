@@ -54,6 +54,10 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute((int) config('throttle.invitations_per_minute'))->by($user($request)),
             Limit::perDay(50)->by($user($request)),
         ]);
+        // Only a request for a new address is limited: it sends email and takes the password. Saving the name alone is free.
+        RateLimiter::for('email-change', fn (Request $request) => strcasecmp((string) $request->input('email'), (string) $request->user()?->email) === 0
+            ? Limit::none()
+            : Limit::perHour(5)->by($user($request)));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         // Stripe retries and bursts events, so this is generous: it only stops floods.
