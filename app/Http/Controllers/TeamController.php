@@ -54,6 +54,7 @@ class TeamController extends Controller
                     'email' => $invitation->email,
                     'role' => $invitation->role->value,
                     'expires_at' => $invitation->expires_at->toIso8601String(),
+                    'expired' => ! $invitation->isPending(),
                 ])
                 : [],
             'can' => [

@@ -11,7 +11,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 interface Member { id: number; name: string; email: string; role: RoleName }
-interface Invitation { id: number; email: string; role: RoleName; expires_at: string }
+interface Invitation { id: number; email: string; role: RoleName; expires_at: string; expired: boolean }
 
 defineProps<{
     team: { id: number; name: string; owner_id: number };
@@ -37,6 +37,7 @@ const deleteTeam = () => deletion.delete(route('teams.destroy'), { preserveScrol
 const sendInvite = () => invite.post(route('teams.invitations.store'), { preserveScroll: true, onSuccess: () => invite.reset('email') });
 const changeRole = (member: Member, role: string) => router.patch(route('teams.members.update', member.id), { role }, { preserveScroll: true });
 const remove = (member: Member) => confirm(`Remove ${member.name}?`) && router.delete(route('teams.members.destroy', member.id), { preserveScroll: true });
+const resend = (invitation: Invitation) => router.post(route('teams.invitations.resend', invitation.id), {}, { preserveScroll: true });
 const cancel = (invitation: Invitation) => router.delete(route('teams.invitations.destroy', invitation.id), { preserveScroll: true });
 const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You will become an admin.`) && router.post(route('teams.ownership'), { user_id: member.id });
 </script>
@@ -99,8 +100,11 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
 
                 <ul v-if="invitations.length" class="mt-6 divide-y divide-gray-100">
                     <li v-for="invitation in invitations" :key="invitation.id" class="flex items-center justify-between py-2 text-sm">
-                        <span>{{ invitation.email }} <span class="text-gray-500">· {{ invitation.role }} · pending</span></span>
-                        <SecondaryButton @click="cancel(invitation)">Cancel</SecondaryButton>
+                        <span>{{ invitation.email }} <span class="text-gray-500">· {{ invitation.role }} · {{ invitation.expired ? 'expired' : 'pending' }}</span></span>
+                        <span class="flex gap-2">
+                            <SecondaryButton @click="resend(invitation)">Resend</SecondaryButton>
+                            <SecondaryButton @click="cancel(invitation)">Cancel</SecondaryButton>
+                        </span>
                     </li>
                 </ul>
             </section>

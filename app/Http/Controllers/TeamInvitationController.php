@@ -57,6 +57,29 @@ class TeamInvitationController extends Controller
         return back()->with('success', "Invitation sent to {$invitation->email}.");
     }
 
+    /** Sends the email again and starts a fresh expiry, also for an invitation that already ran out. */
+    public function resend(Request $request, TeamInvitation $invitation): RedirectResponse
+    {
+        $team = $request->user()->currentTeam;
+        Gate::authorize('invite', $team);
+        abort_unless($invitation->team_id === $team->getKey(), 404);
+        abort_if($invitation->accepted_at !== null, 409, 'This invitation was already accepted.');
+
+        Gate::authorize('inviteAs', [$team, $invitation->role]);
+        // A live invitation already holds a seat; an expired one has to fit the plan again.
+        if (! $invitation->isPending()) {
+            Gate::authorize('addMember', $team);
+        }
+
+        $invitation->forceFill(['expires_at' => now()->addDays(self::TTL_DAYS)])->save();
+
+        $this->audit->record('invitation.resent', "Resent the invitation to {$invitation->email}");
+
+        Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
+
+        return back()->with('success', "Invitation sent again to {$invitation->email}.");
+    }
+
     public function destroy(Request $request, TeamInvitation $invitation): RedirectResponse
     {
         $team = $request->user()->currentTeam;

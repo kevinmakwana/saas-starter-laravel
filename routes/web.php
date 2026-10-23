@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/team/members/{user}', [TeamMemberController::class, 'update'])->name('teams.members.update');
         Route::delete('/team/members/{user}', [TeamMemberController::class, 'destroy'])->name('teams.members.destroy');
         Route::post('/team/invitations', [TeamInvitationController::class, 'store'])->middleware('throttle:invitations')->name('teams.invitations.store');
+        Route::post('/team/invitations/{invitation}/resend', [TeamInvitationController::class, 'resend'])->middleware('throttle:invitations')->name('teams.invitations.resend');
         Route::delete('/team/invitations/{invitation}', [TeamInvitationController::class, 'destroy'])->name('teams.invitations.destroy');
         Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware(['feature:task_export', 'throttle:exports'])->name('projects.tasks.export');
         Route::resource('projects', ProjectController::class);
