@@ -62,6 +62,16 @@ class TeamInvitation extends Model
         return $this->accepted_at === null && $this->expires_at->isFuture();
     }
 
+    /** @return 'accepted'|'expired'|'pending' */
+    public function status(): string
+    {
+        return match (true) {
+            $this->accepted_at !== null => 'accepted',
+            $this->expires_at->isPast() => 'expired',
+            default => 'pending',
+        };
+    }
+
     /** Signed URL that stops working when the invitation expires. */
     public function acceptUrl(): string
     {

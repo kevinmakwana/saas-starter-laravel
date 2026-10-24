@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuditLogExportController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
@@ -30,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->middleware('throttle:email-change')->name('profile.update');
     Route::get('/profile/email/confirm', [EmailChangeController::class, 'confirm'])->middleware('signed')->name('profile.email.confirm');
+    Route::post('/profile/export', DataExportController::class)->middleware('throttle:data-export')->name('profile.export');
     Route::delete('/profile/email', [EmailChangeController::class, 'cancel'])->name('profile.email.cancel');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

@@ -18,6 +18,8 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property int|null $current_team_id
  * @property Team|null $currentTeam
+ * @property Carbon|null $email_verified_at
+ * @property Carbon|null $created_at
  * @property string|null $pending_email
  * @property Carbon|null $pending_email_expires_at
  */
