@@ -58,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('email-change', fn (Request $request) => strcasecmp((string) $request->input('email'), (string) $request->user()?->email) === 0
             ? Limit::none()
             : Limit::perHour(5)->by($user($request)));
+        // Every attempt counts, wrong passwords included: this hands over everything the app knows about a person.
+        RateLimiter::for('data-export', fn (Request $request) => Limit::perHour(3)->by($user($request)));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         // Stripe retries and bursts events, so this is generous: it only stops floods.

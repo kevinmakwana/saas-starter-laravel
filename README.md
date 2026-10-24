@@ -78,7 +78,7 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Webhook recovery:** an event that was stored but never processed is retried when Stripe redelivers it, and every 5 minutes by the
   scheduler (`webhooks:retry-stuck`, events from the last 7 days). `php artisan webhooks:replay evt_123` reprocesses one event on demand.
   Failed jobs are logged with the stored record id.
-- **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions and the webhook
+- **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions, the data export and the webhook
   (login and email verification are throttled by Breeze), email-address changes and the exports. Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
   A team that drops to a smaller plan while over its limits (for example after a cancelled subscription) loses nothing: every
@@ -95,6 +95,11 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Team deletion:** the owner can delete a team from the Team page, after typing its name and their password. Billing is ended first, so if
   Stripe fails nothing is deleted. Projects, tasks, invitations and the audit log go with the team (so the deletion itself is not in the log),
   the other members get an email, and everyone lands on another team of theirs or on "create a team".
+- **Data export:** `Profile → Download your data` gives users one JSON file with their account, team memberships and roles, the invitations
+  they sent or hold, and the audit entries they caused (across all their teams). It needs the current password, is limited to 3 per hour
+  per user (wrong passwords count), and is recorded in the audit log without any of the data. Team content (projects, tasks) and billing
+  belong to the team and are not included, and neither are password hashes, tokens or other people's accounts. The file is built on the
+  request and streamed, with no job or stored file, which is fine while the app keeps no large per-user content.
 - **Email change:** a new address needs the current password and does not replace the old one until its owner opens a signed link
   (60 minutes) mailed to it, while signed in. Opening it verifies the address. The old address gets a notice when the change is
   requested and again when it is done. Requesting a change is limited to 5 per hour; the name can still be saved freely. Other sessions
