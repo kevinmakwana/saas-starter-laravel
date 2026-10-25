@@ -78,7 +78,7 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Webhook recovery:** an event that was stored but never processed is retried when Stripe redelivers it, and every 5 minutes by the
   scheduler (`webhooks:retry-stuck`, events from the last 7 days). `php artisan webhooks:replay evt_123` reprocesses one event on demand.
   Failed jobs are logged with the stored record id.
-- **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions, the data export and the webhook
+- **Rate limiting:** named limiters on registration, password reset, team creation, invitations, billing actions, the data export, the 2FA code step and the webhook
   (login and email verification are throttled by Breeze), email-address changes and the exports. Throttled pages show a banner with the retry time. Limits live in `config/throttle.php`.
 - **Plan limits:** project and member limits enforced in policies, with a friendly upgrade prompt.
   A team that drops to a smaller plan while over its limits (for example after a cancelled subscription) loses nothing: every
@@ -95,6 +95,13 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Team deletion:** the owner can delete a team from the Team page, after typing its name and their password. Billing is ended first, so if
   Stripe fails nothing is deleted. Projects, tasks, invitations and the audit log go with the team (so the deletion itself is not in the log),
   the other members get an email, and everyone lands on another team of theirs or on "create a team".
+- **Two-factor authentication:** optional per user, on every plan (`Profile → Two-factor authentication`). Setup shows a QR code and a key,
+  and only a correct first code turns it on, then 8 single-use recovery codes are shown once. After the right password, a user with 2FA is
+  not signed in yet: they get a code (or recovery code) prompt, limited to 5 tries a minute per account, and a pending sign-in expires after
+  10 minutes. A code works once (the last accepted time step is stored). Turning it on or off and making new recovery codes ask for the password
+  again. The secret and the codes are encrypted at rest and never sent to the browser after setup. A password reset does **not** turn 2FA off.
+  Built on `pragmarx/google2fa` and `bacon/bacon-qr-code`. Not included: requiring it for a team, SMS or email codes, passkeys, trusted devices,
+  and an admin reset, so a user who lost both the app and the recovery codes has to be reset by hand (clear the four `two_factor_*` columns).
 - **Data export:** `Profile → Download your data` gives users one JSON file with their account, team memberships and roles, the invitations
   they sent or hold, and the audit entries they caused (across all their teams). It needs the current password, is limited to 3 per hour
   per user (wrong passwords count), and is recorded in the audit log without any of the data. Team content (projects, tasks) and billing
@@ -172,7 +179,7 @@ configuration, the release steps, migration safety, backups and where to look du
 - Run a nightly job against Stripe's real test mode (stripe-mock returns canned fixtures, so it cannot prove your real prices and portal settings).
 - Extend dunning: reminder emails during the grace period (today the owner gets one email when the payment fails).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
-- Add 2FA and SSO for Business.
+- Add SSO for Business.
 - Ship the logs somewhere searchable and add uptime and queue-depth monitoring on top of the Sentry and Horizon alerts.
 - Add seat-based billing and proration instead of fixed per-plan limits (trials and yearly billing are done).
 - Zero-downtime deploys with migration safety checks.

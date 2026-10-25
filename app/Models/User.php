@@ -20,6 +20,10 @@ use Illuminate\Support\Carbon;
  * @property Team|null $currentTeam
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $created_at
+ * @property string|null $two_factor_secret
+ * @property list<string>|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
+ * @property int|null $two_factor_last_step
  * @property string|null $pending_email
  * @property Carbon|null $pending_email_expires_at
  */
@@ -50,6 +54,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_last_step',
     ];
 
     /**
@@ -62,8 +69,23 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'pending_email_expires_at' => 'datetime',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /** Signing in asks for a code. A setup that was never confirmed does not count. */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    /** A secret was made but its first code was never entered. */
+    public function hasPendingTwoFactor(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at === null;
     }
 
     /** The address waiting for confirmation, or null when there is none or its link has run out. */

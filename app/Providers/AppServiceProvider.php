@@ -60,6 +60,8 @@ class AppServiceProvider extends ServiceProvider
             : Limit::perHour(5)->by($user($request)));
         // Every attempt counts, wrong passwords included: this hands over everything the app knows about a person.
         RateLimiter::for('data-export', fn (Request $request) => Limit::perHour(3)->by($user($request)));
+        // Six digits are guessable, so the code step allows few tries per account, however many addresses they come from.
+        RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by('two-factor|'.($request->session()->get('login.id') ?? $request->ip())));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         // Stripe retries and bursts events, so this is generous: it only stops floods.
