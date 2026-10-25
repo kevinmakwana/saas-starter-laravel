@@ -42,6 +42,8 @@ test('a user turns on 2FA, then signs in with a code and with a recovery code', 
     await page.fill('#two_factor_code', totp(secret, -1));
     await page.getByRole('button', { name: 'Turn on' }).click();
 
+    // allTextContents() does not wait, so let the codes appear first.
+    await expect(page.getByTestId('recovery-codes')).toBeVisible();
     const codes = await page.getByTestId('recovery-codes').locator('li').allTextContents();
     expect(codes).toHaveLength(8);
     await expect(page.getByText('Two-factor authentication is on')).toBeVisible();
