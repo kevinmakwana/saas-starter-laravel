@@ -9,6 +9,7 @@ use App\Mail\EmailChangeNoticeMail;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\TwoFactor;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,12 +28,24 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): Response
+    public function edit(Request $request, TwoFactor $twoFactor): Response
     {
+        $user = $request->user();
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
-            'pendingEmail' => $request->user()->pendingEmail(),
+            'pendingEmail' => $user->pendingEmail(),
+            'twoFactor' => [
+                'enabled' => $user->hasTwoFactorEnabled(),
+                'pending' => $user->hasPendingTwoFactor(),
+                // Only while setting up: once it is on, the secret is never sent to the browser again.
+                'setupKey' => $user->hasPendingTwoFactor() ? $user->two_factor_secret : null,
+                'qrSvg' => $user->hasPendingTwoFactor() ? $twoFactor->qrSvg($user) : null,
+                'recoveryCodesLeft' => $user->hasTwoFactorEnabled() ? count($user->two_factor_recovery_codes ?? []) : null,
+            ],
+            // Flashed by the request that made them, so they show exactly once.
+            'recoveryCodes' => session('recoveryCodes'),
         ]);
     }
 
