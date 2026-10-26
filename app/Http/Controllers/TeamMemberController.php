@@ -16,7 +16,7 @@ class TeamMemberController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('updateMemberRole', $team);
 
         $data = $request->validate(['role' => ['required', Rule::enum(Role::class)->only(Role::invitable())]]);
@@ -32,13 +32,13 @@ class TeamMemberController extends Controller
 
     public function destroy(Request $request, User $user): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('removeMember', [$team, $user]);
 
         $team->removeMember($user);
-        $this->audit->record('member.removed', $request->user()->is($user) ? "{$user->name} left the team" : "Removed {$user->name} from the team");
+        $this->audit->record('member.removed', $this->user($request)->is($user) ? "{$user->name} left the team" : "Removed {$user->name} from the team");
 
-        return $request->user()->is($user)
+        return $this->user($request)->is($user)
             ? redirect()->route('dashboard')->with('success', 'You left the team.')
             : back()->with('success', 'Member removed.');
     }

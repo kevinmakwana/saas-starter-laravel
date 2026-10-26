@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use LogicException;
 
 /** @extends Factory<Team> */
 class TeamFactory extends Factory
@@ -25,7 +26,7 @@ class TeamFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Team $team): void {
-            $owner = $team->owner;
+            $owner = $team->owner ?? throw new LogicException('A team needs an owner.');
             $team->addMember($owner, Role::Owner);
             if ($owner->current_team_id === null) {
                 $owner->forceFill(['current_team_id' => $team->id])->save();

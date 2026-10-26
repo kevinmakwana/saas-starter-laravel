@@ -13,7 +13,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request, PlanLimits $limits): Response
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         $plan = $team->currentPlan();
 
         return Inertia::render('Dashboard', [

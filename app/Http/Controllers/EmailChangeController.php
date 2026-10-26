@@ -15,7 +15,7 @@ class EmailChangeController extends Controller
     /** Signed, expiring link mailed to the new address. The signed-in user must be the one who asked. */
     public function confirm(Request $request, AuditLogger $audit): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->user($request);
         abort_unless((int) $request->query('id') === $user->getKey(), 403);
 
         $pending = $user->pendingEmail();
@@ -39,7 +39,7 @@ class EmailChangeController extends Controller
 
     public function cancel(Request $request): RedirectResponse
     {
-        $request->user()->clearPendingEmail();
+        $this->user($request)->clearPendingEmail();
 
         return redirect()->route('profile.edit')->with('success', 'The email change was cancelled.');
     }

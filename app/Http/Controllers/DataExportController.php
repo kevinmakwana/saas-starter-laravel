@@ -27,7 +27,7 @@ class DataExportController extends Controller
     {
         $request->validate(['password' => ['required', 'current_password']]);
 
-        $user = $request->user();
+        $user = $this->user($request);
         $audit->recordFor($user, 'account.exported', 'Downloaded their account data');
 
         return response()->streamDownload(function () use ($user) {

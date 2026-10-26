@@ -28,7 +28,7 @@ class BillingController extends Controller
 
     public function show(Request $request, PlanLimits $limits, FeatureGate $features): Response
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('view', $team);
         $current = $team->currentPlan();
         $canManage = Gate::allows('manageBilling', $team);
@@ -62,7 +62,7 @@ class BillingController extends Controller
 
     public function subscribe(Request $request): SymfonyResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('manageBilling', $team);
         $plan = $this->paidPlan($request);
         $interval = $this->interval($request, fallback: BillingInterval::Monthly);
@@ -92,7 +92,7 @@ class BillingController extends Controller
 
     public function change(Request $request): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('manageBilling', $team);
         // Going back to Free is cancelling, which keeps the paid plan until the period ends.
         $plan = $this->paidPlan($request);
@@ -118,7 +118,7 @@ class BillingController extends Controller
 
     public function cancel(Request $request): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('manageBilling', $team);
 
         if ($failed = $this->attempt(fn () => $this->gateway->cancel($team))) {
@@ -132,7 +132,7 @@ class BillingController extends Controller
 
     public function resume(Request $request): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('manageBilling', $team);
 
         if ($failed = $this->attempt(fn () => $this->gateway->resume($team))) {
@@ -149,8 +149,8 @@ class BillingController extends Controller
     {
         // The email names its team, which may not be the one the owner currently has open.
         $team = $request->query('team') === null
-            ? $request->user()->currentTeam
-            : $request->user()->teams()->whereKey((int) $request->query('team'))->firstOrFail();
+            ? $this->team($request)
+            : $this->user($request)->teams()->whereKey((int) $request->query('team'))->firstOrFail();
         Gate::authorize('manageBilling', $team);
 
         if (! $team->hasStripeId() || ! $this->gateway->supportsPortal()) {

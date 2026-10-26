@@ -16,7 +16,7 @@ class AuditLogExportController extends Controller
 
     public function __invoke(Request $request): StreamedResponse
     {
-        Gate::authorize('viewAuditLog', $request->user()->currentTeam);
+        Gate::authorize('viewAuditLog', $this->team($request));
 
         return response()->streamDownload(function () {
             $out = fopen('php://output', 'w') ?: throw new RuntimeException('Could not open the response stream.');

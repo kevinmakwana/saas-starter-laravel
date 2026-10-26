@@ -21,11 +21,11 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
+        $this->user($request)->update([
             'password' => Hash::make($validated['password']),
         ]);
 
-        $audit->recordFor($request->user(), 'password.changed', 'Changed their password');
+        $audit->recordFor($this->user($request), 'password.changed', 'Changed their password');
 
         return back();
     }
