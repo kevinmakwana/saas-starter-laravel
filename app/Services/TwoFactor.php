@@ -32,15 +32,23 @@ class TwoFactor
         ])->save();
     }
 
-    /** The otpauth:// text an authenticator app scans, drawn as an SVG. Null without a pending setup. */
+    /** The otpauth:// address an authenticator app takes (by scan or paste). Null without a secret. */
+    public function setupUri(User $user): ?string
+    {
+        return $user->two_factor_secret === null
+            ? null
+            : $this->google2fa->getQRCodeUrl(config('app.name'), $user->email, $user->two_factor_secret);
+    }
+
+    /** The setup address drawn as a QR code (SVG). Null without a pending setup. */
     public function qrSvg(User $user): ?string
     {
-        if ($user->two_factor_secret === null) {
+        $uri = $this->setupUri($user);
+        if ($uri === null) {
             return null;
         }
 
-        $url = $this->google2fa->getQRCodeUrl(config('app.name'), $user->email, $user->two_factor_secret);
-        $svg = (new Writer(new ImageRenderer(new RendererStyle(192, 1), new SvgImageBackEnd)))->writeString($url);
+        $svg = (new Writer(new ImageRenderer(new RendererStyle(192, 1), new SvgImageBackEnd)))->writeString($uri);
 
         // Drop the XML declaration so the SVG can be placed straight into a page.
         return trim(substr($svg, strpos($svg, "\n") + 1));
