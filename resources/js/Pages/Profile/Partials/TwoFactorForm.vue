@@ -61,7 +61,7 @@ const submitConfirm = () => confirm.post(route('profile.two-factor.confirm'), { 
             <p class="text-sm text-gray-800">
                 Scan this code with your authenticator app, or type the key in by hand, then enter the 6-digit code it shows.
             </p>
-            <div v-if="twoFactor.qrSvg" class="inline-block bg-white p-2" data-testid="qr-code" v-html="twoFactor.qrSvg" />
+            <div v-if="twoFactor.qrSvg" class="inline-block bg-white p-4" data-testid="qr-code" v-html="twoFactor.qrSvg" />
             <p class="font-mono text-sm break-all text-gray-700" data-testid="setup-key">{{ twoFactor.setupKey }}</p>
 
             <form class="space-y-4" @submit.prevent="submitConfirm">

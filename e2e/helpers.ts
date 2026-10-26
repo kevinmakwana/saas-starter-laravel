@@ -22,6 +22,19 @@ export async function waitForMail(to: string, subject?: RegExp): Promise<Mailpit
     throw new Error(`No mail for ${to} arrived in Mailpit`);
 }
 
+/** Polls until at least `expected` messages for the address match the subject, and returns how many do (queued mail takes a moment). */
+export async function waitForMailCount(to: string, subject: RegExp, expected: number): Promise<number> {
+    let count = 0;
+    for (let attempt = 0; attempt < 30; attempt++) {
+        const response = await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`);
+        const body = (await response.json()) as { messages?: MailpitMessage[] };
+        count = body.messages?.filter((message) => subject.test(message.Subject)).length ?? 0;
+        if (count >= expected) break;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    return count;
+}
+
 /** Returns the first link in the mail whose href matches the pattern, HTML entities decoded. */
 export async function linkFromMail(message: MailpitMessage, pattern: RegExp): Promise<string> {
     const full = (await (await fetch(`${MAILPIT}/api/v1/message/${message.ID}`)).json()) as { HTML: string };

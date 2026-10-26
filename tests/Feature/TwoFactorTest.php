@@ -85,6 +85,20 @@ describe('setting up', function () {
             ->where('twoFactor.recoveryCodesLeft', 8));
     });
 
+    it('offers the standard authenticator address: the app as issuer, the account, the secret, 6 digits every 30 seconds', function () {
+        $this->actingAs($this->user)->withSession(confirmed())->post('/profile/two-factor');
+        $user = $this->user->fresh();
+
+        $uri = app(TwoFactor::class)->setupUri($user);
+        $parts = parse_url($uri);
+        parse_str($parts['query'], $query);
+
+        expect($parts['scheme'])->toBe('otpauth')->and($parts['host'])->toBe('totp')
+            ->and(rawurldecode(ltrim($parts['path'], '/')))->toBe(config('app.name').':'.$user->email)
+            ->and($query)->toMatchArray(['secret' => $user->two_factor_secret, 'issuer' => config('app.name'), 'algorithm' => 'SHA1', 'digits' => '6', 'period' => '30']);
+        expect(app(TwoFactor::class)->setupUri($this->user->fresh()->forceFill(['two_factor_secret' => null])))->toBeNull();
+    });
+
     it('does not restart a setup that is already on', function () {
         enableTwoFactor($this->user);
         $secret = DB::table('users')->where('id', $this->user->id)->value('two_factor_secret');
