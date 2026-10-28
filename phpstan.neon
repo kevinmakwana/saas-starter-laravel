@@ -6,5 +6,5 @@ parameters:
         - app
         - database
         - routes
-    level: 7
+    level: 8
     tmpDir: storage/framework/phpstan

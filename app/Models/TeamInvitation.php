@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\URL;
  * @property int $team_id
  * @property string $email
  * @property Role $role
+ * @property Team $team
  * @property Carbon $expires_at
  * @property Carbon|null $accepted_at
  */

@@ -12,7 +12,7 @@ class AuditLogController extends Controller
 {
     public function index(Request $request): Response
     {
-        Gate::authorize('viewAuditLog', $request->user()->currentTeam);
+        Gate::authorize('viewAuditLog', $this->team($request));
 
         $entries = AuditLog::query()
             ->with('user:id,name')
@@ -22,7 +22,7 @@ class AuditLogController extends Controller
                 'id' => $log->id,
                 'action' => $log->action,
                 'summary' => $log->summary,
-                'actor' => $log->user_id === null ? 'System' : $log->user->name,
+                'actor' => $log->user->name ?? 'System',
                 'at' => $log->created_at->toIso8601String(),
             ]);
 

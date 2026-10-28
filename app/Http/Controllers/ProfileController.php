@@ -10,7 +10,6 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\TwoFactor;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +29,10 @@ class ProfileController extends Controller
      */
     public function edit(Request $request, TwoFactor $twoFactor): Response
     {
-        $user = $request->user();
+        $user = $this->user($request);
 
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'mustVerifyEmail' => true,
             'status' => session('status'),
             'pendingEmail' => $user->pendingEmail(),
             'twoFactor' => [
@@ -55,7 +54,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request, AuditLogger $audit): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->user($request);
         $user->fill($request->safe()->only('name'));
 
         $changed = array_keys($user->getDirty());
@@ -114,7 +113,7 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        $user = $request->user();
+        $user = $this->user($request);
         $owned = Team::where('owner_id', $user->getKey())->get();
 
         $shared = $owned->first(fn (Team $team) => $team->users()->whereKeyNot($user->getKey())->exists());

@@ -16,7 +16,7 @@ class TwoFactorController extends Controller
     /** Starts a setup. Nothing changes about signing in until the first code is confirmed. */
     public function store(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->user($request);
 
         if ($user->hasTwoFactorEnabled()) {
             return redirect()->route('profile.edit')->with('error', 'Two-factor authentication is already on.');
@@ -30,7 +30,7 @@ class TwoFactorController extends Controller
     public function confirm(Request $request): RedirectResponse
     {
         $request->validate(['code' => ['required', 'string']]);
-        $user = $request->user();
+        $user = $this->user($request);
 
         $codes = $user->hasPendingTwoFactor() ? $this->twoFactor->confirm($user, $request->string('code')->toString()) : null;
         if ($codes === null) {
@@ -44,7 +44,7 @@ class TwoFactorController extends Controller
 
     public function recoveryCodes(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->user($request);
 
         if (! $user->hasTwoFactorEnabled()) {
             return redirect()->route('profile.edit')->with('error', 'Turn on two-factor authentication first.');
@@ -59,7 +59,7 @@ class TwoFactorController extends Controller
     /** Turns it off, or abandons a setup that was never confirmed. */
     public function destroy(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->user($request);
         $wasOn = $user->hasTwoFactorEnabled();
 
         $this->twoFactor->disable($user);

@@ -28,16 +28,16 @@ class TeamController extends Controller
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
 
-        $team = Team::createFor($request->user(), $data['name']);
-        $audit->recordFor($request->user(), 'team.created', "Created the team “{$team->name}”", $team);
+        $team = Team::createFor($this->user($request), $data['name']);
+        $audit->recordFor($this->user($request), 'team.created', "Created the team “{$team->name}”", $team);
 
         return redirect()->route('teams.show')->with('success', 'Team created.');
     }
 
     public function show(Request $request): Response
     {
-        $user = $request->user();
-        $team = $user->currentTeam;
+        $user = $this->user($request);
+        $team = $this->team($request);
         Gate::authorize('view', $team);
 
         return Inertia::render('Teams/Show', [
@@ -69,7 +69,7 @@ class TeamController extends Controller
 
     public function update(Request $request, AuditLogger $audit): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('update', $team);
 
         $previous = $team->name;
@@ -89,8 +89,8 @@ class TeamController extends Controller
      */
     public function destroy(Request $request, BillingGateway $billing): RedirectResponse
     {
-        $user = $request->user();
-        $team = $user->currentTeam;
+        $user = $this->user($request);
+        $team = $this->team($request);
         Gate::authorize('delete', $team);
 
         $request->validate([
@@ -133,7 +133,7 @@ class TeamController extends Controller
         $request->validate(['team_id' => ['required', 'integer']]);
         $team = Team::find($request->integer('team_id'));
 
-        abort_unless($team && $request->user()->switchTeam($team), 403);
+        abort_unless($team && $this->user($request)->switchTeam($team), 403);
 
         return redirect()->route('dashboard');
     }

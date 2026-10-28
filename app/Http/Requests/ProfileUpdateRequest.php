@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\User;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,7 +25,7 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                Rule::unique(User::class)->ignore($this->signedInUser()->id),
             ],
             // A new address is confirmed by link, and asking for it needs the password, so a hijacked session cannot redirect the account.
             'current_password' => [
@@ -37,6 +38,11 @@ class ProfileUpdateRequest extends FormRequest
     /** Whether the submitted address differs from the account's current one. */
     public function changesEmail(): bool
     {
-        return strcasecmp((string) $this->input('email'), $this->user()->email) !== 0;
+        return strcasecmp((string) $this->input('email'), $this->signedInUser()->email) !== 0;
+    }
+
+    private function signedInUser(): User
+    {
+        return $this->user() ?? throw new AuthenticationException;
     }
 }

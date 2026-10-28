@@ -156,7 +156,7 @@ make test                  # Pest feature + unit tests (inside Sail)
 #   STRIPE_MOCK_URL=http://127.0.0.1:12111 vendor/bin/pest --group=stripe-mock
 npm run e2e                # Playwright browser tests against the running app (make up first)
 vendor/bin/pint --test     # code style
-vendor/bin/phpstan analyse # Larastan, level 7
+vendor/bin/phpstan analyse # Larastan, level 8
 npm run build              # vue-tsc type check + Vite build
 ```
 

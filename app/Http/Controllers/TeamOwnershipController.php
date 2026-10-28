@@ -15,17 +15,17 @@ class TeamOwnershipController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $team = $request->user()->currentTeam;
+        $team = $this->team($request);
         Gate::authorize('transferOwnership', $team);
 
         $request->validate(['user_id' => ['required', 'integer']]);
         $newOwner = User::find($request->integer('user_id'));
 
-        if (! $newOwner || $newOwner->is($request->user()) || ! $team->hasMember($newOwner)) {
+        if (! $newOwner || $newOwner->is($this->user($request)) || ! $team->hasMember($newOwner)) {
             throw ValidationException::withMessages(['user_id' => 'Choose another member of this team.']);
         }
 
-        $team->transferOwnership($request->user(), $newOwner);
+        $team->transferOwnership($this->user($request), $newOwner);
 
         $this->audit->record('team.ownership_transferred', "Transferred ownership to {$newOwner->name}");
 
