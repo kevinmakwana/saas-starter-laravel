@@ -22,5 +22,8 @@
         "vite": "^7.0.7",
         "vue": "^3.5.44",
         "vue-tsc": "^2.0.24"
+    },
+    "overrides": {
+        "postcss-selector-parser": "^7.1.6"
     }
 }
