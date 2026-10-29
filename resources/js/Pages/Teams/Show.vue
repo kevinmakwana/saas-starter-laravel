@@ -54,12 +54,12 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
             <section class="bg-white p-6 shadow sm:rounded-lg">
                 <h3 class="mb-4 text-lg font-medium text-gray-900">Members</h3>
                 <ul class="divide-y divide-gray-100">
-                    <li v-for="member in members" :key="member.id" class="flex items-center justify-between gap-4 py-3">
+                    <li v-for="member in members" :key="member.id" class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                         <div>
                             <p class="font-medium text-gray-900">{{ member.name }}</p>
                             <p class="text-sm text-gray-500">{{ member.email }}</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <select
                                 v-if="can.updateRoles && member.role !== 'owner'"
                                 :value="member.role"
@@ -99,7 +99,7 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                 </form>
 
                 <ul v-if="invitations.length" class="mt-6 divide-y divide-gray-100">
-                    <li v-for="invitation in invitations" :key="invitation.id" class="flex items-center justify-between py-2 text-sm">
+                    <li v-for="invitation in invitations" :key="invitation.id" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                         <span>{{ invitation.email }} <span class="text-gray-500">· {{ invitation.role }} · {{ invitation.expired ? 'expired' : 'pending' }}</span></span>
                         <span class="flex gap-2">
                             <SecondaryButton @click="resend(invitation)">Resend</SecondaryButton>
