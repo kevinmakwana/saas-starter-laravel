@@ -32,7 +32,7 @@ class TeamController extends Controller
         $team = Team::createFor($this->user($request), $data['name']);
         $audit->recordFor($this->user($request), 'team.created', "Created the team “{$team->name}”", $team);
 
-        return redirect()->route('teams.show')->with('success', 'Team created.');
+        return redirect()->route('teams.show')->with('success', __('Team created.'));
     }
 
     public function show(Request $request): Response
@@ -80,7 +80,7 @@ class TeamController extends Controller
             $audit->record('team.renamed', "Renamed the team from “{$previous}” to “{$team->name}”", $team);
         }
 
-        return back()->with('success', 'Team renamed.');
+        return back()->with('success', __('Team renamed.'));
     }
 
     /**
@@ -97,7 +97,7 @@ class TeamController extends Controller
         $request->validate([
             'password' => ['required', 'current_password'],
             'name' => ['required', 'string', fn (string $attribute, mixed $value, \Closure $fail) => hash_equals($team->name, (string) $value)
-                || $fail('Type the team name exactly to confirm.')],
+                || $fail(__('Type the team name exactly to confirm.'))],
         ]);
 
         try {
@@ -106,7 +106,7 @@ class TeamController extends Controller
             report($e);
 
             throw ValidationException::withMessages([
-                'team' => 'We could not end the subscription, so nothing was deleted. Please try again or contact support.',
+                'team' => __('We could not end the subscription, so nothing was deleted. Please try again or contact support.'),
             ]);
         }
 
@@ -116,7 +116,7 @@ class TeamController extends Controller
         DB::transaction(fn () => $team->delete());
 
         foreach ($others as $member) {
-            Mail::to($member->email)->send(new TeamDeletedMail($name, $user->name));
+            Mail::to($member)->send(new TeamDeletedMail($name, $user->name));
             $member->notify(new TeamDeleted($name, $user->name));
         }
 
@@ -125,8 +125,8 @@ class TeamController extends Controller
         $next = $user->teams()->first();
 
         return $next !== null && $user->switchTeam($next)
-            ? redirect()->route('dashboard')->with('success', "“{$name}” was deleted.")
-            : redirect()->route('teams.create')->with('success', "“{$name}” was deleted.");
+            ? redirect()->route('dashboard')->with('success', __('“:name” was deleted.', ['name' => $name]))
+            : redirect()->route('teams.create')->with('success', __('“:name” was deleted.', ['name' => $name]));
     }
 
     /** Switch the current team to one the user belongs to. */

@@ -1,15 +1,14 @@
 <x-mail::message>
-# We couldn't process your payment
+# {{ __("We couldn't process your payment") }}
 
-The latest payment for **{{ $team->name }}** ({{ $plan->label() }} plan) failed.
+{{ __('The latest payment for **:team** (:plan plan) failed.', ['team' => $team->name, 'plan' => $plan->label()]) }}
 
-Your plan stays active until **{{ $deadline?->toFormattedDateString() }}**. Please update your payment method before then,
-otherwise the team will move to the Free plan until the payment goes through.
+{{ __('Your plan stays active until **:date**. Please update your payment method before then, otherwise the team will move to the Free plan until the payment goes through.', ['date' => $deadline?->isoFormat('ll')]) }}
 
 <x-mail::button :url="$url">
-Update payment method
+{{ __('Update payment method') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('Thanks,') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

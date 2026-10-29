@@ -5,6 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { isAxiosError } from 'axios';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const password = ref('');
 const error = ref('');
@@ -36,10 +39,10 @@ const download = async () => {
 
 const describe = async (e: unknown): Promise<string> => {
     if (!isAxiosError(e) || !e.response) {
-        return 'Could not reach the server. Please try again.';
+        return t('profile.export.unreachable');
     }
     if (e.response.status === 429) {
-        return 'You have downloaded your data too often. Please try again later.';
+        return t('profile.export.tooMany');
     }
     if (e.response.status === 422) {
         try {
@@ -49,25 +52,23 @@ const describe = async (e: unknown): Promise<string> => {
             // fall through
         }
     }
-    return 'Something went wrong. Please try again.';
+    return t('profile.export.generic');
 };
 </script>
 
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Download your data</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ t('profile.export.title') }}</h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Get a copy of the personal data we hold about you as a JSON file: your account, your teams and roles, your
-                invitations and the activity you caused. Team content such as projects and tasks belongs to the team and is
-                not included.
+                {{ t('profile.export.intro') }}
             </p>
         </header>
 
         <form class="mt-6 space-y-6" @submit.prevent="download">
             <div>
-                <InputLabel for="export_password" value="Current password" />
+                <InputLabel for="export_password" :value="t('profile.export.password')" />
                 <TextInput
                     id="export_password"
                     v-model="password"
@@ -80,8 +81,8 @@ const describe = async (e: unknown): Promise<string> => {
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="processing">Download</PrimaryButton>
-                <p v-if="done" class="text-sm text-gray-600 dark:text-gray-400" role="status">Downloaded.</p>
+                <PrimaryButton :disabled="processing">{{ t('profile.export.download') }}</PrimaryButton>
+                <p v-if="done" class="text-sm text-gray-600 dark:text-gray-400" role="status">{{ t('profile.export.done') }}</p>
             </div>
         </form>
     </section>

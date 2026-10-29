@@ -66,6 +66,8 @@ export type PageProps<
         overLimit: { plan: string; items: { key: string; label: string; used: number; limit: number }[] } | null;
     };
     notifications: { unread: number; items: NotificationItem[] } | null;
+    locale: string;
+    locales: { code: string; name: string }[];
     flash: {
         success: string | null;
         upgrade: string | null;

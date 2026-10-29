@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { SocialProvider } from '@/types';
+import { useI18n } from 'vue-i18n';
 
-defineProps<{ providers: SocialProvider[]; verb: string }>();
+defineProps<{ providers: SocialProvider[]; mode: 'signIn' | 'signUp' }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -14,9 +17,9 @@ defineProps<{ providers: SocialProvider[]; verb: string }>();
                 :href="route('social.redirect', provider.key)"
                 class="flex w-full items-center justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-                {{ verb }} with {{ provider.label }}
+                {{ t(`auth.social.${mode}`, { provider: provider.label }) }}
             </a>
         </div>
-        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">or use your email</p>
+        <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">{{ t('auth.social.divider') }}</p>
     </div>
 </template>

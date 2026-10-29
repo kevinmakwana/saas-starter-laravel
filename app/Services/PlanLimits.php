@@ -32,9 +32,9 @@ class PlanLimits
         }
 
         $next = $plan->nextWithRoomFor('storage_mb', (int) ceil($total / self::MB));
-        $hint = $next ? "Upgrade to {$next->label()} for more." : 'Contact us for a custom plan.';
+        $hint = $next ? __('Upgrade to :plan for more.', ['plan' => $next->label()]) : __('Contact us for a custom plan.');
 
-        return Response::deny("Your {$plan->label()} plan includes {$limit} MB of file storage. {$hint}")->withStatus(402);
+        return Response::deny(__('Your :plan plan includes :limit MB of file storage. :hint', ['plan' => $plan->label(), 'limit' => $limit, 'hint' => $hint]))->withStatus(402);
     }
 
     public function usage(Team $team, string $key): int
@@ -83,8 +83,8 @@ class PlanLimits
         }
 
         $next = $plan->nextWithRoomFor($key, $used + 1);
-        $hint = $next ? "Upgrade to {$next->label()} to add more." : 'Contact us for a custom plan.';
+        $hint = $next ? __('Upgrade to :plan to add more.', ['plan' => $next->label()]) : __('Contact us for a custom plan.');
 
-        return Response::deny("Your {$plan->label()} plan includes up to {$limit} {$noun}. {$hint}")->withStatus(402);
+        return Response::deny(__('Your :plan plan includes up to :limit :noun. :hint', ['plan' => $plan->label(), 'limit' => $limit, 'noun' => __($noun), 'hint' => $hint]))->withStatus(402);
     }
 }

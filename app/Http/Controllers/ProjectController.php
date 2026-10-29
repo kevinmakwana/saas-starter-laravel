@@ -51,7 +51,7 @@ class ProjectController extends Controller
         $project = Project::create($this->validated($request));
         $this->audit->record('project.created', "Created project “{$project->name}”", $project);
 
-        return redirect()->route('projects.show', $project)->with('success', 'Project created.');
+        return redirect()->route('projects.show', $project)->with('success', __('Project created.'));
     }
 
     public function show(Request $request, Project $project, PlanLimits $limits): Response
@@ -111,7 +111,7 @@ class ProjectController extends Controller
         $project->update($this->validated($request));
         $this->audit->record('project.updated', "Updated project “{$project->name}”", $project);
 
-        return redirect()->route('projects.show', $project)->with('success', 'Project updated.');
+        return redirect()->route('projects.show', $project)->with('success', __('Project updated.'));
     }
 
     public function destroy(Project $project): RedirectResponse
@@ -121,7 +121,7 @@ class ProjectController extends Controller
         $project->delete();
         $this->audit->record('project.deleted', "Deleted project “{$project->name}”", $project);
 
-        return redirect()->route('projects.index')->with('success', 'Project deleted.');
+        return redirect()->route('projects.index')->with('success', __('Project deleted.'));
     }
 
     /** @return array{name: string, description: string|null} */

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+import LocaleSwitcher from '@/Components/LocaleSwitcher.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
 import { Link } from '@inertiajs/vue3';
 </script>
@@ -8,7 +9,10 @@ import { Link } from '@inertiajs/vue3';
     <div
         class="flex min-h-screen flex-col items-center bg-gray-100 dark:bg-gray-900 pt-6 sm:justify-center sm:pt-0"
     >
-        <ThemeToggle class="absolute right-4 top-4" />
+        <div class="absolute right-4 top-4 flex items-center gap-2">
+            <LocaleSwitcher />
+            <ThemeToggle />
+        </div>
 
         <div>
             <Link href="/">

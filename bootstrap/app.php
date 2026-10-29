@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureHasTeam;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequireFeature;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\UseTokenTeam;
 use App\Support\TrustedProxies;
 use Illuminate\Foundation\Application;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecurityHeaders::class);
 
         $middleware->web(append: [
+            SetLocale::class,
             AddRequestContext::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -71,7 +73,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->header('X-Inertia')) {
                 $seconds = (int) ($e->getHeaders()['Retry-After'] ?? 60);
 
-                return back()->with('error', "Too many attempts. Please try again in {$seconds} seconds.");
+                return back()->with('error', __('Too many attempts. Please try again in :seconds seconds.', ['seconds' => $seconds]));
             }
         });
     })->create();

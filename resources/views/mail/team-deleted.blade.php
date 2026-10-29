@@ -1,14 +1,14 @@
 <x-mail::message>
-# {{ $teamName }} was deleted
+# {{ __(':team was deleted', ['team' => $teamName]) }}
 
-{{ $deletedBy }} deleted the team **{{ $teamName }}**. Its projects, tasks and activity history were deleted with it, and you no longer have access to it.
+{{ __(':user deleted the team **:team**. Its projects, tasks and activity history were deleted with it, and you no longer have access to it.', ['user' => $deletedBy, 'team' => $teamName]) }}
 
-Your own account and any other teams you belong to are not affected.
+{{ __('Your own account and any other teams you belong to are not affected.') }}
 
 <x-mail::button :url="$url">
-Go to your dashboard
+{{ __('Go to your dashboard') }}
 </x-mail::button>
 
-Thanks,<br>
+{{ __('Thanks,') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

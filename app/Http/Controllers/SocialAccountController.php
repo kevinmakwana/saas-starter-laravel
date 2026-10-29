@@ -19,6 +19,6 @@ class SocialAccountController extends Controller
         $link->delete();
         $audit->recordFor($user, 'social.unlinked', "Disconnected their {$label} login");
 
-        return redirect()->route('profile.edit')->with('success', "{$label} disconnected.");
+        return redirect()->route('profile.edit')->with('success', __(':provider disconnected.', ['provider' => $label]));
     }
 }

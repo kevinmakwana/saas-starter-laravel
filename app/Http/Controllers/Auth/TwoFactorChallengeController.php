@@ -51,8 +51,8 @@ class TwoFactorChallengeController extends Controller
         if (! $accepted) {
             throw ValidationException::withMessages([
                 $field => $field === 'code' && blank($data['code'] ?? null)
-                    ? 'Enter the code from your authenticator app, or a recovery code.'
-                    : 'That code is not valid.',
+                    ? __('Enter the code from your authenticator app, or a recovery code.')
+                    : __('That code is not valid.'),
             ]);
         }
 

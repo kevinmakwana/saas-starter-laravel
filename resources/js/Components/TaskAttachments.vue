@@ -4,6 +4,7 @@ import { formatBytes } from '@/lib/format';
 import type { AttachmentRow } from '@/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
     projectId: number;
@@ -13,6 +14,8 @@ const props = defineProps<{
     maxFileKb: number;
     extensions: string[];
 }>();
+
+const { t } = useI18n();
 
 const input = ref<HTMLInputElement | null>(null);
 const form = useForm<{ file: File | null }>({ file: null });
@@ -47,7 +50,7 @@ const pick = (event: Event) => {
 };
 
 const remove = (file: AttachmentRow) => {
-    if (window.confirm(`Remove “${file.name}”?`)) {
+    if (window.confirm(t('attachments.confirmRemove', { name: file.name }))) {
         router.delete(route('attachments.destroy', file.id), { preserveScroll: true });
     }
 };
@@ -61,18 +64,18 @@ const remove = (file: AttachmentRow) => {
                     <a :href="route('attachments.download', file.id)" class="break-all text-indigo-700 underline dark:text-indigo-400">{{ file.name }}</a>
                     <span class="ms-2 text-xs text-gray-600 dark:text-gray-400">{{ formatBytes(file.size) }}<template v-if="file.uploader"> · {{ file.uploader }}</template></span>
                 </div>
-                <button type="button" class="text-red-600 hover:underline dark:text-red-400" :aria-label="`Remove ${file.name}`" @click="remove(file)">Remove</button>
+                <button type="button" class="text-red-600 hover:underline dark:text-red-400" :aria-label="t('attachments.removeAria', { name: file.name })" @click="remove(file)">{{ t('common.remove') }}</button>
             </li>
         </ul>
-        <p v-else class="text-gray-600 dark:text-gray-400">No files yet.</p>
+        <p v-else class="text-gray-600 dark:text-gray-400">{{ t('attachments.empty') }}</p>
 
         <div class="mt-2 flex flex-wrap items-center gap-3">
             <label class="cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm hover:bg-gray-50 focus-within:ring-2 focus-within:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" :class="{ 'opacity-50': form.processing }">
-                {{ form.processing ? 'Uploading…' : 'Attach a file' }}
-                <input ref="input" type="file" class="sr-only" :accept="accept" :disabled="form.processing" :aria-label="`Attach a file to task ${taskId}`" @change="pick" />
+                {{ form.processing ? t('attachments.uploading') : t('attachments.attach') }}
+                <input ref="input" type="file" class="sr-only" :accept="accept" :disabled="form.processing" :aria-label="t('attachments.attachAria', { id: taskId })" @change="pick" />
             </label>
             <span v-if="form.progress" class="text-xs text-gray-600 dark:text-gray-400" role="status">{{ form.progress.percentage }}%</span>
         </div>
-        <InputError class="mt-2" :message="tooBig ? `That file is larger than ${Math.round(maxFileKb / 1024)} MB.` : form.errors.file" />
+        <InputError class="mt-2" :message="tooBig ? t('attachments.tooBig', { mb: Math.round(maxFileKb / 1024) }) : form.errors.file" />
     </div>
 </template>

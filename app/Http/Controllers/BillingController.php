@@ -72,7 +72,7 @@ class BillingController extends Controller
         }
 
         if ($team->currentPlan() !== Plan::Free) {
-            return back()->with('error', 'Your team already has a paid plan. Use Switch plan or Resume instead.');
+            return back()->with('error', __('Your team already has a paid plan. Use Switch plan or Resume instead.'));
         }
 
         $url = null;
@@ -87,7 +87,7 @@ class BillingController extends Controller
             $this->audit->record('billing.subscribed', "Started the {$plan->label()} plan");
         }
 
-        return $url ? Inertia::location($url) : back()->with('success', "You're now on the {$plan->label()} plan.");
+        return $url ? Inertia::location($url) : back()->with('success', __("You're now on the :plan plan.", ['plan' => $plan->label()]));
     }
 
     public function change(Request $request): RedirectResponse
@@ -100,7 +100,7 @@ class BillingController extends Controller
         $interval = $this->interval($request, fallback: $team->billingInterval());
 
         if ($plan === $team->currentPlan() && $interval === $team->billingInterval()) {
-            return back()->with('error', "Your team is already on the {$plan->label()} plan.");
+            return back()->with('error', __('Your team is already on the :plan plan.', ['plan' => $plan->label()]));
         }
 
         if ($unavailable = $this->unavailable($plan, $interval)) {
@@ -113,7 +113,7 @@ class BillingController extends Controller
 
         $this->audit->record('billing.changed', "Changed plan to {$plan->label()} (billed {$interval->value})");
 
-        return back()->with('success', "Plan changed to {$plan->label()}.");
+        return back()->with('success', __('Plan changed to :plan.', ['plan' => $plan->label()]));
     }
 
     public function cancel(Request $request): RedirectResponse
@@ -127,7 +127,7 @@ class BillingController extends Controller
 
         $this->audit->record('billing.cancelled', 'Cancelled the subscription');
 
-        return back()->with('success', 'Subscription cancelled. You keep your plan until the end of the period.');
+        return back()->with('success', __('Subscription cancelled. You keep your plan until the end of the period.'));
     }
 
     public function resume(Request $request): RedirectResponse
@@ -141,7 +141,7 @@ class BillingController extends Controller
 
         $this->audit->record('billing.resumed', 'Resumed the subscription');
 
-        return back()->with('success', 'Subscription resumed.');
+        return back()->with('success', __('Subscription resumed.'));
     }
 
     /** Sends the owner to Stripe's Customer Portal (payment method, invoices). The payment failed email links here. */
@@ -155,7 +155,7 @@ class BillingController extends Controller
 
         if (! $team->hasStripeId() || ! $this->gateway->supportsPortal()) {
             return redirect()->route('billing.show')
-                ->with('error', 'The billing portal is available once you have a paid subscription.');
+                ->with('error', __('The billing portal is available once you have a paid subscription.'));
         }
 
         try {
@@ -165,7 +165,7 @@ class BillingController extends Controller
             report($e);
 
             return redirect()->route('billing.show')
-                ->with('error', 'We could not open the billing portal right now. Please try again later or contact support.');
+                ->with('error', __('We could not open the billing portal right now. Please try again later or contact support.'));
         }
     }
 
@@ -179,11 +179,11 @@ class BillingController extends Controller
         } catch (AlreadySubscribed $e) {
             return back()->with('error', $e->getMessage());
         } catch (IncompletePayment) {
-            return back()->with('error', 'Your bank needs you to confirm this payment. Update your payment method with the billing portal, then try again.');
+            return back()->with('error', __('Your bank needs you to confirm this payment. Update your payment method with the billing portal, then try again.'));
         } catch (Throwable $e) {
             report($e);
 
-            return back()->with('error', 'We could not reach our payment provider, so nothing was changed. Please try again in a moment.');
+            return back()->with('error', __('We could not reach our payment provider, so nothing was changed. Please try again in a moment.'));
         }
     }
 
@@ -212,7 +212,7 @@ class BillingController extends Controller
     private function unavailable(Plan $plan, BillingInterval $interval): ?RedirectResponse
     {
         if ($interval === BillingInterval::Yearly && ! $this->gateway->offersYearly($plan)) {
-            return back()->with('error', "Yearly billing is not available for the {$plan->label()} plan.");
+            return back()->with('error', __('Yearly billing is not available for the :plan plan.', ['plan' => $plan->label()]));
         }
 
         return null;

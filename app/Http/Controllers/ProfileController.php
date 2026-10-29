@@ -102,8 +102,8 @@ class ProfileController extends Controller
             ['id' => $user->getKey(), 'hash' => sha1($newEmail)],
         );
 
-        Mail::to($newEmail)->send(new EmailChangeConfirmationMail($user->name, $link));
-        Mail::to($user->email)->send(new EmailChangeNoticeMail($user->name, $newEmail));
+        Mail::to($newEmail)->locale(app()->getLocale())->send(new EmailChangeConfirmationMail($user->name, $link));
+        Mail::to($user)->send(new EmailChangeNoticeMail($user->name, $newEmail));
         $audit->recordFor($user, 'profile.email_change_requested', "Asked to change their email to {$newEmail}");
     }
 
@@ -138,7 +138,7 @@ class ProfileController extends Controller
         $shared = $owned->first(fn (Team $team) => $team->users()->whereKeyNot($user->getKey())->exists());
         if ($shared !== null) {
             throw ValidationException::withMessages([
-                'account' => "You still own “{$shared->name}” with other members. Transfer ownership or remove them before deleting your account.",
+                'account' => __('You still own “:team” with other members. Transfer ownership or remove them before deleting your account.', ['team' => $shared->name]),
             ]);
         }
 
@@ -150,7 +150,7 @@ class ProfileController extends Controller
                 report($e);
 
                 throw ValidationException::withMessages([
-                    'account' => "We could not end the subscription of “{$team->name}”, so nothing was deleted. Please try again or contact support.",
+                    'account' => __('We could not end the subscription of “:team”, so nothing was deleted. Please try again or contact support.', ['team' => $team->name]),
                 ]);
             }
         }

@@ -10,7 +10,11 @@ enum Role: string
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Owner => __('Owner'),
+            self::Admin => __('Admin'),
+            self::Member => __('Member'),
+        };
     }
 
     /** Owners and admins manage members, invitations and see the audit log. */

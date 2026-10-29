@@ -21,7 +21,7 @@ class PaymentFailedMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Action needed: payment failed for {$this->team->name}");
+        return new Envelope(subject: __('Action needed: payment failed for :team', ['team' => $this->team->name]));
     }
 
     public function content(): Content

@@ -20,7 +20,7 @@ class EmailChangeNoticeMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: $this->completed ? 'Your email address was changed' : 'Someone asked to change your email address');
+        return new Envelope(subject: $this->completed ? __('Your email address was changed') : __('Someone asked to change your email address'));
     }
 
     public function content(): Content
