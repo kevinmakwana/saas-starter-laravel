@@ -24,7 +24,7 @@ function switchTeam(event: Event) {
         v-if="teams.length"
         :value="current"
         aria-label="Switch team"
-        class="rounded-md border-gray-300 py-1.5 text-sm text-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+        class="rounded-md border-gray-300 dark:border-gray-600 py-1.5 text-sm text-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         @change="switchTeam"
     >
         <option v-for="team in teams" :key="team.id" :value="team.id">

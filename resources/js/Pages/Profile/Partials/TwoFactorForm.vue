@@ -32,14 +32,14 @@ const submitConfirm = () => confirm.post(route('profile.two-factor.confirm'), { 
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">Two-factor authentication</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Two-factor authentication</h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Ask for a code from an authenticator app when you sign in, on top of your password.
             </p>
         </header>
 
-        <div v-if="recoveryCodes?.length" class="mt-6 rounded-md bg-amber-50 p-4 text-sm text-amber-900" data-testid="recovery-codes">
+        <div v-if="recoveryCodes?.length" class="mt-6 rounded-md bg-amber-50 dark:bg-amber-900/30 p-4 text-sm text-amber-900 dark:text-amber-200" data-testid="recovery-codes">
             <p class="font-medium">Save these recovery codes somewhere safe.</p>
             <p class="mt-1">Each works once if you lose your phone. They will not be shown again.</p>
             <ul class="mt-3 grid grid-cols-1 gap-1 font-mono sm:grid-cols-2">
@@ -48,7 +48,7 @@ const submitConfirm = () => confirm.post(route('profile.two-factor.confirm'), { 
         </div>
 
         <div v-if="twoFactor.enabled" class="mt-6 space-y-4">
-            <p class="text-sm text-gray-800">
+            <p class="text-sm text-gray-800 dark:text-gray-200">
                 Two-factor authentication is <strong>on</strong>. You have {{ twoFactor.recoveryCodesLeft }} recovery codes left.
             </p>
             <div class="flex flex-wrap gap-3">
@@ -58,11 +58,11 @@ const submitConfirm = () => confirm.post(route('profile.two-factor.confirm'), { 
         </div>
 
         <div v-else-if="twoFactor.pending" class="mt-6 space-y-4">
-            <p class="text-sm text-gray-800">
+            <p class="text-sm text-gray-800 dark:text-gray-200">
                 Scan this code with your authenticator app, or type the key in by hand, then enter the 6-digit code it shows.
             </p>
             <div v-if="twoFactor.qrSvg" class="inline-block bg-white p-4" data-testid="qr-code" v-html="twoFactor.qrSvg" />
-            <p class="font-mono text-sm break-all text-gray-700" data-testid="setup-key">{{ twoFactor.setupKey }}</p>
+            <p class="font-mono text-sm break-all text-gray-700 dark:text-gray-300" data-testid="setup-key">{{ twoFactor.setupKey }}</p>
 
             <form class="space-y-4" @submit.prevent="submitConfirm">
                 <div>

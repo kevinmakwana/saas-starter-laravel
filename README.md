@@ -116,6 +116,7 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Team deletion:** the owner can delete a team from the Team page, after typing its name and their password. Billing is ended first, so if
   Stripe fails nothing is deleted. Projects, tasks, invitations and the audit log go with the team (so the deletion itself is not in the log),
   the other members get an email, and everyone lands on another team of theirs or on "create a team".
+- **Dark mode:** a sun/moon toggle in the header (and on the sign-in pages). It follows the system setting until you choose, and the choice is remembered in the browser. A small inline script in the page head (allowed by the CSP nonce) applies it before first paint, so there is no flash. Every page has dark styles, form controls follow the theme from one place in `resources/css/app.css`, and an automated contrast scan (axe, WCAG AA) covers the main pages in both themes.
 - **Two-factor authentication:** optional per user, on every plan (`Profile → Two-factor authentication`). Setup shows a QR code and a key,
   and only a correct first code turns it on, then 8 single-use recovery codes are shown once. After the right password, a user with 2FA is
   not signed in yet: they get a code (or recovery code) prompt, limited to 5 tries a minute per account, and a pending sign-in expires after

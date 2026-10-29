@@ -56,9 +56,9 @@ const describe = async (e: unknown): Promise<string> => {
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">Download your data</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Download your data</h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Get a copy of the personal data we hold about you as a JSON file: your account, your teams and roles, your
                 invitations and the activity you caused. Team content such as projects and tasks belongs to the team and is
                 not included.
@@ -81,7 +81,7 @@ const describe = async (e: unknown): Promise<string> => {
 
             <div class="flex items-center gap-4">
                 <PrimaryButton :disabled="processing">Download</PrimaryButton>
-                <p v-if="done" class="text-sm text-gray-600" role="status">Downloaded.</p>
+                <p v-if="done" class="text-sm text-gray-600 dark:text-gray-400" role="status">Downloaded.</p>
             </div>
         </form>
     </section>

@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* One place for form controls in dark mode, so every input, select and textarea (present and future) follows it. */
+@layer base {
+    .dark input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']):not([type='file']),
+    .dark select,
+    .dark textarea {
+        @apply border-gray-600 bg-gray-900 text-gray-200;
+    }
+
+    .dark input[type='checkbox'],
+    .dark input[type='radio'] {
+        @apply border-gray-600 bg-gray-900;
+    }
+
+    .dark ::placeholder {
+        @apply text-gray-500;
+    }
+}
+
+/* Native form controls, scrollbars and autofill follow the theme chosen on <html>. */
+:root {
+    color-scheme: light;
+}
+
+:root.dark {
+    color-scheme: dark;
+}

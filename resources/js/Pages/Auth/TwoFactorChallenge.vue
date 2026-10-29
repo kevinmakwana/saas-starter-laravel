@@ -28,7 +28,7 @@ const toggle = () => {
     <GuestLayout>
         <Head title="Two-factor authentication" />
 
-        <p class="mb-4 text-sm text-gray-600">
+        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
             {{
                 useRecovery
                     ? 'Enter one of your recovery codes. Each one works only once.'
@@ -69,7 +69,7 @@ const toggle = () => {
             <div class="mt-4 flex items-center justify-between">
                 <button
                     type="button"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    class="rounded-md text-sm text-gray-600 dark:text-gray-400 underline hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     @click="toggle"
                 >
                     {{ useRecovery ? 'Use an authenticator code' : 'Use a recovery code' }}
