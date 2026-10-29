@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import ApiTokensForm from './Partials/ApiTokensForm.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import ExportDataForm from './Partials/ExportDataForm.vue';
 import TwoFactorForm from './Partials/TwoFactorForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
+import type { ApiToken } from '@/types';
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
@@ -19,6 +21,9 @@ defineProps<{
         recoveryCodesLeft: number | null;
     };
     recoveryCodes?: string[] | null;
+    apiTokens: ApiToken[];
+    apiTeams: { id: number; name: string }[];
+    newToken?: string | null;
 }>();
 </script>
 
@@ -59,6 +64,17 @@ defineProps<{
                     <TwoFactorForm
                         :two-factor="twoFactor"
                         :recovery-codes="recoveryCodes"
+                        class="max-w-xl"
+                    />
+                </div>
+
+                <div
+                    class="bg-white dark:bg-gray-800 p-4 shadow sm:rounded-lg sm:p-8"
+                >
+                    <ApiTokensForm
+                        :tokens="apiTokens"
+                        :teams="apiTeams"
+                        :new-token="newToken"
                         class="max-w-xl"
                     />
                 </div>

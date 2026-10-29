@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Billing\BillingGateway;
 use App\Billing\FakeGateway;
 use App\Billing\StripeGateway;
+use App\Models\PersonalAccessToken;
 use App\Models\Team;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Laravel\Sanctum\Sanctum;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Cashier::useCustomerModel(Team::class);
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
         Vite::prefetch(concurrency: 3);
 
         $this->configureRateLimiting();
@@ -62,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('data-export', fn (Request $request) => Limit::perHour(3)->by($user($request)));
         // Six digits are guessable, so the code step allows few tries per account, however many addresses they come from.
         RateLimiter::for('two-factor', fn (Request $request) => Limit::perMinute(5)->by('two-factor|'.($request->session()->get('login.id') ?? $request->ip())));
+        // Per token, so one busy integration does not slow another. Unauthenticated calls never get this far.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute((int) config('throttle.api_per_minute'))
+            ->by('api|'.($request->user()?->currentAccessToken()?->getKey() ?? $request->ip())));
+        RateLimiter::for('api-tokens', fn (Request $request) => Limit::perHour(10)->by($user($request)));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(20)->by($user($request)));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));
         RateLimiter::for('billing', fn (Request $request) => Limit::perMinute(10)->by($user($request)));

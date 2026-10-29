@@ -4,13 +4,17 @@ namespace App\Models;
 
 use App\Enums\Role;
 use Database\Factories\UserFactory;
+use DateTimeInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\NewAccessToken;
 
 /**
  * @property int $id
@@ -30,7 +34,7 @@ use Illuminate\Support\Carbon;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /** How long the link for a new email address works. */
     public const EMAIL_CHANGE_TTL_MINUTES = 60;
@@ -79,7 +83,32 @@ class User extends Authenticatable implements MustVerifyEmail
     protected static function booted(): void
     {
         // Notifications point at their user without a foreign key, so they would be left behind.
-        static::deleting(fn (User $user) => $user->notifications()->delete());
+        static::deleting(function (User $user) {
+            $user->notifications()->delete();
+            // Tokens point at their user without a foreign key (Sanctum's polymorphic design).
+            $user->tokens()->delete();
+        });
+    }
+
+    /**
+     * Makes an API token that works in one team only. Like Sanctum's createToken(), the plain text is returned
+     * once and only its hash is stored.
+     *
+     * @param  list<string>  $abilities
+     */
+    public function issueApiToken(Team $team, string $name, array $abilities, ?DateTimeInterface $expiresAt = null): NewAccessToken
+    {
+        $plainText = $this->generateTokenString();
+
+        $token = $this->tokens()->create([
+            'name' => $name,
+            'token' => hash('sha256', $plainText),
+            'abilities' => $abilities,
+            'expires_at' => $expiresAt,
+            'team_id' => $team->getKey(),
+        ]);
+
+        return new NewAccessToken($token, $token->getKey().'|'.$plainText);
     }
 
     /** Signing in asks for a code. A setup that was never confirmed does not count. */
@@ -105,6 +134,16 @@ class User extends Authenticatable implements MustVerifyEmail
     public function clearPendingEmail(): void
     {
         $this->forceFill(['pending_email' => null, 'pending_email_expires_at' => null])->save();
+    }
+
+    /**
+     * API tokens made by this user (this narrows the type of HasApiTokens::tokens(), which Sanctum configures to our model).
+     *
+     * @return MorphMany<PersonalAccessToken, $this>
+     */
+    public function tokens(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
     }
 
     /** @return BelongsTo<Team, $this> */
