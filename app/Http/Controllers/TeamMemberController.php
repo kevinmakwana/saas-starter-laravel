@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Role;
 use App\Models\User;
+use App\Notifications\MemberRemoved;
 use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -37,6 +38,10 @@ class TeamMemberController extends Controller
 
         $team->removeMember($user);
         $this->audit->record('member.removed', $this->user($request)->is($user) ? "{$user->name} left the team" : "Removed {$user->name} from the team");
+
+        if (! $this->user($request)->is($user)) {
+            $user->notify(new MemberRemoved($team->name));
+        }
 
         return $this->user($request)->is($user)
             ? redirect()->route('dashboard')->with('success', 'You left the team.')

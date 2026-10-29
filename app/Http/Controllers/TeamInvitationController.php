@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Enums\Role;
 use App\Mail\TeamInvitationMail;
 use App\Models\TeamInvitation;
+use App\Models\User;
+use App\Notifications\MemberJoined;
 use App\Services\AuditLogger;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -113,6 +116,8 @@ class TeamInvitationController extends Controller
         $invitation->forceFill(['accepted_at' => now()])->save();
         $user->switchTeam($team);
         app(TenantContext::class)->run($team, fn () => $this->audit->record('member.joined', "{$user->name} joined as {$invitation->role->label()}", null, $user));
+
+        Notification::send($team->managers()->reject(fn (User $manager) => $manager->is($user)), new MemberJoined($team->getKey(), $team->name, $user->name));
 
         return redirect()->route('dashboard')->with('success', "You joined {$team->name}.");
     }

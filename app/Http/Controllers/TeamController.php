@@ -6,6 +6,7 @@ use App\Billing\BillingGateway;
 use App\Mail\TeamDeletedMail;
 use App\Models\Team;
 use App\Models\User;
+use App\Notifications\TeamDeleted;
 use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -116,6 +117,7 @@ class TeamController extends Controller
 
         foreach ($others as $member) {
             Mail::to($member->email)->send(new TeamDeletedMail($name, $user->name));
+            $member->notify(new TeamDeleted($name, $user->name));
         }
 
         // The foreign key cleared current_team_id; move the owner to another team of theirs if there is one.

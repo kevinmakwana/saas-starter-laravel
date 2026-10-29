@@ -24,3 +24,14 @@ it('is idempotent', function () {
         ->and(Team::count())->toBe(1)
         ->and(asTenant(Team::first(), fn () => Project::count()))->toBe(3);
 });
+
+it('gives the demo owner a few notifications for the header bell, once', function () {
+    $this->seed();
+    $this->seed();
+
+    $owner = User::firstWhere('email', 'demo@acme.test');
+
+    expect($owner->notifications()->count())->toBe(3)
+        ->and($owner->unreadNotifications()->count())->toBe(3)
+        ->and(User::firstWhere('email', 'admin@acme.test')->notifications()->count())->toBe(0);
+});

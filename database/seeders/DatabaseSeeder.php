@@ -7,6 +7,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
+use App\Notifications\MemberJoined;
+use App\Notifications\PlanChanged;
 use App\Services\AuditLogger;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
@@ -33,7 +35,7 @@ class DatabaseSeeder extends Seeder
             $user->switchTeam($team);
         }
 
-        app(TenantContext::class)->run($team, function () use ($owner, $admin) {
+        app(TenantContext::class)->run($team, function () use ($team, $owner, $admin, $member) {
             if (Project::count() > 0) {
                 return;
             }
@@ -42,6 +44,11 @@ class DatabaseSeeder extends Seeder
             $audit->record('team.created', 'Created the Acme Demo team', null, $owner);
             $audit->record('member.invited', 'Invited Avery Admin as Admin', null, $owner);
             $audit->record('billing.subscribed', 'Started the Business plan', null, $owner);
+
+            // So the header bell has something in it on a fresh demo: what an owner of this team would have been told.
+            $owner->notify(new PlanChanged($team->getKey(), $team->name, 'Business'));
+            $owner->notify(new MemberJoined($team->getKey(), $team->name, $admin->name));
+            $owner->notify(new MemberJoined($team->getKey(), $team->name, $member->name));
 
             $projects = [
                 'Website relaunch' => ['Audit current pages', 'Draft new homepage copy', 'Design hero section', 'Set up redirects', 'Launch checklist'],
