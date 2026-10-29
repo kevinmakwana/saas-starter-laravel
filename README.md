@@ -1,12 +1,28 @@
 # Acme SaaS Starter (Laravel)
 
 A multi-tenant SaaS starter built on Laravel 12, Inertia, Vue 3 and TypeScript.
-Teams, roles, signed invitations, plan limits, feature flags and an audit log work out of the box.
+Teams, roles, signed invitations, plan limits, feature flags and an audit log work out of the box,
+and so do the things a real product needs around them: Stripe billing, two-factor authentication, Google and GitHub sign-in,
+a token API, file attachments, in-app notifications, dark mode and three languages.
 It runs locally with **zero paid keys**: billing uses a fake gateway unless you add Stripe test keys.
+
+**At a glance**
+
+| | |
+| --- | --- |
+| **Multi-tenancy** | One database, a global tenant scope, route model binding that 404s across tenants |
+| **Access** | Owner, Admin and Member roles, signed single-use invitations, 2FA (TOTP and recovery codes), Google and GitHub sign-in |
+| **Billing** | Free, Pro and Business with plan limits and feature flags, trials, yearly billing, invoices, Stripe Checkout and Customer Portal behind a gateway, idempotent webhooks |
+| **Product** | Projects, tasks, task attachments with a storage quota per plan, CSV exports, an audit log, in-app notifications |
+| **API** | Bearer-token JSON API for projects and tasks, tied to one team, with the owner's role and plan limits ([docs/api.md](docs/api.md)) |
+| **Everywhere** | English, Spanish and German; dark mode; works on a phone; WCAG AA contrast checked in both themes |
+| **Quality** | Pest and Playwright suites, Larastan level 8, Pint, a CI pipeline, a production Docker image, Horizon, Sentry hooks |
 
 [![CI](https://github.com/kevinmakwana/saas-starter-laravel/actions/workflows/ci.yml/badge.svg)](https://github.com/kevinmakwana/saas-starter-laravel/actions/workflows/ci.yml)
 
-![Dashboard of the demo team](docs/screenshot.png)
+| Light, English | Dark, German |
+| --- | --- |
+| ![Dashboard of the demo team](docs/screenshot.png) | ![The same dashboard in dark mode and German](docs/screenshot-dark.png) |
 
 ## Quick start
 
@@ -187,11 +203,21 @@ vendor/bin/phpstan analyse # Larastan, level 8
 npm run build              # vue-tsc type check + Vite build
 ```
 
-Tests cover tenancy isolation (reads, writes, route model binding), role policies, the invitation flow, plan limits,
-webhook signature and idempotency, payment failures, rate limits, feature gates, and the seeder.
-Browser tests (Playwright) cover login, registration with email verification through Mailpit, tenant isolation, the Free plan
-limit and upgrade, and the invitation flow with its signed link. CI (GitHub Actions) runs Pint, Larastan and Pest against a
-MySQL 8.4 service container, plus the Playwright suite in a second job, on every push and pull request.
+About 600 PHP tests (Pest) and 45 browser tests (Playwright). The PHP tests cover tenancy isolation (reads, writes, route model
+binding), role policies, the invitation flow, plan limits and downgrades, webhook signature and idempotency, payment failures, rate
+limits, feature gates, two-factor authentication (including code replay), social login with a faked provider (account linking rules
+included), the token API (abilities, expiry, cross-team access, rate limit), attachments (type, size, quota, cleanup), notifications,
+the personal data export, the seeder, and the languages. A translation test fails when a language lacks a text another has, when
+placeholders differ, or when the code asks for a text that does not exist.
+
+The browser tests cover registration with email verification through Mailpit, sign-in with 2FA, invitations and their signed
+links, tenant isolation, billing, team deletion, the email change flow, attachments (upload, download, removal, other teams
+refused), notifications, making and using an API token over real HTTP, the redirect to Google and GitHub, the language picker, and
+the content security policy on every main page. Two scans run across the main pages: text contrast (axe, WCAG AA) in light and dark
+mode, and no sideways scrolling at phone width, also in German, whose words are the longest.
+
+CI (GitHub Actions) runs Pint, Larastan and Pest (with a coverage gate) against a MySQL 8.4 service container, plus the Playwright
+suite and a Docker image build with a smoke test, as three jobs on every push and pull request.
 
 For repeated local E2E runs from one IP, set `THROTTLE_REGISTRATION_PER_HOUR=1000` in `.env`.
 
@@ -206,7 +232,7 @@ configuration, the release steps, migration safety, backups and where to look du
 - Run a nightly job against Stripe's real test mode (stripe-mock returns canned fixtures, so it cannot prove your real prices and portal settings).
 - Extend dunning: reminder emails during the grace period (today the owner gets one email when the payment fails).
 - Move large tenants to per-tenant database or schema isolation if needed, and add DB-level row security as a second line of defence.
-- Add SSO for Business.
+- Add SAML / enterprise SSO for Business (Google and GitHub sign-in are done).
 - Ship the logs somewhere searchable and add uptime and queue-depth monitoring on top of the Sentry and Horizon alerts.
 - Add seat-based billing and proration instead of fixed per-plan limits (trials and yearly billing are done).
 - Zero-downtime deploys with migration safety checks.
