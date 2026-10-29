@@ -99,7 +99,7 @@ Route model binding goes through the same scope, so another tenant's record is a
 - **Roles and policies:** Owner, Admin and Member. Owners manage roles, billing and ownership transfer. Admins invite members and see the audit log.
 - **Invitations:** signed, expiring links (7 days), bound to the invited email, single use. Owners and admins can resend one from the Team page (a fresh 7 days, also after it expired, as long as the plan has a seat). Emails are queued on Redis and show up in Mailpit.
 - **Billing:** Free, Pro and Business plans (limits and prices in `config/billing.php`). Subscribe, change plan, cancel and resume.
-  `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe test keys are set.
+  `FakeGateway` by default, `StripeGateway` (Cashier 16) when `BILLING_GATEWAY=stripe` and Stripe sandbox keys are set (see [Using a Stripe sandbox](#using-a-stripe-sandbox-optional)).
 - **Trials and yearly billing:** a team's first paid subscription gets a 14-day free trial (`BILLING_TRIAL_DAYS`, `0` turns it off).
   Stripe Checkout still collects a card; it is charged when the trial ends unless the owner cancels first, and `customer.subscription.trial_will_end`
   emails the owner three days before. A team that has had any subscription before does not get another trial. Plans can also be billed
@@ -164,30 +164,58 @@ Route model binding goes through the same scope, so another tenant's record is a
   retention, old audit log entries are deleted (`config/retention.php`, `RETENTION_*` in `.env`).
 - **Audit log:** team-scoped "who did what", visible to Owners and Admins on Business, with a CSV export (rate limited, formula-safe). It records team activity plus sign-ins, profile and password changes, and team creation and renames. Those user events are written to the user's current team, so a user with no team leaves no entry, and failed logins are not logged. Entries are append-only for application code: the model refuses updates and deletes. Only retention pruning and deleting the team remove rows, and a database-level guard is not included.
 
-### Using real Stripe test keys (optional)
+### Using a Stripe sandbox (optional)
 
-```dotenv
-BILLING_GATEWAY=stripe
-STRIPE_KEY=pk_test_...
-STRIPE_SECRET=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_PRICE_PRO=price_...
-STRIPE_PRICE_BUSINESS=price_...
-# Optional, for yearly billing (create a yearly recurring price on each product)
-STRIPE_PRICE_PRO_YEARLY=price_...
-STRIPE_PRICE_BUSINESS_YEARLY=price_...
-```
+A Stripe **sandbox** is an isolated test environment with its own products, customers and keys; nothing in it touches real money.
+Without keys the app uses the fake gateway, so this is only needed to see real Stripe Checkout, the Customer Portal and webhooks.
 
-Forward events with `stripe listen --forward-to localhost:8080/webhooks/stripe`.
+1. **Get a sandbox.** In the [Stripe Dashboard](https://dashboard.stripe.com) open the account menu, Sandboxes, and create one (or switch to
+   the one you have). For a throwaway, `stripe sandbox create --from-git` provisions one with keys straight from the
+   [Stripe CLI](https://docs.stripe.com/stripe-cli); it expires after 7 days unless you claim it with `stripe sandbox claim`. The keys it prints
+   may be restricted ones: if Stripe refuses an action, use the sandbox's full secret key from Developers, API keys.
+2. **Create the prices** (Product catalog) in the sandbox, to match `config/billing.php`:
+
+   | Product | Monthly | Yearly (optional, "2 months free") |
+   | --- | --- | --- |
+   | Pro | $29 recurring | $290 recurring |
+   | Business | $99 recurring | $990 recurring |
+
+   Copy each price id (`price_...`).
+3. **Put the keys in `.env`** (it is gitignored; never commit keys):
+
+   ```dotenv
+   BILLING_GATEWAY=stripe
+   STRIPE_KEY=pk_test_...
+   STRIPE_SECRET=sk_test_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   STRIPE_PRICE_PRO=price_...
+   STRIPE_PRICE_BUSINESS=price_...
+   # Optional, for yearly billing (create a yearly recurring price on each product)
+   STRIPE_PRICE_PRO_YEARLY=price_...
+   STRIPE_PRICE_BUSINESS_YEARLY=price_...
+   ```
+4. **Forward webhooks** with `stripe listen --forward-to localhost:8080/webhooks/stripe`. It prints the signing secret to use as
+   `STRIPE_WEBHOOK_SECRET` (the same secret each time you restart it). The plan only changes when the webhook arrives, so keep it running.
+5. **Save a Customer Portal configuration** once in the sandbox (Settings, Billing, Customer portal), see below.
+6. **Pay with a test card** at Checkout, any future expiry, any CVC and postal code:
+
+   | Card number | What happens |
+   | --- | --- |
+   | `4242 4242 4242 4242` | Succeeds |
+   | `4000 0025 0000 3155` | Asks for 3D Secure authentication |
+   | `4000 0000 0000 9995` | Declined (insufficient funds) |
+   | `4000 0000 0000 0341` | Saves fine, then the next charge fails: use it to see the payment-failed email, notification and grace period |
+
+   Try the other events with `stripe trigger invoice.payment_failed` or by cancelling, resuming and switching plans from the Billing page.
 
 Subscribing twice is refused (change plan, resume or the portal instead), and a Stripe error shows a message to the owner and
 changes nothing locally. When a plan change leaves a team over its limits the owner gets an email; nothing is deleted or locked.
 
-For the Customer Portal, save a portal configuration once in the Stripe Dashboard (Settings, Billing, Customer portal; in test mode
+For the Customer Portal, save a portal configuration once in the Stripe Dashboard (Settings, Billing, Customer portal; in a sandbox
 too), otherwise Stripe refuses to create portal sessions and the owner sees a "could not open the billing portal" message.
 
 `StripeGateway` and Cashier are tested against [stripe-mock](https://github.com/stripe/stripe-mock), Stripe's official mock server,
-in CI. The Stripe path has not been exercised against live Stripe in this repo; the fake gateway, the webhook pipeline and
+in CI. The Stripe path has not been exercised against a real Stripe sandbox in this repo; the fake gateway, the webhook pipeline and
 the mocked Stripe API are covered by tests.
 
 ## Testing and quality
