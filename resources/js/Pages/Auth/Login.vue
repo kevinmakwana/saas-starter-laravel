@@ -1,16 +1,22 @@
 <script setup lang="ts">
+import SocialLoginButtons from '@/Components/SocialLoginButtons.vue';
 import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import type { SocialProvider } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 
 defineProps<{
     canResetPassword?: boolean;
     status?: string;
+    socialProviders?: SocialProvider[];
 }>();
+
+// A sign-in that failed at Google or GitHub comes back as a fresh page, not as an answer to this form.
+const providerError = usePage().props.errors?.email;
 
 const form = useForm({
     email: '',
@@ -34,6 +40,10 @@ const submit = () => {
         <div v-if="status" class="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
             {{ status }}
         </div>
+
+        <SocialLoginButtons :providers="socialProviders ?? []" verb="Sign in" />
+
+        <p v-if="providerError && !form.errors.email" class="mb-4 text-sm text-red-600 dark:text-red-400" role="alert">{{ providerError }}</p>
 
         <form @submit.prevent="submit">
             <div>

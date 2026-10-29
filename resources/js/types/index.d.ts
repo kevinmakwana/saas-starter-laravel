@@ -24,6 +24,18 @@ export interface AttachmentRow {
     uploader: string | null;
 }
 
+export interface SocialProvider {
+    key: string;
+    label: string;
+}
+
+export interface ConnectedAccount {
+    id: number;
+    provider: string;
+    email: string | null;
+    connected_at: string;
+}
+
 export interface ApiToken {
     id: number;
     name: string;

@@ -11,6 +11,7 @@ use App\Http\Controllers\EmailChangeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SocialAccountController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskExportController;
@@ -42,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/two-factor', [TwoFactorController::class, 'destroy'])->middleware('password.confirm')->name('profile.two-factor.destroy');
     Route::post('/profile/api-tokens', [ApiTokenController::class, 'store'])->middleware(['password.confirm', 'throttle:api-tokens'])->name('profile.api-tokens.store');
     Route::delete('/profile/api-tokens/{token}', [ApiTokenController::class, 'destroy'])->name('profile.api-tokens.destroy');
+    Route::delete('/profile/social-accounts/{account}', [SocialAccountController::class, 'destroy'])->name('profile.social-accounts.destroy');
     Route::delete('/profile/email', [EmailChangeController::class, 'cancel'])->name('profile.email.cancel');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

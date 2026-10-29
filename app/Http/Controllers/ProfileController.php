@@ -10,6 +10,7 @@ use App\Models\PersonalAccessToken;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\SocialProviders;
 use App\Services\TwoFactor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request, TwoFactor $twoFactor): Response
+    public function edit(Request $request, TwoFactor $twoFactor, SocialProviders $social): Response
     {
         $user = $this->user($request);
 
@@ -46,6 +47,12 @@ class ProfileController extends Controller
             ],
             // Flashed by the request that made them, so they show exactly once.
             'recoveryCodes' => session('recoveryCodes'),
+            'socialAccounts' => $user->socialAccounts()->orderBy('id')->get()->map(fn ($account) => [
+                'id' => $account->id,
+                'provider' => $social->label($account->provider),
+                'email' => $account->email,
+                'connected_at' => $account->created_at->toIso8601String(),
+            ])->all(),
             'newToken' => session('newToken'),
             'apiTeams' => $user->teams()->orderBy('teams.name')->get(['teams.id', 'teams.name'])->map(fn (Team $team) => ['id' => $team->id, 'name' => $team->name])->all(),
             'apiTokens' => $user->tokens()->with('team')->latest('id')->get()->map(fn (PersonalAccessToken $token) => [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\SocialProviders;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,9 +21,9 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(SocialProviders $social): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', ['socialProviders' => $social->enabled()]);
     }
 
     /**

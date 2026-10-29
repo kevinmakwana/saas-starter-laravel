@@ -124,6 +124,11 @@ jobs:
       MAIL_HOST: 127.0.0.1
       MAIL_PORT: 1025
       THROTTLE_REGISTRATION_PER_HOUR: 1000
+      # Fake credentials only make the sign-in buttons appear; the e2e test stops the browser before it reaches the provider.
+      GOOGLE_CLIENT_ID: e2e-google-id
+      GOOGLE_CLIENT_SECRET: e2e-google-secret
+      GITHUB_CLIENT_ID: e2e-github-id
+      GITHUB_CLIENT_SECRET: e2e-github-secret
       E2E_BASE_URL: http://127.0.0.1:8000
       MAILPIT_URL: http://127.0.0.1:8025
 
