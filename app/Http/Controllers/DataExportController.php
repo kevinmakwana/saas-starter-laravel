@@ -44,6 +44,7 @@ class DataExportController extends Controller
             fwrite($out, '"notifications": '.$this->json($this->notifications($user)).",\n");
             fwrite($out, '"uploads": '.$this->json($this->uploads($user)).",\n");
             fwrite($out, '"api_tokens": '.$this->json($this->apiTokens($user)).",\n");
+            fwrite($out, '"social_accounts": '.$this->json($this->socialAccounts($user)).",\n");
             fwrite($out, '"audit_log": [');
 
             // Streamed one row at a time: a long-standing user can have a lot of history.
@@ -138,6 +139,16 @@ class DataExportController extends Controller
             'mime' => $file->mime,
             'size' => $file->size,
             'created_at' => $file->created_at->toIso8601String(),
+        ])->all());
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function socialAccounts(User $user): array
+    {
+        return array_values($user->socialAccounts()->orderBy('id')->get()->map(fn ($account) => [
+            'provider' => $account->provider,
+            'email' => $account->email,
+            'connected_at' => $account->created_at->toIso8601String(),
         ])->all());
     }
 

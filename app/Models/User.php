@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -144,6 +145,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function tokens(): MorphMany
     {
         return $this->morphMany(PersonalAccessToken::class, 'tokenable');
+    }
+
+    /** @return HasMany<SocialAccount, $this> */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     /** @return BelongsTo<Team, $this> */

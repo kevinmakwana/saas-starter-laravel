@@ -68,6 +68,7 @@ class AppServiceProvider extends ServiceProvider
         // Per token, so one busy integration does not slow another. Unauthenticated calls never get this far.
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute((int) config('throttle.api_per_minute'))
             ->by('api|'.($request->user()?->currentAccessToken()?->getKey() ?? $request->ip())));
+        RateLimiter::for('social-login', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('api-tokens', fn (Request $request) => Limit::perHour(10)->by($user($request)));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(20)->by($user($request)));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(10)->by($user($request)));

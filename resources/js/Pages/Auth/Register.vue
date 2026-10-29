@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import SocialLoginButtons from '@/Components/SocialLoginButtons.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
+import type { SocialProvider } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
+defineProps<{ socialProviders?: SocialProvider[] }>();
 
 const form = useForm({
     name: '',
@@ -25,6 +29,8 @@ const submit = () => {
 <template>
     <GuestLayout>
         <Head title="Register" />
+
+        <SocialLoginButtons :providers="socialProviders ?? []" verb="Sign up" />
 
         <form @submit.prevent="submit">
             <div>
