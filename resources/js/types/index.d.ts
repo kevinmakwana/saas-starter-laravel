@@ -16,6 +16,14 @@ export interface CurrentTeam extends TeamSummary {
     role: RoleName | null;
 }
 
+export interface AttachmentRow {
+    id: number;
+    name: string;
+    size: number;
+    created_at: string;
+    uploader: string | null;
+}
+
 export interface NotificationItem {
     id: string;
     kind: string;

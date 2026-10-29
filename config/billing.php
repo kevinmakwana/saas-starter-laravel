@@ -30,7 +30,7 @@ return [
             'yearly_price' => null,
             'stripe_price' => null,
             'stripe_price_yearly' => null,
-            'limits' => ['projects' => 3, 'members' => 2],
+            'limits' => ['projects' => 3, 'members' => 2, 'storage_mb' => 25],
         ],
         'pro' => [
             'name' => 'Pro',
@@ -39,7 +39,7 @@ return [
             'yearly_price' => 290,
             'stripe_price' => env('STRIPE_PRICE_PRO'),
             'stripe_price_yearly' => env('STRIPE_PRICE_PRO_YEARLY'),
-            'limits' => ['projects' => 25, 'members' => 10],
+            'limits' => ['projects' => 25, 'members' => 10, 'storage_mb' => 1000],
         ],
         'business' => [
             'name' => 'Business',
@@ -47,7 +47,7 @@ return [
             'yearly_price' => 990,
             'stripe_price' => env('STRIPE_PRICE_BUSINESS'),
             'stripe_price_yearly' => env('STRIPE_PRICE_BUSINESS_YEARLY'),
-            'limits' => ['projects' => null, 'members' => null],
+            'limits' => ['projects' => null, 'members' => null, 'storage_mb' => null],
         ],
     ],
 

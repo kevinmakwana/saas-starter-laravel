@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Cashier\Billable;
 use Laravel\Cashier\SubscriptionItem;
 
@@ -58,6 +59,9 @@ class Team extends Model
         });
 
         static::deleting(function (Team $team) {
+            // The attachment rows go by a database cascade; their files live in one folder per team.
+            Storage::disk(config('attachments.disk'))->deleteDirectory("attachments/{$team->getKey()}");
+
             SubscriptionItem::whereIn('subscription_id', $team->subscriptions()->pluck('id'))->delete();
             $team->subscriptions()->delete();
         });

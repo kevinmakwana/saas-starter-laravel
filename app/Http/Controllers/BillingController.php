@@ -44,14 +44,14 @@ class BillingController extends Controller
             'portal' => $canManage && $team->hasStripeId() && $this->gateway->supportsPortal(),
             // Loaded after the page so a slow Stripe call never delays it; only the owner sees amounts.
             'invoices' => $canManage ? Inertia::defer(fn () => $this->loadInvoices($team)) : [],
-            'usage' => ['projects' => $limits->usage($team, 'projects'), 'members' => $limits->usage($team, 'members')],
+            'usage' => ['projects' => $limits->usage($team, 'projects'), 'members' => $limits->usage($team, 'members'), 'storage_mb' => $limits->usage($team, 'storage_mb')],
             'features' => $features->all($team),
             'plans' => collect(Plan::cases())->map(fn (Plan $plan) => [
                 'key' => $plan->value,
                 'name' => $plan->label(),
                 'price' => $plan->price(),
                 'yearlyPrice' => $this->gateway->offersYearly($plan) ? $plan->price(BillingInterval::Yearly) : null,
-                'limits' => ['projects' => $plan->limit('projects'), 'members' => $plan->limit('members')],
+                'limits' => ['projects' => $plan->limit('projects'), 'members' => $plan->limit('members'), 'storage_mb' => $plan->limit('storage_mb')],
                 'features' => array_keys(array_filter(
                     config('billing.features'),
                     fn (array $plans) => in_array($plan->value, $plans, true),

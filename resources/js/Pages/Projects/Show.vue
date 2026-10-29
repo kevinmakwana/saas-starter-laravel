@@ -3,23 +3,30 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import InputError from '@/Components/InputError.vue';
 import Pagination from '@/Components/Pagination.vue';
+import TaskAttachments from '@/Components/TaskAttachments.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import type { PageProps, Paginated } from '@/types';
+import { formatMegabytes } from '@/lib/format';
+import type { AttachmentRow, PageProps, Paginated } from '@/types';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
-interface TaskRow { id: number; title: string; status: string }
+interface TaskRow { id: number; title: string; status: string; attachments: AttachmentRow[] }
 
 const props = defineProps<{
     project: { id: number; name: string; description: string | null };
     tasks: Paginated<TaskRow>;
     filters: { q: string; status: string };
     statuses: string[];
+    storage: { used_mb: number; limit_mb: number | null; max_file_kb: number; extensions: string[] };
     can: { delete: boolean };
 }>();
 
 const canExport = computed(() => usePage<PageProps>().props.auth.features?.task_export === true);
+
+// Which tasks have their file list open.
+const openFiles = ref<Set<number>>(new Set());
+const toggleFiles = (id: number) => (openFiles.value.has(id) ? openFiles.value.delete(id) : openFiles.value.add(id));
 
 const search = ref(props.filters.q);
 const status = ref(props.filters.status);
@@ -77,18 +84,41 @@ const removeProject = () => window.confirm(`Delete “${props.project.name}” a
 
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <ul v-if="tasks.data.length" class="divide-y divide-gray-100 dark:divide-gray-700">
-                    <li v-for="task in tasks.data" :key="task.id" class="flex items-center justify-between gap-3 p-4">
-                        <span :class="{ 'text-gray-400 line-through': task.status === 'done' }">{{ task.title }}</span>
+                    <li v-for="task in tasks.data" :key="task.id">
+                      <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+                        <span :class="{ 'text-gray-600 line-through dark:text-gray-400': task.status === 'done' }">{{ task.title }}</span>
                         <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                class="text-sm text-indigo-700 hover:underline dark:text-indigo-400"
+                                :aria-expanded="openFiles.has(task.id)"
+                                :aria-label="`Files for ${task.title}`"
+                                @click="toggleFiles(task.id)"
+                            >
+                                Files ({{ task.attachments.length }})
+                            </button>
                             <select :value="task.status" class="rounded-md border-gray-300 dark:border-gray-600 py-1 text-sm" @change="setStatus(task, ($event.target as HTMLSelectElement).value)">
                                 <option v-for="s in statuses" :key="s" :value="s">{{ s }}</option>
                             </select>
                             <button class="text-sm text-red-600 dark:text-red-400 hover:underline" @click="removeTask(task)">Delete</button>
                         </div>
+                      </div>
+                      <TaskAttachments
+                          v-if="openFiles.has(task.id)"
+                          :project-id="project.id"
+                          :task-id="task.id"
+                          :attachments="task.attachments"
+                          :max-file-kb="storage.max_file_kb"
+                          :extensions="storage.extensions"
+                      />
                     </li>
                 </ul>
                 <p v-else class="p-6 text-sm text-gray-500 dark:text-gray-400">No tasks found.</p>
             </div>
+
+            <p class="text-xs text-gray-600 dark:text-gray-400" data-testid="storage-used">
+                File storage: {{ formatMegabytes(storage.used_mb) }} used of {{ formatMegabytes(storage.limit_mb) }}.
+            </p>
 
             <Pagination :page="tasks" />
         </div>

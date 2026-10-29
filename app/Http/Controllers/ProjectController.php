@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\Project;
 use App\Models\Task;
 use App\Services\AuditLogger;
+use App\Services\PlanLimits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -52,9 +54,10 @@ class ProjectController extends Controller
         return redirect()->route('projects.show', $project)->with('success', 'Project created.');
     }
 
-    public function show(Request $request, Project $project): Response
+    public function show(Request $request, Project $project, PlanLimits $limits): Response
     {
         Gate::authorize('view', $project);
+        $team = $this->team($request);
 
         $search = trim((string) $request->query('q', ''));
         $status = $request->query('status');
@@ -62,8 +65,21 @@ class ProjectController extends Controller
         $tasks = $project->tasks()
             ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.addcslashes($search, '%_\\').'%'))
             ->when(in_array($status, Task::STATUSES, true), fn ($query) => $query->where('status', $status))
+            ->with(['attachments' => fn ($query) => $query->with('uploader:id,name')->oldest('id')])
             ->latest('id')
             ->paginate(10)
+            ->through(fn (Task $task) => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'status' => $task->status,
+                'attachments' => $task->attachments->map(fn (Attachment $file) => [
+                    'id' => $file->id,
+                    'name' => $file->name,
+                    'size' => $file->size,
+                    'created_at' => $file->created_at->toIso8601String(),
+                    'uploader' => $file->uploader?->name,
+                ])->all(),
+            ])
             ->withQueryString();
 
         return Inertia::render('Projects/Show', [
@@ -71,6 +87,12 @@ class ProjectController extends Controller
             'tasks' => $tasks,
             'filters' => ['q' => $search, 'status' => is_string($status) ? $status : ''],
             'statuses' => Task::STATUSES,
+            'storage' => [
+                'used_mb' => $limits->usage($team, 'storage_mb'),
+                'limit_mb' => $team->currentPlan()->limit('storage_mb'),
+                'max_file_kb' => (int) config('attachments.max_file_kb'),
+                'extensions' => config('attachments.extensions'),
+            ],
             'can' => ['delete' => Gate::allows('delete', $project)],
         ]);
     }

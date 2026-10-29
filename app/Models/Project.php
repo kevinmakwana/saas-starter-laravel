@@ -16,6 +16,12 @@ class Project extends Model
     /** @var list<string> */
     protected $fillable = ['name', 'description'];
 
+    protected static function booted(): void
+    {
+        // The tasks go by a database cascade, which cannot delete files, so do the files first.
+        static::deleting(fn (Project $project) => Attachment::whereIn('task_id', $project->tasks()->select('tasks.id'))->get()->each->delete());
+    }
+
     /** @return HasMany<Task, $this> */
     public function tasks(): HasMany
     {
