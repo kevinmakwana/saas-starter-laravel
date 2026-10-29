@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuditLogExportController;
 use App\Http\Controllers\BillingController;
@@ -65,6 +66,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/projects/{project}/tasks/export', TaskExportController::class)->middleware(['feature:task_export', 'throttle:exports'])->name('projects.tasks.export');
         Route::resource('projects', ProjectController::class);
         Route::resource('projects.tasks', TaskController::class)->only(['store', 'update', 'destroy'])->scoped();
+        Route::post('/projects/{project}/tasks/{task}/attachments', [AttachmentController::class, 'store'])->scopeBindings()->middleware('throttle:uploads')->name('attachments.store');
+        Route::get('/attachments/{attachment}', [AttachmentController::class, 'download'])->name('attachments.download');
+        Route::delete('/attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
         Route::get('/audit-log/export', AuditLogExportController::class)->middleware(['feature:audit_log', 'throttle:exports'])->name('audit-log.export');
         Route::get('/audit-log', [AuditLogController::class, 'index'])->middleware('feature:audit_log')->name('audit-log.index');
         Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');

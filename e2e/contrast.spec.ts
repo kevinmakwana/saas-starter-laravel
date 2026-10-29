@@ -20,6 +20,12 @@ for (const scheme of ['light', 'dark'] as const) {
         await expect(page.getByTestId('notification-panel')).toBeVisible();
         await expectReadable(page, 'the notification panel');
         await page.keyboard.press('Escape');
+        // A project page with a task's file list open.
+        await page.goto('/projects');
+        await page.locator('a[href*="/projects/"]').filter({ hasNotText: /New|Create/ }).first().click();
+        await page.getByRole('button', { name: /^Files for/ }).first().click();
+        await expectReadable(page, 'a project with its files open');
+
         for (const path of ['/dashboard', '/projects', '/team', '/billing', '/audit-log', '/profile']) {
             await page.goto(path);
             await page.waitForLoadState('networkidle');

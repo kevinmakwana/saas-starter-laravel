@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\AuditLog;
 use App\Models\Team;
 use App\Models\TeamInvitation;
@@ -40,6 +41,7 @@ class DataExportController extends Controller
             fwrite($out, '"teams": '.$this->json($this->teams($user)).",\n");
             fwrite($out, '"invitations": '.$this->json($this->invitations($user)).",\n");
             fwrite($out, '"notifications": '.$this->json($this->notifications($user)).",\n");
+            fwrite($out, '"uploads": '.$this->json($this->uploads($user)).",\n");
             fwrite($out, '"audit_log": [');
 
             // Streamed one row at a time: a long-standing user can have a lot of history.
@@ -119,6 +121,22 @@ class DataExportController extends Controller
             ])->all());
 
         return ['sent' => $sent, 'received' => $received];
+    }
+
+    /**
+     * Metadata of the files the user attached (names and sizes, not the files themselves, which belong to the team).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function uploads(User $user): array
+    {
+        return array_values(Attachment::withoutGlobalScopes()->where('uploaded_by', $user->getKey())->orderBy('id')->get()->map(fn (Attachment $file) => [
+            'team_id' => $file->tenant_id,
+            'name' => $file->name,
+            'mime' => $file->mime,
+            'size' => $file->size,
+            'created_at' => $file->created_at->toIso8601String(),
+        ])->all());
     }
 
     /** @return list<array<string, mixed>> */

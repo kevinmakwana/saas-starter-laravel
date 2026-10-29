@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { formatMegabytes } from '@/lib/format';
 import { computed, ref } from 'vue';
 import { Deferred, Head, router } from '@inertiajs/vue3';
 
@@ -12,7 +13,7 @@ interface PlanCard {
     price: number;
     /** null when the plan cannot be billed yearly. */
     yearlyPrice: number | null;
-    limits: { projects: number | null; members: number | null };
+    limits: { projects: number | null; members: number | null; storage_mb: number | null };
     features: string[];
 }
 
@@ -40,7 +41,7 @@ const props = defineProps<{
     portal: boolean;
     /** Loaded after the page: undefined until then, null when the provider could not be reached. */
     invoices?: InvoiceRow[] | null;
-    usage: { projects: number; members: number };
+    usage: { projects: number; members: number; storage_mb: number };
     features: Record<string, boolean>;
     plans: PlanCard[];
 }>();
@@ -90,7 +91,7 @@ function choose(plan: PlanCard) {
 
         <div class="mx-auto max-w-5xl space-y-6 py-12 sm:px-6 lg:px-8">
             <p class="text-sm text-gray-600 dark:text-gray-400">
-                Using {{ usage.projects }} projects and {{ usage.members }} members (including pending invitations).
+                Using {{ usage.projects }} projects, {{ usage.members }} members (including pending invitations) and {{ formatMegabytes(usage.storage_mb) }} of file storage.
                 <span v-if="cancelsAt" class="font-medium text-amber-700 dark:text-amber-300">
                     Cancelled: your plan ends on {{ new Date(cancelsAt).toLocaleDateString() }}.
                 </span>
@@ -126,6 +127,7 @@ function choose(plan: PlanCard) {
                     <ul class="mt-4 grow space-y-1 text-sm text-gray-600 dark:text-gray-400">
                         <li>{{ limit(plan.limits.projects) }} projects</li>
                         <li>{{ limit(plan.limits.members) }} members</li>
+                        <li>{{ formatMegabytes(plan.limits.storage_mb) }} file storage</li>
                         <li v-for="feature in plan.features" :key="feature" class="capitalize">{{ label(feature) }}</li>
                     </ul>
                     <div class="mt-6">

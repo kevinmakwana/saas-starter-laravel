@@ -44,7 +44,7 @@ describe('the download', function () {
     it('has a stable shape', function () {
         $data = exportedData();
 
-        expect(array_keys($data))->toBe(['exported_at', 'account', 'teams', 'invitations', 'notifications', 'audit_log'])
+        expect(array_keys($data))->toBe(['exported_at', 'account', 'teams', 'invitations', 'notifications', 'uploads', 'audit_log'])
             ->and(array_keys($data['account']))->toBe(['id', 'name', 'email', 'email_verified_at', 'created_at', 'pending_email'])
             ->and(array_keys($data['invitations']))->toBe(['sent', 'received']);
     });
