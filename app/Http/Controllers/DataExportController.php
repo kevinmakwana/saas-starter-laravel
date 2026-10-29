@@ -8,6 +8,7 @@ use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Services\AuditLogger;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -38,6 +39,7 @@ class DataExportController extends Controller
             fwrite($out, '"account": '.$this->json($this->account($user)).",\n");
             fwrite($out, '"teams": '.$this->json($this->teams($user)).",\n");
             fwrite($out, '"invitations": '.$this->json($this->invitations($user)).",\n");
+            fwrite($out, '"notifications": '.$this->json($this->notifications($user)).",\n");
             fwrite($out, '"audit_log": [');
 
             // Streamed one row at a time: a long-standing user can have a lot of history.
@@ -117,6 +119,17 @@ class DataExportController extends Controller
             ])->all());
 
         return ['sent' => $sent, 'received' => $received];
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function notifications(User $user): array
+    {
+        return array_values($user->notifications()->reorder('created_at')->get()->map(fn (DatabaseNotification $n) => [
+            'kind' => $n->data['kind'] ?? 'unknown',
+            'params' => $n->data['params'] ?? [],
+            'read_at' => $n->read_at?->toIso8601String(),
+            'created_at' => $n->created_at?->toIso8601String(),
+        ])->all());
     }
 
     private function json(mixed $value): string

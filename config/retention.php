@@ -11,5 +11,8 @@ return [
     // Only webhook events that were processed are pruned; unprocessed ones are kept for the retry sweeper.
     'webhook_events_days' => (int) env('RETENTION_WEBHOOK_EVENTS_DAYS', 30),
 
+    // In-app notifications are deleted this many days after they were made, read or not. 0 keeps them.
+    'notifications_days' => (int) env('RETENTION_NOTIFICATIONS_DAYS', 60),
+
     'audit_logs_days' => env('RETENTION_AUDIT_LOGS_DAYS') ? (int) env('RETENTION_AUDIT_LOGS_DAYS') : null,
 ];

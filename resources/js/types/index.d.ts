@@ -16,6 +16,14 @@ export interface CurrentTeam extends TeamSummary {
     role: RoleName | null;
 }
 
+export interface NotificationItem {
+    id: string;
+    kind: string;
+    params: Record<string, string>;
+    read: boolean;
+    created_at: string;
+}
+
 export type PageProps<
     T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
@@ -27,6 +35,7 @@ export type PageProps<
         billing: { state: 'grace' | 'overdue'; grace_ends_at: string | null } | null;
         overLimit: { plan: string; items: { key: string; label: string; used: number; limit: number }[] } | null;
     };
+    notifications: { unread: number; items: NotificationItem[] } | null;
     flash: {
         success: string | null;
         upgrade: string | null;

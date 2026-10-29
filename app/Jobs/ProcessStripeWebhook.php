@@ -8,6 +8,8 @@ use App\Mail\PaymentFailedMail;
 use App\Mail\TrialEndingMail;
 use App\Models\ProcessedWebhookEvent;
 use App\Models\Team;
+use App\Notifications\PaymentFailed;
+use App\Notifications\TrialEnding;
 use App\Services\AuditLogger;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Bus\Queueable;
@@ -173,7 +175,9 @@ class ProcessStripeWebhook implements ShouldBeUnique, ShouldQueue
             return;
         }
 
-        Mail::to($team->owner)->send(new TrialEndingMail($team, Carbon::createFromTimestamp((int) $subscription['trial_end'])));
+        $endsAt = Carbon::createFromTimestamp((int) $subscription['trial_end']);
+        Mail::to($team->owner)->send(new TrialEndingMail($team, $endsAt));
+        $team->owner->notify(new TrialEnding($team->getKey(), $team->name, $endsAt->toDateString()));
     }
 
     /** @param  array<string, mixed>  $invoice */
@@ -196,6 +200,7 @@ class ProcessStripeWebhook implements ShouldBeUnique, ShouldQueue
 
         if ($team->owner !== null) {
             Mail::to($team->owner)->send(new PaymentFailedMail($team));
+            $team->owner->notify(new PaymentFailed($team->getKey(), $team->name));
         }
     }
 

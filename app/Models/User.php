@@ -76,6 +76,12 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    protected static function booted(): void
+    {
+        // Notifications point at their user without a foreign key, so they would be left behind.
+        static::deleting(fn (User $user) => $user->notifications()->delete());
+    }
+
     /** Signing in asks for a code. A setup that was never confirmed does not count. */
     public function hasTwoFactorEnabled(): bool
     {

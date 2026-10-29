@@ -6,6 +6,7 @@ use App\Services\FeatureGate;
 use App\Services\PlanLimits;
 use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -42,11 +43,33 @@ class HandleInertiaRequests extends Middleware
                 'features' => fn () => ($team = $request->user() ? app(TenantContext::class)->current() : null) ? app(FeatureGate::class)->all($team) : [],
                 'teams' => fn () => $request->user()?->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
             ],
+            'notifications' => fn () => $this->notifications($request),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'upgrade' => fn () => $request->session()->get('upgrade'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+        ];
+    }
+
+    /** @return array{unread: int, items: list<array<string, mixed>>}|null the header bell: the unread count and the newest ten */
+    private function notifications(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return [
+            'unread' => $user->unreadNotifications()->count(),
+            'items' => array_values($user->notifications()->latest()->limit(10)->get()->map(fn (DatabaseNotification $n) => [
+                'id' => $n->id,
+                'kind' => $n->data['kind'] ?? 'unknown',
+                'params' => $n->data['params'] ?? [],
+                'read' => $n->read_at !== null,
+                'created_at' => $n->created_at?->toIso8601String(),
+            ])->all()),
         ];
     }
 

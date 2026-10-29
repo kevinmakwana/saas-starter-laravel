@@ -14,6 +14,12 @@ for (const scheme of ['light', 'dark'] as const) {
         }
 
         await logIn(page, 'demo@acme.test', 'password');
+
+        // The header bell with its panel open.
+        await page.getByRole('button', { name: /^Notifications/ }).click();
+        await expect(page.getByTestId('notification-panel')).toBeVisible();
+        await expectReadable(page, 'the notification panel');
+        await page.keyboard.press('Escape');
         for (const path of ['/dashboard', '/projects', '/team', '/billing', '/audit-log', '/profile']) {
             await page.goto(path);
             await page.waitForLoadState('networkidle');

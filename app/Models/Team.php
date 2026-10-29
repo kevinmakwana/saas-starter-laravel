@@ -6,9 +6,11 @@ use App\Enums\BillingInterval;
 use App\Enums\Plan;
 use App\Enums\Role;
 use App\Mail\OverLimitMail;
+use App\Notifications\PlanChanged;
 use App\Services\PlanLimits;
 use Carbon\CarbonInterface;
 use Database\Factories\TeamFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,6 +48,8 @@ class Team extends Model
             if (! $team->wasChanged('plan') || $team->owner === null) {
                 return;
             }
+
+            $team->owner->notify(new PlanChanged($team->getKey(), $team->name, Plan::tryFrom((string) $team->plan)?->label() ?? ucfirst((string) $team->plan)));
 
             $overages = app(PlanLimits::class)->overages($team);
             if ($overages !== []) {
@@ -133,6 +137,16 @@ class Team extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot('role')->withTimestamps();
+    }
+
+    /**
+     * The people who run the team: its owner and admins.
+     *
+     * @return Collection<int, User>
+     */
+    public function managers(): Collection
+    {
+        return $this->users()->wherePivotIn('role', [Role::Owner->value, Role::Admin->value])->get();
     }
 
     public function hasMember(User $user): bool

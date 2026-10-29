@@ -134,6 +134,8 @@ describe('payment failures', function () {
 
         Mail::assertQueued(PaymentFailedMail::class, fn ($mail) => $mail->hasTo($this->owner->email) && $mail->queue === 'mail');
         expect(asTenant($team, fn () => AuditLog::pluck('action')->all()))->toContain('billing.payment_failed');
+        $note = $this->owner->notifications()->where('data->kind', 'payment.failed')->first();
+        expect($note->data)->toMatchArray(['team_id' => $team->id, 'url' => '/billing', 'params' => ['team' => $team->name]]);
     });
 
     it('does not restart the clock or re-email on Stripe retries', function () {
@@ -143,7 +145,8 @@ describe('payment failures', function () {
         $this->travel(2)->days();
         postWebhook(invoiceEvent('evt_f2', 'invoice.payment_failed'))->assertOk();
 
-        expect($this->team->refresh()->payment_grace_ends_at->equalTo($firstDeadline))->toBeTrue();
+        expect($this->team->refresh()->payment_grace_ends_at->equalTo($firstDeadline))->toBeTrue()
+            ->and($this->owner->notifications()->where('data->kind', 'payment.failed')->count())->toBe(1);
         Mail::assertQueuedCount(1);
     });
 
@@ -417,6 +420,10 @@ describe('trial ending', function () {
             && $mail->queue === 'mail'
             && $mail->endsAt->isSameDay(now()->addDays(3)));
         expect(ProcessedWebhookEvent::firstWhere('event_id', 'evt_t1')->processed_at)->not->toBeNull();
+        $note = $this->owner->notifications()->where('data->kind', 'trial.ending')->first();
+        expect($note->data)->toMatchArray(['team_id' => $this->team->id, 'url' => '/billing'])
+            ->and($note->data['params']['team'])->toBe($this->team->name)
+            ->and($note->data['params']['date'])->toBe(now()->addDays(3)->toDateString());
     });
 
     it('stays quiet when the subscription is no longer trialing', function () {
@@ -424,6 +431,7 @@ describe('trial ending', function () {
         postWebhook(trialEndingEvent('evt_t3', extra: ['status' => 'active']))->assertOk();
 
         Mail::assertNothingQueued();
+        expect($this->owner->notifications()->count())->toBe(0);
     });
 
     it('stays quiet for an unknown customer or a trial that will not convert', function () {
@@ -431,6 +439,7 @@ describe('trial ending', function () {
         postWebhook(trialEndingEvent('evt_t5', extra: ['cancel_at_period_end' => true]))->assertOk();
 
         Mail::assertNothingQueued();
+        expect($this->owner->notifications()->count())->toBe(0);
     });
 
     it('does not email twice when Stripe redelivers the event', function () {
@@ -438,6 +447,7 @@ describe('trial ending', function () {
         postWebhook(trialEndingEvent('evt_t6'))->assertJson(['status' => 'duplicate']);
 
         Mail::assertQueuedCount(1);
+        expect($this->owner->notifications()->count())->toBe(1);
     });
 
     it('keeps the paid plan while the subscription is trialing', function () {

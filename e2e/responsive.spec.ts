@@ -13,3 +13,15 @@ test('the main pages do not scroll sideways on a phone', async ({ page }) => {
         expect(overflow, `${path} is ${overflow}px wider than the screen`).toBeLessThanOrEqual(0);
     }
 });
+
+test('the notification panel fits inside a phone screen', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await logIn(page, 'demo@acme.test', 'password');
+
+    await page.getByRole('button', { name: /^Notifications/ }).click();
+    const box = await page.getByTestId('notification-panel').boundingBox();
+
+    expect(box).not.toBeNull();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+});

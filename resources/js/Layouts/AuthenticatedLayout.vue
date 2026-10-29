@@ -5,6 +5,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
+import NotificationBell from '@/Components/NotificationBell.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
 import TeamSwitcher from '@/Components/TeamSwitcher.vue';
@@ -73,6 +74,7 @@ const auth = computed(() => page.props.auth);
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                            <NotificationBell class="me-1" />
                             <ThemeToggle class="me-3" />
                             <TeamSwitcher />
                             <!-- Settings Dropdown -->
@@ -122,6 +124,7 @@ const auth = computed(() => page.props.auth);
 
                         <!-- Hamburger -->
                         <div class="-me-2 flex items-center gap-1 sm:hidden">
+                            <NotificationBell />
                             <ThemeToggle />
                             <button
                                 @click="
