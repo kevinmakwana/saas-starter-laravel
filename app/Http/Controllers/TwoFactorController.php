@@ -19,7 +19,7 @@ class TwoFactorController extends Controller
         $user = $this->user($request);
 
         if ($user->hasTwoFactorEnabled()) {
-            return redirect()->route('profile.edit')->with('error', 'Two-factor authentication is already on.');
+            return redirect()->route('profile.edit')->with('error', __('Two-factor authentication is already on.'));
         }
 
         $this->twoFactor->begin($user);
@@ -34,7 +34,7 @@ class TwoFactorController extends Controller
 
         $codes = $user->hasPendingTwoFactor() ? $this->twoFactor->confirm($user, $request->string('code')->toString()) : null;
         if ($codes === null) {
-            throw ValidationException::withMessages(['code' => 'That code is not right. Check the code in your app and try again.']);
+            throw ValidationException::withMessages(['code' => __('That code is not right. Check the code in your app and try again.')]);
         }
 
         $this->audit->recordFor($user, 'twofactor.enabled', 'Turned on two-factor authentication');
@@ -47,7 +47,7 @@ class TwoFactorController extends Controller
         $user = $this->user($request);
 
         if (! $user->hasTwoFactorEnabled()) {
-            return redirect()->route('profile.edit')->with('error', 'Turn on two-factor authentication first.');
+            return redirect()->route('profile.edit')->with('error', __('Turn on two-factor authentication first.'));
         }
 
         $codes = $this->twoFactor->regenerateRecoveryCodes($user);

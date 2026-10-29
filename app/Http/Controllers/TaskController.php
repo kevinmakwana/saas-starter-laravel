@@ -21,7 +21,7 @@ class TaskController extends Controller
         $task = $project->tasks()->create($this->validated($request));
         $this->audit->record('task.created', "Added task “{$task->title}” to “{$project->name}”", $task);
 
-        return back()->with('success', 'Task added.');
+        return back()->with('success', __('Task added.'));
     }
 
     public function update(Request $request, Project $project, Task $task): RedirectResponse
@@ -31,7 +31,7 @@ class TaskController extends Controller
         $task->update($this->validated($request));
         $this->audit->record('task.updated', "Updated task “{$task->title}” ({$task->status})", $task);
 
-        return back()->with('success', 'Task updated.');
+        return back()->with('success', __('Task updated.'));
     }
 
     public function destroy(Project $project, Task $task): RedirectResponse
@@ -41,7 +41,7 @@ class TaskController extends Controller
         $task->delete();
         $this->audit->record('task.deleted', "Deleted task “{$task->title}”", $task);
 
-        return back()->with('success', 'Task deleted.');
+        return back()->with('success', __('Task deleted.'));
     }
 
     /** @return array{title: string, status: string} */

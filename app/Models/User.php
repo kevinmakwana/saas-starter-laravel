@@ -6,6 +6,7 @@ use App\Enums\Role;
 use Database\Factories\UserFactory;
 use DateTimeInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,6 +22,7 @@ use Laravel\Sanctum\NewAccessToken;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property string|null $locale
  * @property int|null $current_team_id
  * @property Team|null $currentTeam
  * @property Carbon|null $email_verified_at
@@ -32,7 +34,7 @@ use Laravel\Sanctum\NewAccessToken;
  * @property string|null $pending_email
  * @property Carbon|null $pending_email_expires_at
  */
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -110,6 +112,12 @@ class User extends Authenticatable implements MustVerifyEmail
         ]);
 
         return new NewAccessToken($token, $token->getKey().'|'.$plainText);
+    }
+
+    /** The language of the emails sent to this user: the one they chose, else the app default. */
+    public function preferredLocale(): string
+    {
+        return is_string($this->locale) && array_key_exists($this->locale, (array) config('locales.available')) ? $this->locale : (string) config('app.locale');
     }
 
     /** Signing in asks for a code. A setup that was never confirmed does not count. */

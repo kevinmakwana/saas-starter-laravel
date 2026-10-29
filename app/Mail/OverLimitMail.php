@@ -23,7 +23,7 @@ class OverLimitMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "{$this->team->name} is over the limits of its plan");
+        return new Envelope(subject: __(':team is over the limits of its plan', ['team' => $this->team->name]));
     }
 
     public function content(): Content

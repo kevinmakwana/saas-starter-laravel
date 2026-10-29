@@ -1,0 +1,343 @@
+{
+    "nav": {
+        "dashboard": "Panel",
+        "projects": "Proyectos",
+        "auditLog": "Registro de actividad",
+        "team": "Equipo",
+        "billing": "Facturación",
+        "profile": "Perfil",
+        "logOut": "Cerrar sesión"
+    },
+    "layout": {
+        "billingGrace": "Tu último pago falló. Tu plan sigue activo hasta el {date}. Actualiza tu método de pago para conservarlo.",
+        "billingOverdue": "Tu pago está vencido, así que este equipo tiene el plan Free hasta que se complete.",
+        "reviewBilling": "Revisar facturación",
+        "overLimit": "Este equipo supera los límites del plan {plan} ({items}). Todo sigue disponible, pero no se puede añadir nada nuevo hasta que elimines algo o mejores el plan.",
+        "overLimitItem": "{used} de {limit} {label}",
+        "seePlans": "Ver planes"
+    },
+    "limits": {
+        "projects": "proyectos",
+        "members": "miembros"
+    },
+    "status": {
+        "todo": "pendiente",
+        "doing": "en curso",
+        "done": "hecho"
+    },
+    "language": {
+        "label": "Idioma"
+    },
+    "theme": {
+        "toLight": "Cambiar al modo claro",
+        "toDark": "Cambiar al modo oscuro"
+    },
+    "teamSwitcher": {
+        "label": "Cambiar de equipo",
+        "new": "+ Nuevo equipo…"
+    },
+    "pagination": {
+        "showing": "Mostrando {from}–{to} de {total}",
+        "nav": "Paginación"
+    },
+    "notifications": {
+        "title": "Notificaciones",
+        "labelUnread": "Notificaciones, {count} sin leer",
+        "markAllRead": "Marcar todo como leído",
+        "caughtUp": "Estás al día.",
+        "unread": "Sin leer:",
+        "fallback": "Tienes una notificación nueva.",
+        "kinds": {
+            "member_joined": "{name} se unió a {team}.",
+            "member_removed": "Te eliminaron de {team}.",
+            "team_deleted": "{by} eliminó {team}.",
+            "plan_changed": "{team} tiene ahora el plan {plan}.",
+            "payment_failed": "Falló un pago de {team}. Actualiza el método de pago antes de que termine el periodo de gracia.",
+            "trial_ending": "La prueba gratuita de {team} termina el {date}."
+        }
+    },
+    "welcome": {
+        "tagline": "Un starter SaaS multiinquilino: equipos, roles, planes y registro de actividad, listo para ejecutarse en local sin claves de pago.",
+        "dashboard": "Panel",
+        "login": "Iniciar sesión",
+        "register": "Registrarse"
+    },
+    "dashboard": {
+        "title": "Panel",
+        "plan": "Plan",
+        "manageBilling": "Gestionar facturación",
+        "projects": "Proyectos",
+        "members": "Miembros",
+        "tasks": "Tareas",
+        "recentProjects": "Proyectos recientes",
+        "noProjects": "Aún no hay proyectos.",
+        "createOne": "Crea uno"
+    },
+    "auth": {
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "name": "Nombre",
+        "confirmPassword": "Confirmar contraseña",
+        "rememberMe": "Recordarme",
+        "forgotLink": "¿Olvidaste tu contraseña?",
+        "logIn": "Iniciar sesión",
+        "register": "Registrarse",
+        "alreadyRegistered": "¿Ya tienes cuenta?",
+        "forgot": {
+            "title": "Contraseña olvidada",
+            "intro": "¿Olvidaste tu contraseña? No pasa nada. Indícanos tu correo electrónico y te enviaremos un enlace para que elijas una nueva.",
+            "send": "Enviar enlace de restablecimiento"
+        },
+        "confirm": {
+            "title": "Confirmar contraseña",
+            "intro": "Esta es una zona segura de la aplicación. Confirma tu contraseña antes de continuar.",
+            "button": "Confirmar"
+        },
+        "verify": {
+            "title": "Verificación del correo electrónico",
+            "intro": "¡Gracias por registrarte! Antes de empezar, ¿puedes verificar tu correo electrónico haciendo clic en el enlace que acabamos de enviarte? Si no lo has recibido, con gusto te enviamos otro.",
+            "sent": "Se ha enviado un nuevo enlace de verificación al correo electrónico que indicaste al registrarte.",
+            "resend": "Reenviar correo de verificación",
+            "logOut": "Cerrar sesión"
+        },
+        "twoFactor": {
+            "title": "Autenticación en dos pasos",
+            "introRecovery": "Introduce uno de tus códigos de recuperación. Cada uno solo funciona una vez.",
+            "introCode": "Introduce el código de 6 dígitos de tu aplicación de autenticación.",
+            "code": "Código",
+            "recovery": "Código de recuperación",
+            "useCode": "Usar un código de la aplicación",
+            "useRecovery": "Usar un código de recuperación"
+        },
+        "reset": {
+            "title": "Restablecer contraseña",
+            "button": "Restablecer contraseña"
+        },
+        "social": {
+            "signIn": "Iniciar sesión con {provider}",
+            "signUp": "Registrarse con {provider}",
+            "divider": "o usa tu correo electrónico"
+        }
+    },
+    "common": {
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar",
+        "remove": "Quitar",
+        "name": "Nombre",
+        "description": "Descripción",
+        "unlimited": "Ilimitado"
+    },
+    "projects": {
+        "title": "Proyectos",
+        "new": "Nuevo proyecto",
+        "edit": "Editar proyecto",
+        "search": "Buscar proyectos…",
+        "tasksCount": "{count} tarea | {count} tareas",
+        "empty": "No se encontraron proyectos."
+    },
+    "projectShow": {
+        "exportCsv": "Exportar CSV",
+        "exportCsvPro": "Exportar CSV (Pro)",
+        "exportTitle": "La exportación está incluida en Pro y Business",
+        "newTaskTitle": "Título de la nueva tarea",
+        "addTask": "Añadir tarea",
+        "searchTasks": "Buscar tareas…",
+        "filterStatus": "Filtrar por estado",
+        "allStatuses": "Todos los estados",
+        "filesFor": "Archivos de {title}",
+        "files": "Archivos ({count})",
+        "noTasks": "No se encontraron tareas.",
+        "storage": "Almacenamiento de archivos: {used} usados de {limit}.",
+        "confirmDelete": "¿Eliminar «{name}» y sus tareas?"
+    },
+    "attachments": {
+        "removeAria": "Quitar {name}",
+        "confirmRemove": "¿Quitar «{name}»?",
+        "empty": "Aún no hay archivos.",
+        "uploading": "Subiendo…",
+        "attach": "Adjuntar un archivo",
+        "attachAria": "Adjuntar un archivo a la tarea {id}",
+        "tooBig": "Ese archivo supera los {mb} MB."
+    },
+    "teamCreate": {
+        "title": "Crear equipo",
+        "heading": "Crear un equipo",
+        "name": "Nombre del equipo",
+        "button": "Crear equipo"
+    },
+    "auditLog": {
+        "title": "Registro de actividad",
+        "exportCsv": "Exportar CSV",
+        "empty": "Aún no hay nada registrado.",
+        "note": "Las entradas se guardan en inglés, sea cual sea el idioma en que se hicieron."
+    },
+    "roles": {
+        "owner": "Propietario",
+        "admin": "Administrador",
+        "member": "Miembro"
+    },
+    "team": {
+        "title": "Equipo",
+        "members": "Miembros",
+        "makeOwner": "Hacer propietario",
+        "leave": "Salir",
+        "confirmRemove": "¿Eliminar a {name}?",
+        "confirmTransfer": "¿Hacer a {name} propietario? Pasarás a ser administrador.",
+        "inviteTitle": "Invitar a alguien",
+        "email": "Correo electrónico",
+        "role": "Rol",
+        "sendInvite": "Enviar invitación",
+        "pending": "pendiente",
+        "expired": "caducada",
+        "resend": "Reenviar",
+        "cancel": "Cancelar",
+        "deleteTitle": "Eliminar equipo",
+        "deleteBlurb": "Elimina {team} con sus proyectos, tareas e historial de actividad, y finaliza su suscripción. Se avisa a los miembros por correo electrónico. Esta acción no se puede deshacer.",
+        "deleteButton": "Eliminar equipo",
+        "typeToConfirm": "Escribe «{team}» para confirmar",
+        "yourPassword": "Tu contraseña",
+        "deletePermanently": "Eliminar equipo definitivamente"
+    },
+    "billing": {
+        "title": "Facturación",
+        "using": "Usas {projects} proyectos, {members} miembros (incluidas las invitaciones pendientes) y {storage} de almacenamiento de archivos.",
+        "cancelled": "Cancelado: tu plan termina el {date}.",
+        "trial": "Estás en una prueba gratuita hasta el {date}. Cancela antes y no se te cobrará.",
+        "intervalLabel": "Periodo de facturación",
+        "monthly": "Mensual",
+        "yearly": "Anual",
+        "twoMonthsFree": "2 meses gratis",
+        "perMonth": "/mes",
+        "perYear": "/año",
+        "projects": "{count} proyectos",
+        "projectsUnlimited": "Proyectos ilimitados",
+        "members": "{count} miembros",
+        "membersUnlimited": "Miembros ilimitados",
+        "storage": "{size} de almacenamiento de archivos",
+        "storageUnlimited": "Almacenamiento de archivos ilimitado",
+        "features": {
+            "audit_log": "Registro de actividad",
+            "task_export": "Exportación de tareas"
+        },
+        "currentPlan": "Plan actual",
+        "startTrial": "Empezar prueba gratuita de {days} días",
+        "subscribe": "Suscribirse",
+        "switchMonthly": "Cambiar a facturación mensual",
+        "switchYearly": "Cambiar a facturación anual",
+        "switchTo": "Cambiar a {plan}",
+        "resume": "Reanudar suscripción",
+        "cancel": "Cancelar suscripción",
+        "confirmCancel": "¿Cancelar tu suscripción?",
+        "updatePayment": "Actualizar método de pago",
+        "updatePaymentHint": "Cambia tu tarjeta o descarga los recibos en Stripe.",
+        "invoices": {
+            "title": "Facturas",
+            "loading": "Cargando facturas…",
+            "failed": "No pudimos cargar tus facturas en este momento. Inténtalo más tarde.",
+            "none": "Aún no hay facturas.",
+            "number": "Factura",
+            "date": "Fecha",
+            "amount": "Importe",
+            "status": "Estado",
+            "view": "Ver",
+            "pdf": "PDF",
+            "statuses": {
+                "paid": "pagada",
+                "open": "abierta",
+                "draft": "borrador",
+                "void": "anulada",
+                "uncollectible": "incobrable"
+            }
+        },
+        "ownerOnly": "Solo el propietario del equipo puede cambiar el plan."
+    },
+    "profile": {
+        "saved": "Guardado.",
+        "save": "Guardar",
+        "info": {
+            "title": "Información del perfil",
+            "intro": "Actualiza la información de perfil y el correo electrónico de tu cuenta.",
+            "name": "Nombre",
+            "email": "Correo electrónico",
+            "currentPassword": "Contraseña actual",
+            "emailHint": "Enviaremos un enlace a la nueva dirección. Tu correo electrónico solo cambia cuando lo abras.",
+            "pending": "Esperando a que confirmes {email}. Abre el enlace que enviamos allí para terminar el cambio.",
+            "cancelChange": "Cancelar el cambio",
+            "unverified": "Tu correo electrónico no está verificado.",
+            "resend": "Haz clic aquí para reenviar el correo de verificación.",
+            "linkSent": "Se ha enviado un nuevo enlace de verificación a tu correo electrónico."
+        },
+        "password": {
+            "title": "Actualizar contraseña",
+            "intro": "Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura.",
+            "current": "Contraseña actual",
+            "new": "Nueva contraseña",
+            "confirm": "Confirmar contraseña"
+        },
+        "export": {
+            "title": "Descargar tus datos",
+            "intro": "Obtén una copia de los datos personales que tenemos sobre ti en un archivo JSON: tu cuenta, tus equipos y roles, tus invitaciones y la actividad que generaste. El contenido de los equipos, como proyectos y tareas, pertenece al equipo y no se incluye.",
+            "password": "Contraseña actual",
+            "download": "Descargar",
+            "done": "Descargado.",
+            "unreachable": "No se pudo contactar con el servidor. Inténtalo de nuevo.",
+            "tooMany": "Has descargado tus datos demasiadas veces. Inténtalo más tarde.",
+            "generic": "Algo salió mal. Inténtalo de nuevo."
+        },
+        "delete": {
+            "title": "Eliminar cuenta",
+            "intro": "Cuando se elimine tu cuenta, todos sus recursos y datos se borrarán de forma permanente. Antes de eliminarla, descarga los datos o la información que quieras conservar.",
+            "button": "Eliminar cuenta",
+            "confirmTitle": "¿Seguro que quieres eliminar tu cuenta?",
+            "confirmBody": "Cuando se elimine tu cuenta, todos sus recursos y datos se borrarán de forma permanente. Introduce tu contraseña para confirmar que quieres eliminarla definitivamente.",
+            "password": "Contraseña"
+        },
+        "twoFactor": {
+            "title": "Autenticación en dos pasos",
+            "intro": "Pide un código de una aplicación de autenticación al iniciar sesión, además de tu contraseña.",
+            "saveCodes": "Guarda estos códigos de recuperación en un lugar seguro.",
+            "codesOnce": "Cada uno funciona una vez si pierdes el teléfono. No se volverán a mostrar.",
+            "state": "La autenticación en dos pasos está {state}.",
+            "on": "activada",
+            "codesLeft": "Te queda {count} código de recuperación. | Te quedan {count} códigos de recuperación.",
+            "regenerate": "Generar nuevos códigos de recuperación",
+            "turnOff": "Desactivar",
+            "confirmOff": "¿Desactivar la autenticación en dos pasos?",
+            "scan": "Escanea este código con tu aplicación de autenticación o escribe la clave a mano; después introduce el código de 6 dígitos que muestra.",
+            "code": "Código",
+            "turnOn": "Activar",
+            "setUp": "Configurar"
+        },
+        "apiTokens": {
+            "title": "Tokens de API",
+            "intro": "Permite que un script u otra herramienta trabaje con los proyectos y tareas de uno de tus equipos. Un token tiene tu rol en ese equipo y se muestra una sola vez.",
+            "copyNow": "Copia ahora tu nuevo token.",
+            "onlyOnce": "No se volverá a mostrar.",
+            "confirmRevoke": "¿Revocar «{name}»? Todo lo que lo use dejará de funcionar de inmediato.",
+            "revoke": "Revocar",
+            "revokeAria": "Revocar {name}",
+            "meta": "{team} · {access} · Último uso: {lastUsed} · Caduca: {expires}",
+            "never": "nunca",
+            "readOnly": "Solo lectura",
+            "readWrite": "Lectura y escritura",
+            "name": "Nombre",
+            "namePlaceholder": "p. ej. Script de despliegue",
+            "team": "Equipo",
+            "access": "Acceso",
+            "expires": "Caduca",
+            "in30": "en 30 días",
+            "in90": "en 90 días",
+            "inYear": "en un año",
+            "create": "Crear token"
+        },
+        "connected": {
+            "title": "Cuentas conectadas",
+            "intro": "Puedes iniciar sesión con ellas. Si te registraste con una y nunca elegiste contraseña, usa «¿Olvidaste tu contraseña?» en la página de inicio de sesión para crear una: se pide antes de los cambios sensibles.",
+            "disconnect": "Desconectar",
+            "confirm": "¿Desconectar {provider}? Seguirás pudiendo iniciar sesión con tu contraseña.",
+            "aria": "Desconectar {provider}"
+        }
+    }
+}

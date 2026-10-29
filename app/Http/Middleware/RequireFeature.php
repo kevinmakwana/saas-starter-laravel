@@ -20,7 +20,7 @@ class RequireFeature
 
         if ($team === null || ! $this->gate->allows($team, $feature)) {
             return redirect()->route('billing.show')
-                ->with('upgrade', 'This feature is not included in your current plan. Upgrade to unlock it.');
+                ->with('upgrade', __('This feature is not included in your current plan. Upgrade to unlock it.'));
         }
 
         return $next($request);

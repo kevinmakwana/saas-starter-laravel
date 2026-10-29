@@ -1,14 +1,14 @@
 <x-mail::message>
-# Join {{ $team->name }}
+# {{ __('Join :team', ['team' => $team->name]) }}
 
-{{ $inviter?->name ?? 'A teammate' }} invited you to join **{{ $team->name }}** on Acme as {{ $role->label() }}.
+{{ __(':inviter invited you to join **:team** on Acme as :role.', ['inviter' => $inviter?->name ?? __('A teammate'), 'team' => $team->name, 'role' => $role->label()]) }}
 
 <x-mail::button :url="$url">
-Accept invitation
+{{ __('Accept invitation') }}
 </x-mail::button>
 
-This link expires on {{ now()->addDays(7)->toFormattedDateString() }}. If you were not expecting it, you can ignore this email.
+{{ __('This link expires on :date. If you were not expecting it, you can ignore this email.', ['date' => now()->addDays(7)->isoFormat('ll')]) }}
 
-Thanks,<br>
+{{ __('Thanks,') }}<br>
 {{ config('app.name') }}
 </x-mail::message>

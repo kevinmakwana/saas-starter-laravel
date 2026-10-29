@@ -45,17 +45,17 @@ class SocialLoginController extends Controller
         $label = $this->providers->label($provider);
 
         if ($request->query('error') !== null) {
-            return $this->failed("Signing in with {$label} was cancelled.");
+            return $this->failed(__('Signing in with :provider was cancelled.', ['provider' => $label]));
         }
 
         try {
             $remote = Socialite::driver($provider)->user();
         } catch (InvalidStateException) {
-            return $this->failed("Signing in with {$label} took too long or was interrupted. Please try again.");
+            return $this->failed(__('Signing in with :provider took too long or was interrupted. Please try again.', ['provider' => $label]));
         } catch (Throwable $e) {
             report($e);
 
-            return $this->failed("We could not reach {$label}. Please try again in a moment.");
+            return $this->failed(__('We could not reach :provider. Please try again in a moment.', ['provider' => $label]));
         }
 
         $user = SocialAccount::where('provider', $provider)->where('provider_id', (string) $remote->getId())->first()?->user;
@@ -63,7 +63,7 @@ class SocialLoginController extends Controller
         if ($user === null) {
             $email = $this->providers->verifiedEmail($provider, $remote);
             if ($email === null) {
-                return $this->failed("{$label} did not give us a verified email address, so we cannot sign you in with it.");
+                return $this->failed(__(':provider did not give us a verified email address, so we cannot sign you in with it.', ['provider' => $label]));
             }
 
             $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
@@ -72,9 +72,9 @@ class SocialLoginController extends Controller
                 $user = $this->register($remote, $email);
                 $this->link($user, $provider, $remote);
             } elseif (! $user->hasVerifiedEmail()) {
-                return $this->failed('An account with this email address exists but its address was never verified. Sign in with your password and verify it first.');
+                return $this->failed(__('An account with this email address exists but its address was never verified. Sign in with your password and verify it first.'));
             } elseif ($user->socialAccounts()->where('provider', $provider)->exists()) {
-                return $this->failed("Your account is already connected to a different {$label} account.");
+                return $this->failed(__('Your account is already connected to a different :provider account.', ['provider' => $label]));
             } else {
                 $this->link($user, $provider, $remote);
                 $this->audit->recordFor($user, 'social.linked', "Connected their {$label} login");
@@ -106,7 +106,7 @@ class SocialLoginController extends Controller
             // Nobody knows this password. The person signs in with the provider, or sets their own with "Forgot your password?".
             $user = User::create(['name' => Str::limit((string) $name, 255, ''), 'email' => $email, 'password' => Hash::make(Str::random(40))]);
             // The provider vouched for the address.
-            $user->forceFill(['email_verified_at' => now()])->save();
+            $user->forceFill(['email_verified_at' => now(), 'locale' => app()->getLocale()])->save();
             Team::createFor($user, "{$user->name}'s Team");
 
             return $user;

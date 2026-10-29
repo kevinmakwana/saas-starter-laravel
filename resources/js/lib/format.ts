@@ -15,10 +15,10 @@ export function formatBytes(bytes: number): string {
     return `${value >= 10 ? Math.round(value) : Math.round(value * 10) / 10} ${units[unit]}`;
 }
 
-/** A storage allowance in MB as "25 MB" or "1 GB"; null means unlimited. */
-export function formatMegabytes(mb: number | null): string {
+/** A storage allowance in MB as "25 MB" or "1 GB"; null means unlimited, which the caller words in the page's language. */
+export function formatMegabytes(mb: number | null, unlimited = 'Unlimited'): string {
     if (mb === null) {
-        return 'Unlimited';
+        return unlimited;
     }
 
     return mb >= 1000 && mb % 1000 === 0 ? `${mb / 1000} GB` : `${mb} MB`;

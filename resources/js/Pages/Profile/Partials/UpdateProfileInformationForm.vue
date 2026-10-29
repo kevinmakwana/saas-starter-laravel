@@ -5,12 +5,15 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 defineProps<{
     mustVerifyEmail?: Boolean;
     status?: String;
     pendingEmail?: string | null;
 }>();
+
+const { t } = useI18n();
 
 const user = usePage().props.auth.user;
 
@@ -30,11 +33,11 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
     <section>
         <header>
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Profile Information
+                {{ t('profile.info.title') }}
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Update your account's profile information and email address.
+                {{ t('profile.info.intro') }}
             </p>
         </header>
 
@@ -43,7 +46,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
             class="mt-6 space-y-6"
         >
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" :value="t('profile.info.name')" />
 
                 <TextInput
                     id="name"
@@ -59,7 +62,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
             </div>
 
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" :value="t('profile.info.email')" />
 
                 <TextInput
                     id="email"
@@ -74,7 +77,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
             </div>
 
             <div v-if="changingEmail">
-                <InputLabel for="current_password" value="Current password" />
+                <InputLabel for="current_password" :value="t('profile.info.currentPassword')" />
 
                 <TextInput
                     id="current_password"
@@ -86,27 +89,27 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
                 />
 
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    We will email a link to the new address. Your email only changes once you open it.
+                    {{ t('profile.info.emailHint') }}
                 </p>
 
                 <InputError class="mt-2" :message="form.errors.current_password" />
             </div>
 
             <div v-if="pendingEmail" class="rounded-md bg-amber-50 dark:bg-amber-900/30 p-3 text-sm text-amber-800 dark:text-amber-200" data-testid="pending-email">
-                Waiting for you to confirm <strong>{{ pendingEmail }}</strong>. Open the link we sent there to finish the change.
-                <button type="button" class="ml-1 underline hover:text-amber-950 dark:hover:text-amber-100" @click="cancelEmailChange">Cancel the change</button>
+                <i18n-t keypath="profile.info.pending" tag="span"><template #email><strong>{{ pendingEmail }}</strong></template></i18n-t>
+                <button type="button" class="ml-1 underline hover:text-amber-950 dark:hover:text-amber-100" @click="cancelEmailChange">{{ t('profile.info.cancelChange') }}</button>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
-                    Your email address is unverified.
+                    {{ t('profile.info.unverified') }}
                     <Link
                         :href="route('verification.send')"
                         method="post"
                         as="button"
                         class="rounded-md text-sm text-gray-600 dark:text-gray-400 underline hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
-                        Click here to re-send the verification email.
+                        {{ t('profile.info.resend') }}
                     </Link>
                 </p>
 
@@ -114,12 +117,12 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
                     v-show="status === 'verification-link-sent'"
                     class="mt-2 text-sm font-medium text-green-600 dark:text-green-400"
                 >
-                    A new verification link has been sent to your email address.
+                    {{ t('profile.info.linkSent') }}
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <PrimaryButton :disabled="form.processing">{{ t('profile.save') }}</PrimaryButton>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -131,7 +134,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
                         v-if="form.recentlySuccessful"
                         class="text-sm text-gray-600 dark:text-gray-400"
                     >
-                        Saved.
+                        {{ t('profile.saved') }}
                     </p>
                 </Transition>
             </div>

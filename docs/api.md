@@ -27,7 +27,7 @@ Revoke a token from the same page and it stops working at once. Expired tokens a
 
 ## Requests
 
-Send `Accept: application/json`. Errors are always JSON.
+Send `Accept: application/json`. Errors are always JSON, and always in English (the API is for programs; the app's screens and emails are translated).
 
 | Status | Meaning |
 | --- | --- |

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import type { Paginated } from '@/types';
+import { useI18n } from 'vue-i18n';
 
 defineProps<{ page: Paginated<unknown> }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <nav v-if="page.last_page > 1" class="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm" aria-label="Pagination">
-        <p class="text-gray-600 dark:text-gray-400">Showing {{ page.from }}–{{ page.to }} of {{ page.total }}</p>
+    <nav v-if="page.last_page > 1" class="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm" :aria-label="t('pagination.nav')">
+        <p class="text-gray-600 dark:text-gray-400">{{ t('pagination.showing', { from: page.from, to: page.to, total: page.total }) }}</p>
         <div class="flex flex-wrap gap-1">
             <template v-for="link in page.links" :key="link.label">
                 <Link

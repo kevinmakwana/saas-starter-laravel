@@ -28,7 +28,7 @@ class TeamMemberController extends Controller
 
         $this->audit->record('member.role_changed', "Changed {$user->name}'s role to {$data['role']}");
 
-        return back()->with('success', 'Role updated.');
+        return back()->with('success', __('Role updated.'));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -44,7 +44,7 @@ class TeamMemberController extends Controller
         }
 
         return $this->user($request)->is($user)
-            ? redirect()->route('dashboard')->with('success', 'You left the team.')
-            : back()->with('success', 'Member removed.');
+            ? redirect()->route('dashboard')->with('success', __('You left the team.'))
+            : back()->with('success', __('Member removed.'));
     }
 }

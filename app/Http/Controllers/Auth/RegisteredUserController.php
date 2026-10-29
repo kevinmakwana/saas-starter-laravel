@@ -44,6 +44,7 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $user->forceFill(['locale' => app()->getLocale()])->save();
 
         Team::createFor($user, "{$user->name}'s Team");
 

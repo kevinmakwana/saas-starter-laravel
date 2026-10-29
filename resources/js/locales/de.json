@@ -1,0 +1,343 @@
+{
+    "nav": {
+        "dashboard": "Übersicht",
+        "projects": "Projekte",
+        "auditLog": "Aktivitätsprotokoll",
+        "team": "Team",
+        "billing": "Abrechnung",
+        "profile": "Profil",
+        "logOut": "Abmelden"
+    },
+    "layout": {
+        "billingGrace": "Ihre letzte Zahlung ist fehlgeschlagen. Ihr Tarif bleibt bis zum {date} aktiv. Aktualisieren Sie Ihre Zahlungsmethode, um ihn zu behalten.",
+        "billingOverdue": "Ihre Zahlung ist überfällig, daher hat dieses Team den Tarif Free, bis sie durchgeführt wird.",
+        "reviewBilling": "Abrechnung prüfen",
+        "overLimit": "Dieses Team überschreitet die Grenzen des Tarifs {plan} ({items}). Alles bleibt verfügbar, aber es kann nichts Neues hinzugefügt werden, bis Sie etwas entfernen oder den Tarif erhöhen.",
+        "overLimitItem": "{used} von {limit} {label}",
+        "seePlans": "Tarife ansehen"
+    },
+    "limits": {
+        "projects": "Projekte",
+        "members": "Mitglieder"
+    },
+    "status": {
+        "todo": "offen",
+        "doing": "in Arbeit",
+        "done": "erledigt"
+    },
+    "language": {
+        "label": "Sprache"
+    },
+    "theme": {
+        "toLight": "Zum hellen Modus wechseln",
+        "toDark": "Zum dunklen Modus wechseln"
+    },
+    "teamSwitcher": {
+        "label": "Team wechseln",
+        "new": "+ Neues Team…"
+    },
+    "pagination": {
+        "showing": "{from}–{to} von {total} werden angezeigt",
+        "nav": "Seitennavigation"
+    },
+    "notifications": {
+        "title": "Benachrichtigungen",
+        "labelUnread": "Benachrichtigungen, {count} ungelesen",
+        "markAllRead": "Alle als gelesen markieren",
+        "caughtUp": "Sie sind auf dem neuesten Stand.",
+        "unread": "Ungelesen:",
+        "fallback": "Sie haben eine neue Benachrichtigung.",
+        "kinds": {
+            "member_joined": "{name} ist {team} beigetreten.",
+            "member_removed": "Sie wurden aus {team} entfernt.",
+            "team_deleted": "{by} hat {team} gelöscht.",
+            "plan_changed": "{team} hat jetzt den Tarif {plan}.",
+            "payment_failed": "Eine Zahlung für {team} ist fehlgeschlagen. Aktualisieren Sie die Zahlungsmethode, bevor die Karenzzeit endet.",
+            "trial_ending": "Die kostenlose Testphase von {team} endet am {date}."
+        }
+    },
+    "welcome": {
+        "tagline": "Ein mandantenfähiger SaaS-Starter: Teams, Rollen, Tarife und ein Aktivitätsprotokoll, lokal ohne kostenpflichtige Schlüssel lauffähig.",
+        "dashboard": "Übersicht",
+        "login": "Anmelden",
+        "register": "Registrieren"
+    },
+    "dashboard": {
+        "title": "Übersicht",
+        "plan": "Tarif",
+        "manageBilling": "Abrechnung verwalten",
+        "projects": "Projekte",
+        "members": "Mitglieder",
+        "tasks": "Aufgaben",
+        "recentProjects": "Letzte Projekte",
+        "noProjects": "Noch keine Projekte.",
+        "createOne": "Erstellen Sie eines"
+    },
+    "auth": {
+        "email": "E-Mail",
+        "password": "Passwort",
+        "name": "Name",
+        "confirmPassword": "Passwort bestätigen",
+        "rememberMe": "Angemeldet bleiben",
+        "forgotLink": "Passwort vergessen?",
+        "logIn": "Anmelden",
+        "register": "Registrieren",
+        "alreadyRegistered": "Bereits registriert?",
+        "forgot": {
+            "title": "Passwort vergessen",
+            "intro": "Passwort vergessen? Kein Problem. Teilen Sie uns Ihre E-Mail-Adresse mit, und wir senden Ihnen einen Link zum Zurücksetzen, mit dem Sie ein neues wählen können.",
+            "send": "Link zum Zurücksetzen senden"
+        },
+        "confirm": {
+            "title": "Passwort bestätigen",
+            "intro": "Dies ist ein geschützter Bereich der Anwendung. Bitte bestätigen Sie Ihr Passwort, bevor Sie fortfahren.",
+            "button": "Bestätigen"
+        },
+        "verify": {
+            "title": "E-Mail-Bestätigung",
+            "intro": "Danke für Ihre Registrierung! Bevor es losgeht: Bitte bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir Ihnen gerade geschickt haben. Falls Sie keine E-Mail erhalten haben, senden wir Ihnen gern eine neue.",
+            "sent": "Ein neuer Bestätigungslink wurde an die bei der Registrierung angegebene E-Mail-Adresse gesendet.",
+            "resend": "Bestätigungs-E-Mail erneut senden",
+            "logOut": "Abmelden"
+        },
+        "twoFactor": {
+            "title": "Zwei-Faktor-Authentifizierung",
+            "introRecovery": "Geben Sie einen Ihrer Wiederherstellungscodes ein. Jeder funktioniert nur einmal.",
+            "introCode": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.",
+            "code": "Code",
+            "recovery": "Wiederherstellungscode",
+            "useCode": "Authenticator-Code verwenden",
+            "useRecovery": "Wiederherstellungscode verwenden"
+        },
+        "reset": {
+            "title": "Passwort zurücksetzen",
+            "button": "Passwort zurücksetzen"
+        },
+        "social": {
+            "signIn": "Mit {provider} anmelden",
+            "signUp": "Mit {provider} registrieren",
+            "divider": "oder per E-Mail"
+        }
+    },
+    "common": {
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "delete": "Löschen",
+        "edit": "Bearbeiten",
+        "remove": "Entfernen",
+        "name": "Name",
+        "description": "Beschreibung",
+        "unlimited": "Unbegrenzt"
+    },
+    "projects": {
+        "title": "Projekte",
+        "new": "Neues Projekt",
+        "edit": "Projekt bearbeiten",
+        "search": "Projekte suchen…",
+        "tasksCount": "{count} Aufgabe | {count} Aufgaben",
+        "empty": "Keine Projekte gefunden."
+    },
+    "projectShow": {
+        "exportCsv": "CSV exportieren",
+        "exportCsvPro": "CSV exportieren (Pro)",
+        "exportTitle": "Der Export ist in Pro und Business enthalten",
+        "newTaskTitle": "Titel der neuen Aufgabe",
+        "addTask": "Aufgabe hinzufügen",
+        "searchTasks": "Aufgaben suchen…",
+        "filterStatus": "Nach Status filtern",
+        "allStatuses": "Alle Status",
+        "filesFor": "Dateien für {title}",
+        "files": "Dateien ({count})",
+        "noTasks": "Keine Aufgaben gefunden.",
+        "storage": "Dateispeicher: {used} von {limit} belegt.",
+        "confirmDelete": "„{name}“ und seine Aufgaben löschen?"
+    },
+    "attachments": {
+        "removeAria": "{name} entfernen",
+        "confirmRemove": "„{name}“ entfernen?",
+        "empty": "Noch keine Dateien.",
+        "uploading": "Wird hochgeladen…",
+        "attach": "Datei anhängen",
+        "attachAria": "Datei an Aufgabe {id} anhängen",
+        "tooBig": "Diese Datei ist größer als {mb} MB."
+    },
+    "teamCreate": {
+        "title": "Team erstellen",
+        "heading": "Ein Team erstellen",
+        "name": "Teamname",
+        "button": "Team erstellen"
+    },
+    "auditLog": {
+        "title": "Aktivitätsprotokoll",
+        "exportCsv": "CSV exportieren",
+        "empty": "Noch nichts aufgezeichnet.",
+        "note": "Einträge werden auf Englisch gespeichert, unabhängig von der Sprache, in der sie entstanden sind."
+    },
+    "roles": {
+        "owner": "Inhaber",
+        "admin": "Administrator",
+        "member": "Mitglied"
+    },
+    "team": {
+        "title": "Team",
+        "members": "Mitglieder",
+        "makeOwner": "Zum Inhaber machen",
+        "leave": "Verlassen",
+        "confirmRemove": "{name} entfernen?",
+        "confirmTransfer": "{name} zum Inhaber machen? Sie werden Administrator.",
+        "inviteTitle": "Jemanden einladen",
+        "email": "E-Mail",
+        "role": "Rolle",
+        "sendInvite": "Einladung senden",
+        "pending": "ausstehend",
+        "expired": "abgelaufen",
+        "resend": "Erneut senden",
+        "cancel": "Zurückziehen",
+        "deleteTitle": "Team löschen",
+        "deleteBlurb": "Löscht {team} mit seinen Projekten, Aufgaben und dem Aktivitätsverlauf und beendet das Abonnement. Die Mitglieder werden per E-Mail informiert. Das kann nicht rückgängig gemacht werden.",
+        "deleteButton": "Team löschen",
+        "typeToConfirm": "Geben Sie „{team}“ zur Bestätigung ein",
+        "yourPassword": "Ihr Passwort",
+        "deletePermanently": "Team endgültig löschen"
+    },
+    "billing": {
+        "title": "Abrechnung",
+        "using": "Sie nutzen {projects} Projekte, {members} Mitglieder (einschließlich ausstehender Einladungen) und {storage} Dateispeicher.",
+        "cancelled": "Gekündigt: Ihr Tarif endet am {date}.",
+        "trial": "Sie befinden sich in einer kostenlosen Testphase bis zum {date}. Kündigen Sie vorher, und es wird nichts berechnet.",
+        "intervalLabel": "Abrechnungszeitraum",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich",
+        "twoMonthsFree": "2 Monate gratis",
+        "perMonth": "/Mon.",
+        "perYear": "/Jahr",
+        "projects": "{count} Projekte",
+        "projectsUnlimited": "Unbegrenzte Projekte",
+        "members": "{count} Mitglieder",
+        "membersUnlimited": "Unbegrenzte Mitglieder",
+        "storage": "{size} Dateispeicher",
+        "storageUnlimited": "Unbegrenzter Dateispeicher",
+        "features": {
+            "audit_log": "Aktivitätsprotokoll",
+            "task_export": "Aufgaben-Export"
+        },
+        "currentPlan": "Aktueller Tarif",
+        "startTrial": "{days}-tägige kostenlose Testphase starten",
+        "subscribe": "Abonnieren",
+        "switchMonthly": "Zu monatlicher Abrechnung wechseln",
+        "switchYearly": "Zu jährlicher Abrechnung wechseln",
+        "switchTo": "Zu {plan} wechseln",
+        "resume": "Abonnement fortsetzen",
+        "cancel": "Abonnement kündigen",
+        "confirmCancel": "Ihr Abonnement kündigen?",
+        "updatePayment": "Zahlungsmethode aktualisieren",
+        "updatePaymentHint": "Ändern Sie Ihre Karte oder laden Sie Belege bei Stripe herunter.",
+        "invoices": {
+            "title": "Rechnungen",
+            "loading": "Rechnungen werden geladen…",
+            "failed": "Wir konnten Ihre Rechnungen gerade nicht laden. Bitte versuchen Sie es später erneut.",
+            "none": "Noch keine Rechnungen.",
+            "number": "Rechnung",
+            "date": "Datum",
+            "amount": "Betrag",
+            "status": "Status",
+            "view": "Ansehen",
+            "pdf": "PDF",
+            "statuses": {
+                "paid": "bezahlt",
+                "open": "offen",
+                "draft": "Entwurf",
+                "void": "storniert",
+                "uncollectible": "uneinbringlich"
+            }
+        },
+        "ownerOnly": "Nur der Team-Inhaber kann den Tarif ändern."
+    },
+    "profile": {
+        "saved": "Gespeichert.",
+        "save": "Speichern",
+        "info": {
+            "title": "Profilinformationen",
+            "intro": "Aktualisieren Sie die Profilinformationen und die E-Mail-Adresse Ihres Kontos.",
+            "name": "Name",
+            "email": "E-Mail",
+            "currentPassword": "Aktuelles Passwort",
+            "emailHint": "Wir senden einen Link an die neue Adresse. Ihre E-Mail-Adresse ändert sich erst, wenn Sie ihn öffnen.",
+            "pending": "Warte auf Ihre Bestätigung von {email}. Öffnen Sie den dorthin gesendeten Link, um die Änderung abzuschließen.",
+            "cancelChange": "Änderung abbrechen",
+            "unverified": "Ihre E-Mail-Adresse ist nicht bestätigt.",
+            "resend": "Hier klicken, um die Bestätigungs-E-Mail erneut zu senden.",
+            "linkSent": "Ein neuer Bestätigungslink wurde an Ihre E-Mail-Adresse gesendet."
+        },
+        "password": {
+            "title": "Passwort ändern",
+            "intro": "Verwenden Sie für Ihr Konto ein langes, zufälliges Passwort, um es sicher zu halten.",
+            "current": "Aktuelles Passwort",
+            "new": "Neues Passwort",
+            "confirm": "Passwort bestätigen"
+        },
+        "export": {
+            "title": "Ihre Daten herunterladen",
+            "intro": "Erhalten Sie eine Kopie der personenbezogenen Daten, die wir über Sie speichern, als JSON-Datei: Ihr Konto, Ihre Teams und Rollen, Ihre Einladungen und die von Ihnen verursachten Aktivitäten. Inhalte der Teams wie Projekte und Aufgaben gehören dem Team und sind nicht enthalten.",
+            "password": "Aktuelles Passwort",
+            "download": "Herunterladen",
+            "done": "Heruntergeladen.",
+            "unreachable": "Der Server ist nicht erreichbar. Bitte versuchen Sie es erneut.",
+            "tooMany": "Sie haben Ihre Daten zu oft heruntergeladen. Bitte versuchen Sie es später erneut.",
+            "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+        },
+        "delete": {
+            "title": "Konto löschen",
+            "intro": "Wenn Ihr Konto gelöscht wird, werden alle zugehörigen Ressourcen und Daten dauerhaft gelöscht. Laden Sie vorher alle Daten oder Informationen herunter, die Sie behalten möchten.",
+            "button": "Konto löschen",
+            "confirmTitle": "Möchten Sie Ihr Konto wirklich löschen?",
+            "confirmBody": "Wenn Ihr Konto gelöscht wird, werden alle zugehörigen Ressourcen und Daten dauerhaft gelöscht. Bitte geben Sie Ihr Passwort ein, um zu bestätigen, dass Sie Ihr Konto endgültig löschen möchten.",
+            "password": "Passwort"
+        },
+        "twoFactor": {
+            "title": "Zwei-Faktor-Authentifizierung",
+            "intro": "Beim Anmelden zusätzlich zum Passwort einen Code aus einer Authenticator-App verlangen.",
+            "saveCodes": "Bewahren Sie diese Wiederherstellungscodes sicher auf.",
+            "codesOnce": "Jeder funktioniert einmal, falls Sie Ihr Handy verlieren. Sie werden nicht erneut angezeigt.",
+            "state": "Die Zwei-Faktor-Authentifizierung ist {state}.",
+            "on": "aktiviert",
+            "codesLeft": "Ihnen bleibt {count} Wiederherstellungscode. | Ihnen bleiben {count} Wiederherstellungscodes.",
+            "regenerate": "Neue Wiederherstellungscodes erstellen",
+            "turnOff": "Deaktivieren",
+            "confirmOff": "Zwei-Faktor-Authentifizierung deaktivieren?",
+            "scan": "Scannen Sie diesen Code mit Ihrer Authenticator-App oder geben Sie den Schlüssel manuell ein und geben Sie dann den angezeigten 6-stelligen Code ein.",
+            "code": "Code",
+            "turnOn": "Aktivieren",
+            "setUp": "Einrichten"
+        },
+        "apiTokens": {
+            "title": "API-Token",
+            "intro": "Erlauben Sie einem Skript oder einem anderen Werkzeug, mit den Projekten und Aufgaben eines Ihrer Teams zu arbeiten. Ein Token hat Ihre Rolle in diesem Team und wird nur einmal angezeigt.",
+            "copyNow": "Kopieren Sie Ihren neuen Token jetzt.",
+            "onlyOnce": "Er wird nicht erneut angezeigt.",
+            "confirmRevoke": "„{name}“ widerrufen? Alles, was ihn verwendet, funktioniert sofort nicht mehr.",
+            "revoke": "Widerrufen",
+            "revokeAria": "{name} widerrufen",
+            "meta": "{team} · {access} · Zuletzt verwendet: {lastUsed} · Läuft ab: {expires}",
+            "never": "nie",
+            "readOnly": "Nur Lesen",
+            "readWrite": "Lesen und Schreiben",
+            "name": "Name",
+            "namePlaceholder": "z. B. Deploy-Skript",
+            "team": "Team",
+            "access": "Zugriff",
+            "expires": "Läuft ab",
+            "in30": "in 30 Tagen",
+            "in90": "in 90 Tagen",
+            "inYear": "in einem Jahr",
+            "create": "Token erstellen"
+        },
+        "connected": {
+            "title": "Verbundene Konten",
+            "intro": "Sie können sich damit anmelden. Wenn Sie sich mit einem registriert und nie ein Passwort gewählt haben, nutzen Sie auf der Anmeldeseite „Passwort vergessen?“, um eines festzulegen: Es wird vor sensiblen Änderungen abgefragt.",
+            "disconnect": "Trennen",
+            "confirm": "{provider} trennen? Sie können sich weiterhin mit Ihrem Passwort anmelden.",
+            "aria": "{provider} trennen"
+        }
+    }
+}

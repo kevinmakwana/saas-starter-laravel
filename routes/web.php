@@ -8,6 +8,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\EmailChangeController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
@@ -29,6 +30,8 @@ Route::get('/', function () {
         'canRegister' => Route::has('register'),
     ]);
 });
+
+Route::put('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified', 'team'])->name('dashboard');
 

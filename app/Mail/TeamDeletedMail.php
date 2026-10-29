@@ -23,7 +23,7 @@ class TeamDeletedMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "{$this->teamName} was deleted");
+        return new Envelope(subject: __(':team was deleted', ['team' => $this->teamName]));
     }
 
     public function content(): Content

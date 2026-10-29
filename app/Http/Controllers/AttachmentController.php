@@ -44,7 +44,7 @@ class AttachmentController extends Controller
         ]);
         $this->audit->record('attachment.added', "Attached “{$attachment->name}” to task “{$task->title}”", $attachment);
 
-        return back()->with('success', 'File attached.');
+        return back()->with('success', __('File attached.'));
     }
 
     /** Always a download, never shown inline, and only to a member of the team that owns it. */
@@ -65,7 +65,7 @@ class AttachmentController extends Controller
         $attachment->delete();
         $this->audit->record('attachment.deleted', "Removed “{$attachment->name}” from a task");
 
-        return back()->with('success', 'File removed.');
+        return back()->with('success', __('File removed.'));
     }
 
     /** The name as the user sees it: no folders, control characters or markup, and at most 255 characters. */

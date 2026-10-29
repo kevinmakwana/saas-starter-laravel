@@ -1,0 +1,343 @@
+{
+    "nav": {
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "auditLog": "Audit log",
+        "team": "Team",
+        "billing": "Billing",
+        "profile": "Profile",
+        "logOut": "Log Out"
+    },
+    "layout": {
+        "billingGrace": "Your last payment failed. Your plan stays active until {date}. Update your payment method to keep it.",
+        "billingOverdue": "Your payment is overdue, so this team is on the Free plan until it goes through.",
+        "reviewBilling": "Review billing",
+        "overLimit": "This team is over the {plan} plan limits ({items}). Everything stays available, but nothing new can be added until you remove some or upgrade.",
+        "overLimitItem": "{used} of {limit} {label}",
+        "seePlans": "See plans"
+    },
+    "limits": {
+        "projects": "projects",
+        "members": "members"
+    },
+    "status": {
+        "todo": "todo",
+        "doing": "doing",
+        "done": "done"
+    },
+    "language": {
+        "label": "Language"
+    },
+    "theme": {
+        "toLight": "Switch to light mode",
+        "toDark": "Switch to dark mode"
+    },
+    "teamSwitcher": {
+        "label": "Switch team",
+        "new": "+ New team…"
+    },
+    "pagination": {
+        "showing": "Showing {from}–{to} of {total}",
+        "nav": "Pagination"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "labelUnread": "Notifications, {count} unread",
+        "markAllRead": "Mark all read",
+        "caughtUp": "You're all caught up.",
+        "unread": "Unread:",
+        "fallback": "You have a new notification.",
+        "kinds": {
+            "member_joined": "{name} joined {team}.",
+            "member_removed": "You were removed from {team}.",
+            "team_deleted": "{by} deleted {team}.",
+            "plan_changed": "{team} is now on the {plan} plan.",
+            "payment_failed": "A payment for {team} failed. Update the payment method before the grace period ends.",
+            "trial_ending": "The free trial of {team} ends on {date}."
+        }
+    },
+    "welcome": {
+        "tagline": "A multi-tenant SaaS starter: teams, roles, plans and an audit log, ready to run locally with no paid keys.",
+        "dashboard": "Dashboard",
+        "login": "Log in",
+        "register": "Register"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "plan": "Plan",
+        "manageBilling": "Manage billing",
+        "projects": "Projects",
+        "members": "Members",
+        "tasks": "Tasks",
+        "recentProjects": "Recent projects",
+        "noProjects": "No projects yet.",
+        "createOne": "Create one"
+    },
+    "auth": {
+        "email": "Email",
+        "password": "Password",
+        "name": "Name",
+        "confirmPassword": "Confirm Password",
+        "rememberMe": "Remember me",
+        "forgotLink": "Forgot your password?",
+        "logIn": "Log in",
+        "register": "Register",
+        "alreadyRegistered": "Already registered?",
+        "forgot": {
+            "title": "Forgot Password",
+            "intro": "Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.",
+            "send": "Email Password Reset Link"
+        },
+        "confirm": {
+            "title": "Confirm Password",
+            "intro": "This is a secure area of the application. Please confirm your password before continuing.",
+            "button": "Confirm"
+        },
+        "verify": {
+            "title": "Email Verification",
+            "intro": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
+            "sent": "A new verification link has been sent to the email address you provided during registration.",
+            "resend": "Resend Verification Email",
+            "logOut": "Log Out"
+        },
+        "twoFactor": {
+            "title": "Two-factor authentication",
+            "introRecovery": "Enter one of your recovery codes. Each one works only once.",
+            "introCode": "Enter the 6-digit code from your authenticator app.",
+            "code": "Code",
+            "recovery": "Recovery code",
+            "useCode": "Use an authenticator code",
+            "useRecovery": "Use a recovery code"
+        },
+        "reset": {
+            "title": "Reset Password",
+            "button": "Reset Password"
+        },
+        "social": {
+            "signIn": "Sign in with {provider}",
+            "signUp": "Sign up with {provider}",
+            "divider": "or use your email"
+        }
+    },
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "remove": "Remove",
+        "name": "Name",
+        "description": "Description",
+        "unlimited": "Unlimited"
+    },
+    "projects": {
+        "title": "Projects",
+        "new": "New project",
+        "edit": "Edit project",
+        "search": "Search projects…",
+        "tasksCount": "{count} task | {count} tasks",
+        "empty": "No projects found."
+    },
+    "projectShow": {
+        "exportCsv": "Export CSV",
+        "exportCsvPro": "Export CSV (Pro)",
+        "exportTitle": "Export is included in Pro and Business",
+        "newTaskTitle": "New task title",
+        "addTask": "Add task",
+        "searchTasks": "Search tasks…",
+        "filterStatus": "Filter by status",
+        "allStatuses": "All statuses",
+        "filesFor": "Files for {title}",
+        "files": "Files ({count})",
+        "noTasks": "No tasks found.",
+        "storage": "File storage: {used} used of {limit}.",
+        "confirmDelete": "Delete “{name}” and its tasks?"
+    },
+    "attachments": {
+        "removeAria": "Remove {name}",
+        "confirmRemove": "Remove “{name}”?",
+        "empty": "No files yet.",
+        "uploading": "Uploading…",
+        "attach": "Attach a file",
+        "attachAria": "Attach a file to task {id}",
+        "tooBig": "That file is larger than {mb} MB."
+    },
+    "teamCreate": {
+        "title": "Create team",
+        "heading": "Create a team",
+        "name": "Team name",
+        "button": "Create team"
+    },
+    "auditLog": {
+        "title": "Audit log",
+        "exportCsv": "Export CSV",
+        "empty": "Nothing recorded yet.",
+        "note": "Entries are kept in English, whatever language they were made in."
+    },
+    "roles": {
+        "owner": "Owner",
+        "admin": "Admin",
+        "member": "Member"
+    },
+    "team": {
+        "title": "Team",
+        "members": "Members",
+        "makeOwner": "Make owner",
+        "leave": "Leave",
+        "confirmRemove": "Remove {name}?",
+        "confirmTransfer": "Make {name} the owner? You will become an admin.",
+        "inviteTitle": "Invite someone",
+        "email": "Email",
+        "role": "Role",
+        "sendInvite": "Send invite",
+        "pending": "pending",
+        "expired": "expired",
+        "resend": "Resend",
+        "cancel": "Cancel",
+        "deleteTitle": "Delete team",
+        "deleteBlurb": "Deletes {team} with its projects, tasks and activity history, and ends its subscription. Members are told by email. This cannot be undone.",
+        "deleteButton": "Delete team",
+        "typeToConfirm": "Type “{team}” to confirm",
+        "yourPassword": "Your password",
+        "deletePermanently": "Delete team permanently"
+    },
+    "billing": {
+        "title": "Billing",
+        "using": "Using {projects} projects, {members} members (including pending invitations) and {storage} of file storage.",
+        "cancelled": "Cancelled: your plan ends on {date}.",
+        "trial": "You're on a free trial until {date}. Cancel before then and you won't be charged.",
+        "intervalLabel": "Billing interval",
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "twoMonthsFree": "2 months free",
+        "perMonth": "/mo",
+        "perYear": "/yr",
+        "projects": "{count} projects",
+        "projectsUnlimited": "Unlimited projects",
+        "members": "{count} members",
+        "membersUnlimited": "Unlimited members",
+        "storage": "{size} file storage",
+        "storageUnlimited": "Unlimited file storage",
+        "features": {
+            "audit_log": "Audit log",
+            "task_export": "Task export"
+        },
+        "currentPlan": "Current plan",
+        "startTrial": "Start {days}-day free trial",
+        "subscribe": "Subscribe",
+        "switchMonthly": "Switch to monthly billing",
+        "switchYearly": "Switch to yearly billing",
+        "switchTo": "Switch to {plan}",
+        "resume": "Resume subscription",
+        "cancel": "Cancel subscription",
+        "confirmCancel": "Cancel your subscription?",
+        "updatePayment": "Update payment method",
+        "updatePaymentHint": "Change your card or download receipts at Stripe.",
+        "invoices": {
+            "title": "Invoices",
+            "loading": "Loading invoices…",
+            "failed": "We couldn't load your invoices right now. Please try again later.",
+            "none": "No invoices yet.",
+            "number": "Invoice",
+            "date": "Date",
+            "amount": "Amount",
+            "status": "Status",
+            "view": "View",
+            "pdf": "PDF",
+            "statuses": {
+                "paid": "paid",
+                "open": "open",
+                "draft": "draft",
+                "void": "void",
+                "uncollectible": "uncollectible"
+            }
+        },
+        "ownerOnly": "Only the team owner can change the plan."
+    },
+    "profile": {
+        "saved": "Saved.",
+        "save": "Save",
+        "info": {
+            "title": "Profile Information",
+            "intro": "Update your account's profile information and email address.",
+            "name": "Name",
+            "email": "Email",
+            "currentPassword": "Current password",
+            "emailHint": "We will email a link to the new address. Your email only changes once you open it.",
+            "pending": "Waiting for you to confirm {email}. Open the link we sent there to finish the change.",
+            "cancelChange": "Cancel the change",
+            "unverified": "Your email address is unverified.",
+            "resend": "Click here to re-send the verification email.",
+            "linkSent": "A new verification link has been sent to your email address."
+        },
+        "password": {
+            "title": "Update Password",
+            "intro": "Ensure your account is using a long, random password to stay secure.",
+            "current": "Current Password",
+            "new": "New Password",
+            "confirm": "Confirm Password"
+        },
+        "export": {
+            "title": "Download your data",
+            "intro": "Get a copy of the personal data we hold about you as a JSON file: your account, your teams and roles, your invitations and the activity you caused. Team content such as projects and tasks belongs to the team and is not included.",
+            "password": "Current password",
+            "download": "Download",
+            "done": "Downloaded.",
+            "unreachable": "Could not reach the server. Please try again.",
+            "tooMany": "You have downloaded your data too often. Please try again later.",
+            "generic": "Something went wrong. Please try again."
+        },
+        "delete": {
+            "title": "Delete Account",
+            "intro": "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.",
+            "button": "Delete Account",
+            "confirmTitle": "Are you sure you want to delete your account?",
+            "confirmBody": "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.",
+            "password": "Password"
+        },
+        "twoFactor": {
+            "title": "Two-factor authentication",
+            "intro": "Ask for a code from an authenticator app when you sign in, on top of your password.",
+            "saveCodes": "Save these recovery codes somewhere safe.",
+            "codesOnce": "Each works once if you lose your phone. They will not be shown again.",
+            "state": "Two-factor authentication is {state}.",
+            "on": "on",
+            "codesLeft": "You have {count} recovery code left. | You have {count} recovery codes left.",
+            "regenerate": "Make new recovery codes",
+            "turnOff": "Turn off",
+            "confirmOff": "Turn off two-factor authentication?",
+            "scan": "Scan this code with your authenticator app, or type the key in by hand, then enter the 6-digit code it shows.",
+            "code": "Code",
+            "turnOn": "Turn on",
+            "setUp": "Set up"
+        },
+        "apiTokens": {
+            "title": "API tokens",
+            "intro": "Let a script or another tool work with the projects and tasks of one of your teams. A token has your role in that team and is shown only once.",
+            "copyNow": "Copy your new token now.",
+            "onlyOnce": "It will not be shown again.",
+            "confirmRevoke": "Revoke “{name}”? Anything using it stops working at once.",
+            "revoke": "Revoke",
+            "revokeAria": "Revoke {name}",
+            "meta": "{team} · {access} · Last used {lastUsed} · Expires {expires}",
+            "never": "never",
+            "readOnly": "Read only",
+            "readWrite": "Read and write",
+            "name": "Name",
+            "namePlaceholder": "e.g. Deploy script",
+            "team": "Team",
+            "access": "Access",
+            "expires": "Expires",
+            "in30": "in 30 days",
+            "in90": "in 90 days",
+            "inYear": "in a year",
+            "create": "Create token"
+        },
+        "connected": {
+            "title": "Connected accounts",
+            "intro": "You can sign in with these. If you signed up with one and never chose a password, use “Forgot your password?” on the sign-in page to set one: it is asked for before sensitive changes.",
+            "disconnect": "Disconnect",
+            "confirm": "Disconnect {provider}? You can still sign in with your password.",
+            "aria": "Disconnect {provider}"
+        }
+    }
+}

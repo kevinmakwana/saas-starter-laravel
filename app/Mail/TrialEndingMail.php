@@ -22,7 +22,7 @@ class TrialEndingMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Your {$this->team->name} trial ends on {$this->endsAt->toFormattedDateString()}");
+        return new Envelope(subject: __('Your :team trial ends on :date', ['team' => $this->team->name, 'date' => $this->endsAt->isoFormat('ll')]));
     }
 
     public function content(): Content

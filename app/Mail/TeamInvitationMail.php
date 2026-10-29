@@ -21,7 +21,7 @@ class TeamInvitationMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "You're invited to join {$this->invitation->team->name} on Acme");
+        return new Envelope(subject: __("You're invited to join :team on Acme", ['team' => $this->invitation->team->name]));
     }
 
     public function content(): Content

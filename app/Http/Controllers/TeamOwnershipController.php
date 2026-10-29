@@ -22,13 +22,13 @@ class TeamOwnershipController extends Controller
         $newOwner = User::find($request->integer('user_id'));
 
         if (! $newOwner || $newOwner->is($this->user($request)) || ! $team->hasMember($newOwner)) {
-            throw ValidationException::withMessages(['user_id' => 'Choose another member of this team.']);
+            throw ValidationException::withMessages(['user_id' => __('Choose another member of this team.')]);
         }
 
         $team->transferOwnership($this->user($request), $newOwner);
 
         $this->audit->record('team.ownership_transferred', "Transferred ownership to {$newOwner->name}");
 
-        return back()->with('success', "{$newOwner->name} is now the owner.");
+        return back()->with('success', __(':name is now the owner.', ['name' => $newOwner->name]));
     }
 }

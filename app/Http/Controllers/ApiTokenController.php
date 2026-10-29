@@ -51,7 +51,7 @@ class ApiTokenController extends Controller
         $record->delete();
         $this->record($record->team, 'apitoken.revoked', "Revoked the API token “{$record->name}”");
 
-        return redirect()->route('profile.edit')->with('success', 'API token revoked.');
+        return redirect()->route('profile.edit')->with('success', __('API token revoked.'));
     }
 
     /** Written to the audit log of the token's team, which is not necessarily the one the user has open. */

@@ -43,6 +43,8 @@ class HandleInertiaRequests extends Middleware
                 'features' => fn () => ($team = $request->user() ? app(TenantContext::class)->current() : null) ? app(FeatureGate::class)->all($team) : [],
                 'teams' => fn () => $request->user()?->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
             ],
+            'locale' => app()->getLocale(),
+            'locales' => collect((array) config('locales.available'))->map(fn ($name, $code) => ['code' => $code, 'name' => $name])->values()->all(),
             'notifications' => fn () => $this->notifications($request),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

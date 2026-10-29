@@ -10,7 +10,10 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
 import TeamSwitcher from '@/Components/TeamSwitcher.vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+import LocaleSwitcher from '@/Components/LocaleSwitcher.vue';
 
+const { t, locale } = useI18n();
 const showingNavigationDropdown = ref(false);
 const page = usePage<PageProps>();
 const auth = computed(() => page.props.auth);
@@ -43,38 +46,39 @@ const auth = computed(() => page.props.auth);
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    {{ t('nav.dashboard') }}
                                 </NavLink>
                                 <NavLink
                                     :href="route('projects.index')"
                                     :active="route().current('projects.*')"
                                 >
-                                    Projects
+                                    {{ t('nav.projects') }}
                                 </NavLink>
                                 <NavLink
                                     v-if="auth.features?.audit_log && ['owner', 'admin'].includes(auth.team?.role ?? '')"
                                     :href="route('audit-log.index')"
                                     :active="route().current('audit-log.*')"
                                 >
-                                    Audit log
+                                    {{ t('nav.auditLog') }}
                                 </NavLink>
                                 <NavLink
                                     :href="route('teams.show')"
                                     :active="route().current('teams.*')"
                                 >
-                                    Team
+                                    {{ t('nav.team') }}
                                 </NavLink>
                                 <NavLink
                                     :href="route('billing.show')"
                                     :active="route().current('billing.*')"
                                 >
-                                    Billing
+                                    {{ t('nav.billing') }}
                                 </NavLink>
                             </div>
                         </div>
 
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <NotificationBell class="me-1" />
+                            <LocaleSwitcher class="me-3" />
                             <ThemeToggle class="me-3" />
                             <TeamSwitcher />
                             <!-- Settings Dropdown -->
@@ -108,14 +112,14 @@ const auth = computed(() => page.props.auth);
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            {{ t('nav.profile') }}
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
                                         >
-                                            Log Out
+                                            {{ t('nav.logOut') }}
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>
@@ -180,23 +184,23 @@ const auth = computed(() => page.props.auth);
                             :href="route('dashboard')"
                             :active="route().current('dashboard')"
                         >
-                            Dashboard
+                            {{ t('nav.dashboard') }}
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('projects.index')" :active="route().current('projects.*')">
-                            Projects
+                            {{ t('nav.projects') }}
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             v-if="auth.features?.audit_log && ['owner', 'admin'].includes(auth.team?.role ?? '')"
                             :href="route('audit-log.index')"
                             :active="route().current('audit-log.*')"
                         >
-                            Audit log
+                            {{ t('nav.auditLog') }}
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('teams.show')" :active="route().current('teams.*')">
-                            Team
+                            {{ t('nav.team') }}
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('billing.show')" :active="route().current('billing.*')">
-                            Billing
+                            {{ t('nav.billing') }}
                         </ResponsiveNavLink>
                     </div>
 
@@ -215,16 +219,20 @@ const auth = computed(() => page.props.auth);
                             </div>
                         </div>
 
+                        <div class="mt-3 px-4">
+                            <LocaleSwitcher class="w-full" />
+                        </div>
+
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                {{ t('nav.profile') }}
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                {{ t('nav.logOut') }}
                             </ResponsiveNavLink>
                         </div>
                     </div>
@@ -255,11 +263,10 @@ const auth = computed(() => page.props.auth);
                 role="alert"
             >
                 <span v-if="auth.billing.state === 'grace'">
-                    Your last payment failed. Your plan stays active until
-                    {{ new Date(auth.billing.grace_ends_at ?? '').toLocaleDateString() }}. Update your payment method to keep it.
+                    {{ t('layout.billingGrace', { date: new Date(auth.billing.grace_ends_at ?? '').toLocaleDateString(locale) }) }}
                 </span>
-                <span v-else>Your payment is overdue, so this team is on the Free plan until it goes through.</span>
-                <Link :href="route('billing.show')" class="font-semibold underline">Review billing</Link>
+                <span v-else>{{ t('layout.billingOverdue') }}</span>
+                <Link :href="route('billing.show')" class="font-semibold underline">{{ t('layout.reviewBilling') }}</Link>
             </div>
 
             <div
@@ -268,11 +275,14 @@ const auth = computed(() => page.props.auth);
                 role="status"
             >
                 <span>
-                    This team is over the {{ auth.overLimit.plan }} plan limits
-                    ({{ auth.overLimit.items.map((item) => `${item.used} of ${item.limit} ${item.label}`).join(', ') }}).
-                    Everything stays available, but nothing new can be added until you remove some or upgrade.
+                    {{
+                        t('layout.overLimit', {
+                            plan: auth.overLimit.plan,
+                            items: auth.overLimit.items.map((item) => t('layout.overLimitItem', { used: item.used, limit: item.limit, label: t(`limits.${item.label}`) })).join(', '),
+                        })
+                    }}
                 </span>
-                <Link :href="route('billing.show')" class="shrink-0 font-semibold underline">See plans</Link>
+                <Link :href="route('billing.show')" class="shrink-0 font-semibold underline">{{ t('layout.seePlans') }}</Link>
             </div>
 
             <div
@@ -289,7 +299,7 @@ const auth = computed(() => page.props.auth);
                 role="alert"
             >
                 <span>{{ page.props.flash.upgrade }}</span>
-                <Link :href="route('billing.show')" class="font-semibold underline">See plans</Link>
+                <Link :href="route('billing.show')" class="font-semibold underline">{{ t('layout.seePlans') }}</Link>
             </div>
 
             <!-- Page Content -->

@@ -40,7 +40,7 @@ class TeamInvitationController extends Controller
         }
 
         if ($team->users()->where('email', $data['email'])->exists()) {
-            throw ValidationException::withMessages(['email' => 'This person is already on the team.']);
+            throw ValidationException::withMessages(['email' => __('This person is already on the team.')]);
         }
 
         $invitation = $team->invitations()->updateOrCreate(
@@ -55,9 +55,9 @@ class TeamInvitationController extends Controller
 
         $this->audit->record('member.invited', "Invited {$invitation->email} as {$role->label()}");
 
-        Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
+        Mail::to($invitation->email)->locale($this->inviteeLocale($invitation->email))->send(new TeamInvitationMail($invitation));
 
-        return back()->with('success', "Invitation sent to {$invitation->email}.");
+        return back()->with('success', __('Invitation sent to :email.', ['email' => $invitation->email]));
     }
 
     /** Sends the email again and starts a fresh expiry, also for an invitation that already ran out. */
@@ -66,7 +66,7 @@ class TeamInvitationController extends Controller
         $team = $this->team($request);
         Gate::authorize('invite', $team);
         abort_unless($invitation->team_id === $team->getKey(), 404);
-        abort_if($invitation->accepted_at !== null, 409, 'This invitation was already accepted.');
+        abort_if($invitation->accepted_at !== null, 409, __('This invitation was already accepted.'));
 
         Gate::authorize('inviteAs', [$team, $invitation->role]);
         // A live invitation already holds a seat; an expired one has to fit the plan again.
@@ -78,9 +78,9 @@ class TeamInvitationController extends Controller
 
         $this->audit->record('invitation.resent', "Resent the invitation to {$invitation->email}");
 
-        Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
+        Mail::to($invitation->email)->locale($this->inviteeLocale($invitation->email))->send(new TeamInvitationMail($invitation));
 
-        return back()->with('success', "Invitation sent again to {$invitation->email}.");
+        return back()->with('success', __('Invitation sent again to :email.', ['email' => $invitation->email]));
     }
 
     public function destroy(Request $request, TeamInvitation $invitation): RedirectResponse
@@ -92,7 +92,7 @@ class TeamInvitationController extends Controller
         $invitation->delete();
         $this->audit->record('invitation.cancelled', "Cancelled invitation for {$invitation->email}");
 
-        return back()->with('success', 'Invitation cancelled.');
+        return back()->with('success', __('Invitation cancelled.'));
     }
 
     /** Signed, expiring link from the invitation email. The signed-in user must match the invited address. */
@@ -100,8 +100,8 @@ class TeamInvitationController extends Controller
     {
         $user = $this->user($request);
 
-        abort_unless(strcasecmp($user->email, $invitation->email) === 0, 403, 'This invitation is for a different email address.');
-        abort_unless($invitation->isPending(), 410, 'This invitation has expired or was already used.');
+        abort_unless(strcasecmp($user->email, $invitation->email) === 0, 403, __('This invitation is for a different email address.'));
+        abort_unless($invitation->isPending(), 410, __('This invitation has expired or was already used.'));
 
         $team = $invitation->team;
 
@@ -109,7 +109,7 @@ class TeamInvitationController extends Controller
         $seats = $team->currentPlan()->limit('members');
         if ($seats !== null && $team->users()->count() >= $seats) {
             return redirect()->route('dashboard')
-                ->with('error', "{$team->name} is full on its current plan. Ask the owner to upgrade, then open the invitation link again.");
+                ->with('error', __(':team is full on its current plan. Ask the owner to upgrade, then open the invitation link again.', ['team' => $team->name]));
         }
 
         $team->addMember($user, $invitation->role);
@@ -119,6 +119,14 @@ class TeamInvitationController extends Controller
 
         Notification::send($team->managers()->reject(fn (User $manager) => $manager->is($user)), new MemberJoined($team->getKey(), $team->name, $user->name));
 
-        return redirect()->route('dashboard')->with('success', "You joined {$team->name}.");
+        return redirect()->route('dashboard')->with('success', __('You joined :team.', ['team' => $team->name]));
+    }
+
+    /** Someone who already has an account gets the invitation in the language they chose there, anyone else in the inviter's. */
+    private function inviteeLocale(string $email): string
+    {
+        $saved = User::whereRaw('LOWER(email) = ?', [strtolower($email)])->value('locale');
+
+        return is_string($saved) && array_key_exists($saved, (array) config('locales.available')) ? $saved : app()->getLocale();
     }
 }

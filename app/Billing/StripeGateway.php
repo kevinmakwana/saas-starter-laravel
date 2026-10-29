@@ -17,7 +17,7 @@ class StripeGateway implements BillingGateway
         // because a payment failed: its Stripe subscription is still there, and the portal is how to fix it.
         $existing = $team->subscription('default');
         if ($existing !== null && ! $existing->ended() && in_array($existing->stripe_status, ['active', 'trialing', 'past_due'], true)) {
-            throw new AlreadySubscribed('Your team already has a subscription. Use Switch plan, Resume, or Update payment method instead.');
+            throw new AlreadySubscribed(__('Your team already has a subscription. Use Switch plan, Resume, or Update payment method instead.'));
         }
 
         $builder = $team->newSubscription('default', $this->price($plan, $interval));
