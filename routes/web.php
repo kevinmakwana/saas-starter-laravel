@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuditLogExportController;
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('profile.two-factor.confirm');
     Route::post('/profile/two-factor/recovery-codes', [TwoFactorController::class, 'recoveryCodes'])->middleware('password.confirm')->name('profile.two-factor.recovery-codes');
     Route::delete('/profile/two-factor', [TwoFactorController::class, 'destroy'])->middleware('password.confirm')->name('profile.two-factor.destroy');
+    Route::post('/profile/api-tokens', [ApiTokenController::class, 'store'])->middleware(['password.confirm', 'throttle:api-tokens'])->name('profile.api-tokens.store');
+    Route::delete('/profile/api-tokens/{token}', [ApiTokenController::class, 'destroy'])->name('profile.api-tokens.destroy');
     Route::delete('/profile/email', [EmailChangeController::class, 'cancel'])->name('profile.email.cancel');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });

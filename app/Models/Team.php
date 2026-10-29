@@ -192,6 +192,8 @@ class Team extends Model
     public function removeMember(User $user): void
     {
         $this->users()->detach($user->getKey());
+        // Their API tokens for this team are no use any more.
+        PersonalAccessToken::where('team_id', $this->getKey())->where('tokenable_type', $user->getMorphClass())->where('tokenable_id', $user->getKey())->delete();
 
         if ($user->current_team_id === $this->getKey()) {
             $next = $user->teams()->first();

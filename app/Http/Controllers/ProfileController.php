@@ -6,6 +6,7 @@ use App\Billing\BillingGateway;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Mail\EmailChangeConfirmationMail;
 use App\Mail\EmailChangeNoticeMail;
+use App\Models\PersonalAccessToken;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -45,6 +46,17 @@ class ProfileController extends Controller
             ],
             // Flashed by the request that made them, so they show exactly once.
             'recoveryCodes' => session('recoveryCodes'),
+            'newToken' => session('newToken'),
+            'apiTeams' => $user->teams()->orderBy('teams.name')->get(['teams.id', 'teams.name'])->map(fn (Team $team) => ['id' => $team->id, 'name' => $team->name])->all(),
+            'apiTokens' => $user->tokens()->with('team')->latest('id')->get()->map(fn (PersonalAccessToken $token) => [
+                'id' => $token->id,
+                'name' => $token->name,
+                'team' => $token->team->name,
+                'access' => $token->access(),
+                'last_used_at' => $token->last_used_at?->toIso8601String(),
+                'expires_at' => $token->expires_at?->toIso8601String(),
+                'created_at' => $token->created_at?->toIso8601String(),
+            ])->all(),
         ]);
     }
 

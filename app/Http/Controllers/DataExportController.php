@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Models\AuditLog;
+use App\Models\PersonalAccessToken;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -42,6 +43,7 @@ class DataExportController extends Controller
             fwrite($out, '"invitations": '.$this->json($this->invitations($user)).",\n");
             fwrite($out, '"notifications": '.$this->json($this->notifications($user)).",\n");
             fwrite($out, '"uploads": '.$this->json($this->uploads($user)).",\n");
+            fwrite($out, '"api_tokens": '.$this->json($this->apiTokens($user)).",\n");
             fwrite($out, '"audit_log": [');
 
             // Streamed one row at a time: a long-standing user can have a lot of history.
@@ -136,6 +138,23 @@ class DataExportController extends Controller
             'mime' => $file->mime,
             'size' => $file->size,
             'created_at' => $file->created_at->toIso8601String(),
+        ])->all());
+    }
+
+    /**
+     * The API tokens the user made (never the secret, which is not even stored).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function apiTokens(User $user): array
+    {
+        return array_values($user->tokens()->orderBy('id')->get()->map(fn (PersonalAccessToken $token) => [
+            'name' => $token->name,
+            'team_id' => $token->team_id,
+            'access' => $token->access(),
+            'last_used_at' => $token->last_used_at?->toIso8601String(),
+            'expires_at' => $token->expires_at?->toIso8601String(),
+            'created_at' => $token->created_at?->toIso8601String(),
         ])->all());
     }
 

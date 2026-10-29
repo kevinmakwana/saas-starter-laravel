@@ -24,6 +24,16 @@ export interface AttachmentRow {
     uploader: string | null;
 }
 
+export interface ApiToken {
+    id: number;
+    name: string;
+    team: string;
+    access: 'read' | 'write';
+    last_used_at: string | null;
+    expires_at: string | null;
+    created_at: string;
+}
+
 export interface NotificationItem {
     id: string;
     kind: string;
