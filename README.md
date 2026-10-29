@@ -29,6 +29,27 @@ Host ports are configurable in `.env` (`APP_PORT`, `FORWARD_DB_PORT`, `FORWARD_R
 `FORWARD_MAILPIT_PORT`, `FORWARD_MAILPIT_DASHBOARD_PORT`, `VITE_PORT`) in case the defaults are busy.
 All ports bind to `127.0.0.1` only. If you change `DB_DATABASE` or `DB_USERNAME` after the first start, run `./vendor/bin/sail down -v` first so MySQL re-initialises. Other commands: `make dev` (Vite HMR), `make test`, `make fresh`, `make logs`, `make down`.
 
+### Without Docker
+
+Only PHP 8.4, Composer and Node 22 are needed. This skips MySQL, Redis, Mailpit, Horizon and the scheduler, which is fine for a look around:
+
+```bash
+cp .env.example .env
+composer install && npm ci && npm run build
+php artisan key:generate
+touch database/database.sqlite
+```
+
+In `.env`, delete the `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` and `DB_PASSWORD` lines (SQLite would otherwise read `DB_DATABASE` as a file name) and set
+`DB_CONNECTION=sqlite`, `QUEUE_CONNECTION=sync`, `SESSION_DRIVER=file`, `CACHE_STORE=file` and `MAIL_MAILER=log`. Then:
+
+```bash
+php artisan migrate --seed
+php artisan serve      # http://127.0.0.1:8000, same demo logins as above
+```
+
+Mail is written to `storage/logs/laravel.log` instead of Mailpit, so an invitation or email-change link has to be copied from there. `php artisan test` needs none of this: it runs on in-memory SQLite out of the box.
+
 ## How it fits together
 
 ```mermaid
