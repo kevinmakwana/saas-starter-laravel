@@ -29,11 +29,11 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                 Profile Information
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                 Update your account's profile information and email address.
             </p>
         </header>
@@ -85,26 +85,26 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
                     autocomplete="current-password"
                 />
 
-                <p class="mt-1 text-sm text-gray-600">
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     We will email a link to the new address. Your email only changes once you open it.
                 </p>
 
                 <InputError class="mt-2" :message="form.errors.current_password" />
             </div>
 
-            <div v-if="pendingEmail" class="rounded-md bg-amber-50 p-3 text-sm text-amber-800" data-testid="pending-email">
+            <div v-if="pendingEmail" class="rounded-md bg-amber-50 dark:bg-amber-900/30 p-3 text-sm text-amber-800 dark:text-amber-200" data-testid="pending-email">
                 Waiting for you to confirm <strong>{{ pendingEmail }}</strong>. Open the link we sent there to finish the change.
-                <button type="button" class="ml-1 underline hover:text-amber-950" @click="cancelEmailChange">Cancel the change</button>
+                <button type="button" class="ml-1 underline hover:text-amber-950 dark:hover:text-amber-100" @click="cancelEmailChange">Cancel the change</button>
             </div>
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="mt-2 text-sm text-gray-800">
+                <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
                     Your email address is unverified.
                     <Link
                         :href="route('verification.send')"
                         method="post"
                         as="button"
-                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        class="rounded-md text-sm text-gray-600 dark:text-gray-400 underline hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         Click here to re-send the verification email.
                     </Link>
@@ -112,7 +112,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
 
                 <div
                     v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-green-600"
+                    class="mt-2 text-sm font-medium text-green-600 dark:text-green-400"
                 >
                     A new verification link has been sent to your email address.
                 </div>
@@ -129,7 +129,7 @@ const cancelEmailChange = () => router.delete(route('profile.email.cancel'), { p
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        class="text-sm text-gray-600 dark:text-gray-400"
                     >
                         Saved.
                     </p>

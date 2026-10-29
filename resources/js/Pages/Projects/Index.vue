@@ -28,10 +28,10 @@ watch(search, (value) => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">Projects</h2>
+                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Projects</h2>
                 <Link
                     :href="route('projects.create')"
-                    class="rounded-md bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-gray-700"
+                    class="rounded-md bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-gray-700 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-white"
                 >
                     New project
                 </Link>
@@ -41,17 +41,17 @@ watch(search, (value) => {
         <div class="mx-auto max-w-5xl space-y-4 py-12 sm:px-6 lg:px-8">
             <TextInput v-model="search" type="search" placeholder="Search projects…" aria-label="Search projects" class="block w-full" />
 
-            <div class="bg-white shadow sm:rounded-lg">
-                <ul v-if="projects.data.length" class="divide-y divide-gray-100">
+            <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
+                <ul v-if="projects.data.length" class="divide-y divide-gray-100 dark:divide-gray-700">
                     <li v-for="project in projects.data" :key="project.id" class="flex items-center justify-between p-4">
                         <div>
-                            <Link :href="route('projects.show', project.id)" class="font-medium text-indigo-700 hover:underline">{{ project.name }}</Link>
-                            <p v-if="project.description" class="text-sm text-gray-500">{{ project.description }}</p>
+                            <Link :href="route('projects.show', project.id)" class="font-medium text-indigo-700 dark:text-indigo-400 hover:underline">{{ project.name }}</Link>
+                            <p v-if="project.description" class="text-sm text-gray-500 dark:text-gray-400">{{ project.description }}</p>
                         </div>
-                        <span class="text-sm text-gray-500">{{ project.tasks_count }} tasks</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ project.tasks_count }} tasks</span>
                     </li>
                 </ul>
-                <p v-else class="p-6 text-sm text-gray-500">No projects found.</p>
+                <p v-else class="p-6 text-sm text-gray-500 dark:text-gray-400">No projects found.</p>
             </div>
 
             <Pagination :page="projects" />

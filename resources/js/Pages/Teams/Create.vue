@@ -14,11 +14,11 @@ const form = useForm({ name: '' });
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">Create a team</h2>
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Create a team</h2>
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-xl bg-white p-6 shadow sm:rounded-lg">
+            <div class="mx-auto max-w-xl bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg">
                 <form class="space-y-4" @submit.prevent="form.post(route('teams.store'))">
                     <div>
                         <InputLabel for="name" value="Team name" />

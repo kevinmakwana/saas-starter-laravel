@@ -47,29 +47,29 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">{{ team.name }}</h2>
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">{{ team.name }}</h2>
         </template>
 
         <div class="mx-auto max-w-4xl space-y-6 py-12 sm:px-6 lg:px-8">
-            <section class="bg-white p-6 shadow sm:rounded-lg">
-                <h3 class="mb-4 text-lg font-medium text-gray-900">Members</h3>
-                <ul class="divide-y divide-gray-100">
+            <section class="bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg">
+                <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Members</h3>
+                <ul class="divide-y divide-gray-100 dark:divide-gray-700">
                     <li v-for="member in members" :key="member.id" class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                         <div>
-                            <p class="font-medium text-gray-900">{{ member.name }}</p>
-                            <p class="text-sm text-gray-500">{{ member.email }}</p>
+                            <p class="font-medium text-gray-900 dark:text-gray-100">{{ member.name }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ member.email }}</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <select
                                 v-if="can.updateRoles && member.role !== 'owner'"
                                 :value="member.role"
-                                class="rounded-md border-gray-300 py-1 text-sm"
+                                class="rounded-md border-gray-300 dark:border-gray-600 py-1 text-sm"
                                 @change="changeRole(member, ($event.target as HTMLSelectElement).value)"
                             >
                                 <option value="admin">Admin</option>
                                 <option value="member">Member</option>
                             </select>
-                            <span v-else class="rounded bg-gray-100 px-2 py-1 text-xs font-medium capitalize text-gray-700">{{ member.role }}</span>
+                            <span v-else class="rounded bg-gray-100 dark:bg-gray-900 px-2 py-1 text-xs font-medium capitalize text-gray-700 dark:text-gray-300">{{ member.role }}</span>
                             <SecondaryButton v-if="can.transfer && member.id !== me.id" @click="transfer(member)">Make owner</SecondaryButton>
                             <DangerButton v-if="member.role !== 'owner' && (member.id === me.id || can.invite)" @click="remove(member)">
                                 {{ member.id === me.id ? 'Leave' : 'Remove' }}
@@ -79,8 +79,8 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                 </ul>
             </section>
 
-            <section v-if="can.invite" class="bg-white p-6 shadow sm:rounded-lg">
-                <h3 class="mb-4 text-lg font-medium text-gray-900">Invite someone</h3>
+            <section v-if="can.invite" class="bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg">
+                <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">Invite someone</h3>
                 <form class="flex flex-wrap items-end gap-3" @submit.prevent="sendInvite">
                     <div class="grow">
                         <InputLabel for="invite-email" value="Email" />
@@ -89,7 +89,7 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                     </div>
                     <div>
                         <InputLabel for="invite-role" value="Role" />
-                        <select id="invite-role" v-model="invite.role" class="mt-1 rounded-md border-gray-300 text-sm">
+                        <select id="invite-role" v-model="invite.role" class="mt-1 rounded-md border-gray-300 dark:border-gray-600 text-sm">
                             <option value="member">Member</option>
                             <option v-if="can.updateRoles" value="admin">Admin</option>
                         </select>
@@ -98,9 +98,9 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                     <PrimaryButton :disabled="invite.processing">Send invite</PrimaryButton>
                 </form>
 
-                <ul v-if="invitations.length" class="mt-6 divide-y divide-gray-100">
+                <ul v-if="invitations.length" class="mt-6 divide-y divide-gray-100 dark:divide-gray-700">
                     <li v-for="invitation in invitations" :key="invitation.id" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                        <span>{{ invitation.email }} <span class="text-gray-500">· {{ invitation.role }} · {{ invitation.expired ? 'expired' : 'pending' }}</span></span>
+                        <span>{{ invitation.email }} <span class="text-gray-500 dark:text-gray-400">· {{ invitation.role }} · {{ invitation.expired ? 'expired' : 'pending' }}</span></span>
                         <span class="flex gap-2">
                             <SecondaryButton @click="resend(invitation)">Resend</SecondaryButton>
                             <SecondaryButton @click="cancel(invitation)">Cancel</SecondaryButton>
@@ -109,14 +109,14 @@ const transfer = (member: Member) => confirm(`Make ${member.name} the owner? You
                 </ul>
             </section>
 
-            <section v-if="can.delete" class="bg-white p-6 shadow sm:rounded-lg">
-                <h3 class="text-lg font-medium text-gray-900">Delete team</h3>
-                <p class="mt-1 text-sm text-gray-600">
+            <section v-if="can.delete" class="bg-white dark:bg-gray-800 p-6 shadow sm:rounded-lg">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Delete team</h3>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
                     Deletes {{ team.name }} with its projects, tasks and activity history, and ends its subscription. Members are told by email. This cannot be undone.
                 </p>
                 <DangerButton class="mt-4" @click="confirmingDeletion = true">Delete team</DangerButton>
 
-                <form v-if="confirmingDeletion" class="mt-4 space-y-4 border-t border-gray-100 pt-4" @submit.prevent="deleteTeam">
+                <form v-if="confirmingDeletion" class="mt-4 space-y-4 border-t border-gray-100 dark:border-gray-700 pt-4" @submit.prevent="deleteTeam">
                     <div>
                         <InputLabel for="delete-name" :value="`Type “${team.name}” to confirm`" />
                         <TextInput id="delete-name" v-model="deletion.name" type="text" class="mt-1 block w-full" required autocomplete="off" />
